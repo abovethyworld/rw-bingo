@@ -184,6 +184,9 @@ td.r,th.r{text-align:right}
 .m-row .st.done{color:var(--grn)}
 .modal p{color:var(--mut);line-height:1.55;font-weight:600}
 .modal p b{color:#fff}
+.rsec{color:#fff !important;font-weight:900 !important;font-size:16.5px;margin-top:20px}
+.modal ul{color:var(--mut);font-weight:600;line-height:1.55;margin:2px 0 10px 18px;padding:0}
+.modal ul b{color:#fff}
 
 /* mvp */
 .podium{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:22px;align-items:end}
@@ -344,10 +347,38 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <p><b>Scoring.</b> Every tile is worth the points printed on it. The board holds 208 tile points in total.</p>
     <p><b>Line bonuses.</b> A full row is worth <b>3 bonus points</b>, a full column <b>3 bonus points</b>, and a full diagonal <b>10 bonus points</b>.</p>
     <p><b>Skips.</b> Each team has <b>3 skips</b> for the week.</p>
-    <p><b>Bonus Tile: TFA Purple.</b> Obtain any purple or pet from The Fractured Archive for 1 tile skip.</p>
-    <p><b>Pet Skip.</b> Any pet is worth 1 tile skip. Excludes Chaos Elemental, Chompy Chick, Skotos, and Beef.</p>
-    <p><b>Megarare Skip.</b> Any megarare is worth 1 tile skip: Twisted Bow, Tumeken's Shadow, Scythe of Vitur, or an Obligator.</p>
     <p><b>When.</b> Nov 14, 1:00 PM to Nov 22, 1:00 PM ET.</p>
+    <p class="rsec">Bonus tiles</p>
+    <p><b>TFA Purple.</b> Obtain any purple or pet from The Fractured Archive for 1 tile skip.</p>
+    <p><b>Any Pet.</b> Any pet is worth 1 tile skip. Excludes Chaos Elemental, Chompy Chick, Skotos, and Beef.</p>
+    <p><b>Any Megarare.</b> Any megarare is worth 1 tile skip: Twisted Bow, Tumeken's Shadow, Scythe of Vitur, or an Obligator.</p>
+    <p class="rsec">General rules</p>
+    <p><b>1.</b> No leaking tile or event information prior to the start date, including captains to members.</p>
+    <p><b>2.</b> Each participant must have the codeword and the current date in each screenshot for it to be counted.</p>
+    <p><b>3.</b> Alts may not be used to complete tiles. You must use the iron account you signed up with.</p>
+    <p><b>4. Ironman integrity.</b> All players must play as if they are standard Ironman accounts. Players may only group for content that would be considered groupable for regular Ironman accounts (bossing, raids, minigames that allow grouping, etc.). Group Ironman accounts are allowed, but all gameplay must still follow the restrictions of a regular Ironman. Using any grouping features unique to Group Ironman mode for an advantage is strictly prohibited.</p>
+    <p><b>5. Stacking.</b> Stacking rewards from minigames or bosses is highly frowned upon. Let's try to keep it on even footing for all participants. If you cannot process your banked points or items beforehand, you can take a before and after screenshot of the points or banked items and include that in your submission. If the after screenshot has at least as much as the before screenshot, the submission will be accepted. It is also not allowed to exchange banked minigame rewards for points.</p>
+    <p><b>6.</b> Each team member is expected to participate as best they can. If you need to be away or something IRL occurs, let your captain and team know ASAP.</p>
+    <p><b>7.</b> All clan rules and the ToS of both Jagex and Discord apply to this event.</p>
+    <p><b>8.</b> Group content within your team is encouraged, and this year you are allowed to do content outside your team, but please put in a good faith effort to find people on your team first. This event is about making friends with new clan members you haven't had the chance to get to know yet.</p>
+    <p><b>9.</b> Communicate with your team. If you are working on a tile, let your team know. If you won't be able to play for part of the competition, let your captain know.</p>
+    <p class="rsec">Event preparation</p>
+    <p><b>OK to prep:</b></p>
+    <ul>
+      <li>Gauntlet / CG Chest</li>
+      <li>Moons of Peril Chest</li>
+      <li>Barrows Chest</li>
+      <li>Ecumenical Keys / Key Shards</li>
+      <li>Clue Scroll Boxes (max. 5 per tier)</li>
+    </ul>
+    <p><b>Not OK to prep:</b></p>
+    <ul>
+      <li>Raid Chests</li>
+      <li>Minigame Rolls (GotR, Wintertodt, Tempoross, etc.)</li>
+      <li>Unrefined Sailing Salvage</li>
+    </ul>
+    <p class="rsec">Tile information</p>
+    <div id="tileInfo"></div>
   </div>
 </div>
 <script>
@@ -698,6 +729,23 @@ function tick(){
   document.getElementById("pctComplete").textContent = (Math.floor(pct * 10) / 10) + "% complete";
 }
 TEAMS.forEach(function(tm, i){ tm.skips = SHEET.skips[i] || 0; });
+/* Tile information from the official bingo post (tiles with a written description). */
+var TILE_DESC = {
+ 0:"As a team, gain 3M total XP in the Slayer skill. No screenshots required.",
+ 1:"As a team, gain 5M total XP in the Sailing skill. No screenshots required.",
+ 2:"As a team, gain 6M total XP in the Crafting skill. No screenshots required.",
+ 3:"As a team, gain 4M total XP in the Fishing skill. No screenshots required.",
+ 4:"As a team, gain 4M total XP in the Runecrafting skill. No screenshots required.",
+ 5:"As a team, gain 10M total XP in the Firemaking skill. No screenshots required.",
+ 6:"As a team, gain 5M total XP in the Hunter skill. No screenshots required.",
+ 7:"As a team, obtain a full, matching set from The Barrows.",
+ 8:"As a team, obtain 5 Abyssal Whips as drops from Abyssal Demons or the Unsired. Must submit a screenshot of your bank and inventory for any Unsireds.",
+ 9:"Receive a Tome of Fire, the Phoenix pet, or a Dragon Axe from Wintertodt. Must also submit a screenshot of your Wintertodt reward points beforehand.",
+ 10:"Obtain a Crystal Tool Seed, Zalcano Shard, Uncut Onyx, or Smolcano from Zalcano."
+};
+document.getElementById("tileInfo").innerHTML = TILES.map(function(t, i){
+  return '<p><b>' + esc(t.t) + ' — ' + t.p + (t.p === 1 ? ' point.' : ' points.') + '</b>' + (TILE_DESC[i] ? ' ' + esc(TILE_DESC[i]) : '') + '</p>';
+}).join("");
 renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); loadWOM(); tick(); setInterval(tick, 60000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
