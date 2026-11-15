@@ -59,6 +59,7 @@ button{font-family:inherit;cursor:pointer}
 #shotBox{position:fixed;inset:0;background:rgba(4,8,16,.93);z-index:4000;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 #shotBox[hidden]{display:none}
 #shotBox img{max-width:94vw;max-height:92vh;border-radius:10px}
+.who-link{color:var(--acc);font-weight:700;text-decoration:underline dotted;cursor:pointer}
 .dateline{color:var(--acc2);font-weight:800;font-size:16.5px;margin-top:10px}
 .progress{height:5px;background:#16223d;border-radius:99px;margin-top:10px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--acc);border-radius:99px}
@@ -1753,7 +1754,7 @@ function openChaseTile(idx){
     var whoRows = TEAMS.map(function(tm, ti){
       var seenC = {}, lines = [];
       allDrops().forEach(function(cl){
-        if (cl.tile === idx && cl.team === tm.name){ var k = cl.player + "|" + cl.item; if (!seenC[k]){ seenC[k] = 1; lines.push(esc(cl.player) + " \u2014 " + esc(cl.item)); } }
+        if (cl.tile === idx && cl.team === tm.name){ var k = cl.player + "|" + cl.item; if (!seenC[k]){ seenC[k] = 1; lines.push(esc(cl.player) + " \u2014 " + (cl.img ? '<a class="who-link" onclick="openShot(event,\'' + cl.img + '\')">' + esc(cl.item) + '</a>' : esc(cl.item))); } }
       });
       return { tm: tm, lines: lines };
     });
@@ -2118,7 +2119,7 @@ function allDrops(){
     if (tlActive && e.t && e.t > tlCutoff()) return;
     var k = key(e.p, e.item, e.tile);
     if (seen[k]) return; seen[k] = 1;
-    out.push({ player: e.p, item: e.item, tile: e.tile, team: TEAMS[e.team].name, t: e.t });
+    out.push({ player: e.p, item: e.item, tile: e.tile, team: TEAMS[e.team].name, t: e.t, img: e.img || "" });
   });
   return out;
 }
