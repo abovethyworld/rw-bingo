@@ -24,6 +24,10 @@
   .bar>div{height:100%}
   .prow{margin-bottom:10px;font-size:14px}
   .tn{font-weight:700}
+  .sthumb{width:46px;height:46px;object-fit:cover;border-radius:6px;cursor:pointer;float:right;margin:2px 0 4px 10px;border:1px solid #4a3a28;background:#14100d}
+  #shotBox{position:fixed;inset:0;background:rgba(10,6,4,.93);z-index:4000;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+  #shotBox[hidden]{display:none}
+  #shotBox img{max-width:94vw;max-height:92vh;border-radius:10px}
 </style>
 </head>
 <body>
@@ -45,6 +49,19 @@ function pointsFor(marks){
   return p;
 }
 function fmtT(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",minute:"2-digit"});}
+var shotBoxEl=null;
+function openShot(e,src){
+  if(e)e.stopPropagation();
+  if(!shotBoxEl){
+    shotBoxEl=document.createElement("div");
+    shotBoxEl.id="shotBox"; shotBoxEl.hidden=true;
+    shotBoxEl.innerHTML="<img alt='Drop screenshot'>";
+    shotBoxEl.addEventListener("click",function(){shotBoxEl.hidden=true;});
+    document.body.appendChild(shotBoxEl);
+  }
+  shotBoxEl.querySelector("img").src=src;
+  shotBoxEl.hidden=false;
+}
 fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
   var shots=(d.SHOTS||[]).slice().sort(function(a,b){return b.t-a.t;});
   var prog={};
@@ -77,7 +94,7 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
     var team=s.team==null?"":(" · <span style='color:"+TEAMS[s.team].color+"'>"+TEAMS[s.team].name+"</span>");
     var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+(g.n>1?" ×"+g.n:"")+"</b>");
     var tag=s.inSheets?"in sheets":(s.tag?"2B log only":"not logged");
-    return "<div class='logrow'>"+s.p+team+" — "+what+" <span class='tag "+(s.inSheets?"yes":"no")+"'>"+tag+"</span>"+
+    return "<div class='logrow'>"+(s.img?"<img class='sthumb' src='"+s.img+"' alt='' onclick='openShot(event,this.src)'>":"")+s.p+team+" — "+what+" <span class='tag "+(s.inSheets?"yes":"no")+"'>"+tag+"</span>"+
       "<br><span class='when'>"+TILES[s.tile][0]+" · "+fmtT(s.t)+" ET</span></div>";
   }).join("");
   var seen={}, prows="";
