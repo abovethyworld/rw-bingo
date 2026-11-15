@@ -34,7 +34,7 @@ button{font-family:inherit;cursor:pointer}
 /* banner */
 .banner{margin:16px 0 4px;border-radius:14px;overflow:hidden;border:1px solid var(--line);line-height:0}
 .banner img{width:100%;height:118px;object-fit:cover;object-position:center 38%}
-@media(max-width:640px){.banner img{height:74px}table{font-size:12.5px}th,td{padding:8px 8px}.board-head .stats{gap:14px}}
+@media(max-width:640px){.banner img{height:74px}table{font-size:12.5px}th,td{padding:8px 8px}}
 
 /* event header */
 .title-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:14px}
@@ -54,6 +54,18 @@ button{font-family:inherit;cursor:pointer}
 .tabs{display:flex;gap:26px;margin-top:20px;border-bottom:1px solid var(--hair);overflow-x:auto}
 .tabs button{background:none;border:none;color:var(--mut);font-weight:900;font-size:16.5px;padding:10px 2px 12px;border-bottom:2.5px solid transparent;white-space:nowrap}
 .tabs button.on{color:#fff;border-bottom-color:#fff}
+@media(max-width:640px){
+  .wrap{padding:0 14px 28px}
+  .nav-in{padding:10px 14px}
+  .title-row h1{font-size:28px;gap:10px}
+  .title-row h1 img{width:30px;height:30px;border-radius:8px}
+  .dateline{font-size:15px}
+  .underbar{flex-wrap:wrap;font-size:13.5px}
+  .tabs{gap:18px}
+  .tabs button{font-size:15px}
+  .note-card{padding:16px}
+  .side-card{padding:14px}
+}
 .timelapse-row{display:flex;justify-content:center;margin-top:16px}
 .tl-panel{display:none;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .tl-panel.open{display:block}
@@ -65,11 +77,14 @@ button{font-family:inherit;cursor:pointer}
 .tl-note{color:var(--mut);font-size:13.5px;margin-top:10px;line-height:1.45}
 
 /* boards */
-.boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:18px;margin-top:20px}
-@media(max-width:420px){.boards{grid-template-columns:1fr}}
+/* Backstop only, on html: setting overflow-x on body too made body a scroll container and broke the sticky nav. */
+html{overflow-x:hidden}
+.boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(350px,100%),1fr));gap:18px;margin-top:20px}
+.board-card{min-width:0}
+@media(max-width:420px){.boards{grid-template-columns:minmax(0,1fr)}}
 .board-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
-.board-head{display:flex;align-items:center;gap:10px;margin-bottom:13px}
-.place{font-size:12.5px;font-weight:900;padding:3.5px 10px;border-radius:999px;background:#263550;color:#c7d4ef}
+.board-head{display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}
+.place{font-size:12.5px;font-weight:900;padding:3.5px 10px;border-radius:999px;background:#263550;color:#c7d4ef;white-space:nowrap;flex:none}
 .place.p1{background:var(--gold);color:#231a00}
 .place.p3{background:var(--bronze);color:#261300}
 .team-chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;flex:none;position:relative;overflow:hidden}
@@ -77,29 +92,30 @@ button{font-family:inherit;cursor:pointer}
 .big-chip{position:relative;overflow:hidden}
 .big-chip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .team-tabs button img{width:20px;height:20px;border-radius:6px;vertical-align:-5px;margin-right:7px;object-fit:cover}
-.team-name{font-weight:900;font-size:18.5px;line-height:1.1}
-.head-stats{margin-left:auto;display:flex;gap:15px}
-.hstat{text-align:right}
+.team-name{font-weight:900;font-size:18.5px;line-height:1.1;min-width:0;overflow-wrap:anywhere}
+.head-stats{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 15px;max-width:100%;min-width:0}
+@media(max-width:700px){.head-stats{flex:1 1 100%;margin-left:0;justify-content:space-between;gap:6px 8px}.head-stats .hstat{text-align:left}.team-name{font-size:17px}}
+.hstat{text-align:right;white-space:nowrap}
 .hstat .v{font-weight:900;font-size:16.5px}
 .hstat .k{font-size:10.5px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
 .hstat .v.gold{color:var(--gold)} .hstat .v.grn{color:var(--grn)} .hstat .v.acc{color:var(--acc2)}
-.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.tile{position:relative;aspect-ratio:1;border-radius:10px;border:1.5px solid var(--tileline);background:var(--tile);display:flex;align-items:center;justify-content:center;padding:4px;transition:transform .08s}
-.tile:hover{transform:translateY(-1px);border-color:var(--acc)}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.tile{position:relative;aspect-ratio:1;border-radius:10px;border:1.5px solid var(--tileline);background:var(--tile);display:flex;align-items:center;justify-content:center;padding:4px;transition:transform .08s;min-width:0}
+@media(hover:hover){.tile:hover{transform:translateY(-1px);border-color:var(--acc)}}
 .tile.done{background:var(--grnfill);border-color:var(--grn)}
 .tile img{width:72%;height:72%;object-fit:contain;image-rendering:pixelated}
 .tile.open img{opacity:.62;filter:saturate(.55)}
 .tile .mono{font-weight:900;font-size:15px;color:#cfe0ff;letter-spacing:.3px}
 .tile.open .mono{opacity:.6}
 .tile .pts{position:absolute;right:4px;bottom:3px;font-size:10px;font-weight:900;color:var(--gold)}
-.tile.focus{box-shadow:inset 0 0 0 2.5px var(--fc,#fff)}
-.tile .star{position:absolute;top:2px;left:5px;font-size:10px;color:var(--fc,#fff)}
-.board-foot{display:flex;justify-content:space-between;margin-top:12px;color:var(--mut);font-weight:700;font-size:13.5px}
+@media(max-width:420px){.tile .mono{font-size:11.5px;letter-spacing:0}}
+.board-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-top:12px;color:var(--mut);font-weight:700;font-size:13.5px}
 .board-foot b{color:#fff}
 
 /* lower tables */
-.lower{display:grid;grid-template-columns:1.9fr 1fr;gap:18px;margin-top:20px}
-@media(max-width:900px){.lower{grid-template-columns:1fr}}
+.lower{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:18px;margin-top:20px}
+@media(max-width:900px){.lower{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.tcard{padding:6px 12px 12px}}
 .tcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 18px 14px;overflow:hidden}
 .tcard h3{margin:12px 0 6px;font-size:17px;font-weight:900}
 table{width:100%;border-collapse:collapse;font-size:14.5px}
@@ -115,8 +131,21 @@ td.r,th.r{text-align:right}
 .team-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .team-tabs button{border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:999px;padding:8px 18px;font-weight:900;font-size:15px}
 .team-tabs button.on{color:#fff;border-color:var(--acc);background:var(--card2)}
-.team-cols{display:grid;grid-template-columns:300px 1fr 330px;gap:18px;margin-top:18px;align-items:start}
-@media(max-width:1080px){.team-cols{grid-template-columns:1fr}}
+.team-cols{display:grid;grid-template-columns:300px minmax(0,1fr) 330px;gap:18px;margin-top:18px;align-items:start}
+.team-cols>*{min-width:0}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tblwrap th{white-space:nowrap}
+.tile-lg .lab{overflow-wrap:anywhere;max-width:100%}
+.tile-lg .prog{overflow-wrap:anywhere;max-width:100%;text-align:center}
+/* 1081-1399px: three columns left the board ~350px wide with 10.5px labels in ~44px tiles; put the board on its own row. */
+@media(max-width:1399px){
+  .team-cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"board board" "side lb"}
+  #teamBoard{grid-area:board} #teamSide{grid-area:side} #teamLb{grid-area:lb}
+}
+@media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamLb{grid-area:auto}}
+/* Phones: a labelled 7x7 board cannot fit 320px, so it scrolls sideways inside its own card instead of widening the page. */
+#teamBoard{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:600px){#teamBoard .grid7{min-width:500px}#teamBoard{padding:12px}}
 .side-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
 .side-card h3{margin:0 0 4px;font-size:20px;font-weight:900}
 .big-chip{width:74px;height:74px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:27px;color:#fff;margin-bottom:12px}
@@ -138,26 +167,30 @@ td.r,th.r{text-align:right}
 /* modal + dialog */
 .backdrop{position:fixed;inset:0;background:rgba(3,5,10,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:80;padding:18px}
 .backdrop.open{display:flex}
-.modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;max-height:86vh;overflow:auto;padding:22px}
+.modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;max-height:86vh;max-height:86dvh;overflow:auto;overscroll-behavior:contain;padding:22px}
+@media(max-width:640px){.backdrop{padding:12px}.modal{padding:16px}.modal h2{font-size:18px}}
 .modal .m-head{display:flex;align-items:center;gap:12px}
-.modal .m-head img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated}
+.modal .m-head img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;display:block}
+.modal .m-head #mIcon{flex:none}
 .modal .m-head .mono{font-size:24px;font-weight:900}
-.modal h2{margin:0;font-size:21px;font-weight:900}
-.modal .m-pts{margin-left:auto;color:var(--gold);font-weight:900;white-space:nowrap}
-.modal .x{margin-left:6px;background:none;border:none;color:var(--mut);font-size:21px;line-height:1}
+/* h2 takes the free space so the close button sits at the right edge in both modals (the Rules modal has no .m-pts to push it). */
+.modal h2{margin:0;font-size:21px;font-weight:900;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.modal .m-pts{margin-left:auto;color:var(--gold);font-weight:900;white-space:nowrap;flex:none}
+.modal .x{margin-left:6px;background:none;border:none;color:var(--mut);font-size:21px;line-height:1;flex:none;padding:6px;margin-right:-6px}
 .m-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--hair)}
 .m-row:last-child{border-bottom:none}
 .m-row .dot{width:11px;height:11px;border-radius:99px;flex:none}
-.m-row .st{margin-left:auto;font-weight:800;color:var(--mut)}
+.m-row .st{margin-left:auto;font-weight:800;color:var(--mut);text-align:right}
 .m-row .st.done{color:var(--grn)}
 .modal p{color:var(--mut);line-height:1.55;font-weight:600}
 .modal p b{color:#fff}
 
 /* mvp */
-.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:16px;margin-top:22px;align-items:end}
-.pod{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
+.podium{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:22px;align-items:end}
+.pod{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;min-width:0;overflow-wrap:anywhere}
 .pod .medal{font-size:30px}
 .pod .who{font-weight:900;font-size:19px;margin-top:6px}
+@media(max-width:640px){.podium{gap:8px}.pod{padding:12px 8px;border-radius:12px}.pod .medal{font-size:24px}.pod .who{font-size:15px}.pod .pts2,.pod .tm{font-size:13px}}
 .pod .pts2{color:var(--gold);font-weight:900}
 .pod .tm{color:var(--mut);font-weight:700}
 .note-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:20px}
@@ -199,9 +232,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <div class="tabs" id="viewTabs">
     <button data-view="overview">▦ Overview</button>
     <button data-view="team">👥 Team View</button>
-    <button data-view="ehb">📊 EHB</button>
+    <button data-view="ehb">📊 EHB / EHP</button>
     <button data-view="mvp">🏆 MVP</button>
-    <button data-view="luck">🍀 Luck</button>
   </div>
   <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timelapse</button></div>
   <div class="tl-panel" id="tlPanel">
@@ -220,17 +252,19 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- OVERVIEW -->
   <section class="view" id="view-overview">
     <div class="boards" id="boards"></div>
-    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC and EHB progress comes from the event's Wise Old Man competition and updates as players update there.</div>
+    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there.</div>
     <div class="lower">
       <div class="tcard">
+        <div class="tblwrap">
         <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th class="r">Time ↓</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
+        </div>
       </div>
       <div class="tcard">
-        <h3>EHB Leaderboard</h3>
-        <table><thead><tr><th>#</th><th>Player</th><th class="r">EHB ↓</th></tr></thead>
+        <h3>EHP / EHB Leaderboard</h3>
+        <table><thead><tr><th>#</th><th>Player</th><th class="r">EHP ↓</th><th class="r">EHB</th></tr></thead>
         <tbody id="ehbBody"></tbody></table>
-        <div class="tfoot">Overall EHB <b id="overallEhb">—</b> · Tiles completed <b id="totalTiles">0</b></div>
+        <div class="tfoot">Overall EHP <b id="overallEhp">—</b> · Overall EHB <b id="overallEhb">—</b> · Tiles completed <b id="totalTiles">0</b></div>
       </div>
     </div>
   </section>
@@ -245,8 +279,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     </div>
     <div class="lower">
       <div class="tcard">
+        <div class="tblwrap">
         <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th class="r">Time ↓</th></tr></thead>
         <tbody id="teamClaimsBody"></tbody></table>
+        </div>
       </div>
       <div class="tcard">
         <h3>Skips</h3>
@@ -258,10 +294,12 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- EHB -->
   <section class="view" id="view-ehb">
     <div class="note-card">
-      <h3>Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span></h3>
-      <p style="margin-bottom:12px">Detailed breakdown of Efficient Hours Bossed by player, from the event's Wise Old Man competition.</p>
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Total EHB ↓</th><th class="r">XP Gained</th></tr></thead>
+      <h3>Overall EHP <span id="ehpBig" style="color:var(--acc2)">—</span> · Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span></h3>
+      <p style="margin-bottom:12px">Efficient Hours Played and Efficient Hours Bossed by player, from the event's Wise Old Man competition. EHP counts skilling and bossing; EHB counts bossing only.</p>
+      <div class="tblwrap">
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHP ↓</th><th class="r">EHB</th><th class="r">XP Gained</th></tr></thead>
       <tbody id="ehbFullBody"></tbody></table>
+      </div>
     </div>
   </section>
 
@@ -269,17 +307,11 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <section class="view" id="view-mvp">
     <div class="podium" id="podium"></div>
     <div class="tcard" style="margin-top:20px">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">XP Gained ↓</th><th class="r">EHB</th></tr></thead>
+      <div class="tblwrap">
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">XP Gained ↓</th><th class="r">EHP</th><th class="r">EHB</th></tr></thead>
       <tbody id="mvpBody"></tbody></table>
+      </div>
       <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total XP Gained <b>0</b> · Average per Player <b>0</b></div>
-    </div>
-  </section>
-
-  <!-- LUCK -->
-  <section class="view" id="view-luck">
-    <div class="note-card">
-      <h3>Luck is not tracked for this event</h3>
-      <p>Luck scoring needs drop rates and hours per tile, which Raven's Watch does not record for this bingo. If the clan starts logging drops with timestamps, this view can be built the same way as the others.</p>
     </div>
   </section>
 
@@ -420,10 +452,18 @@ function standings(){
   return TEAMS.map(function(tm, i){ return { i:i, s:teamStats(tm) }; })
     .sort(function(a, b){ return b.s.pts - a.s.pts || b.s.tiles - a.s.tiles; });
 }
+function placeFirst(s, all){
+  for (var i = 0; i < all.length; i++) if (all[i].s.pts === s.pts && all[i].s.tiles === s.tiles) return i;
+  return 0;
+}
 function placeLabel(rank, s, all){
   var tied = all.filter(function(x){ return x.s.pts === s.pts && x.s.tiles === s.tiles; }).length > 1;
   var names = ["1st","2nd","3rd","4th","5th"];
-  return (tied ? "T-" : "") + names[rank];
+  return (tied ? "T-" : "") + names[placeFirst(s, all)];
+}
+function placeCls(rank, s, all){
+  var f = placeFirst(s, all);
+  return f === 0 ? "p1" : f === 2 ? "p3" : "";
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(ch){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]; }); }
 function chipHTML(tm, cls, extra){
@@ -444,13 +484,12 @@ function renderBoards(){
     var rank = rankOf[ti];
     var tiles = TILES.map(function(tile, idx){
       var done = tm.done.indexOf(idx) >= 0;
-      var foc = SHEET.focus[String(ti)] === idx;
-      return '<button class="tile ' + (done ? "done" : "open") + (foc ? " focus" : "") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + ' — ' + tile.p + ' pts">' +
-        (foc ? '<span class="star">★</span>' : '') + iconHTML(tile) + '<span class="pts">' + tile.p + '</span></button>';
+      return '<button class="tile ' + (done ? "done" : "open") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + ' — ' + tile.p + ' pts">' +
+        iconHTML(tile) + '<span class="pts">' + tile.p + '</span></button>';
     }).join("");
     return '<div class="board-card">' +
       '<div class="board-head">' +
-        '<span class="place ' + (rank === 0 ? "p1" : rank === 2 ? "p3" : "") + '">' + placeLabel(rank, s, order) + '</span>' +
+        '<span class="place ' + placeCls(rank, s, order) + '">' + placeLabel(rank, s, order) + '</span>' +
         chipHTML(tm, "team-chip") +
         '<span class="team-name">' + esc(tm.name) + '</span>' +
         '<div class="head-stats">' +
@@ -472,7 +511,7 @@ function renderClaims(){
   else { cb.innerHTML = CLAIMS.map(function(cl){
     return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.time) + '</td></tr>';
   }).join(""); }
-  document.getElementById("ehbBody").innerHTML = '<tr><td colspan="3" class="empty">Loading from Wise Old Man…</td></tr>';
+  document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
   document.getElementById("teamClaimsBody").innerHTML = '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
 }
 
@@ -496,9 +535,8 @@ function renderTeam(){
     }).join("");
   var tiles = TILES.map(function(tile, idx){
     var done = tm.done.indexOf(idx) >= 0;
-    var foc = SHEET.focus[String(curTeam)] === idx;
-    return '<button class="tile tile-lg ' + (done ? "done" : "open") + (foc ? " focus" : "") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + '">' +
-      (done ? '<span class="check">✓</span>' : '') + (foc ? '<span class="star">★</span>' : '') + iconHTML(tile) +
+    return '<button class="tile tile-lg ' + (done ? "done" : "open") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + '">' +
+      (done ? '<span class="check">✓</span>' : '') + iconHTML(tile) +
       '<span class="lab">' + esc(tile.t) + '</span><span class="prog">' + (done ? "Done" : teamProg(curTeam, tile, idx)) + '</span></button>';
   }).join("");
   document.getElementById("teamBoard").innerHTML =
@@ -507,7 +545,7 @@ function renderTeam(){
   var order = standings();
   document.getElementById("teamLb").innerHTML = '<h3 style="margin-bottom:6px">Leaderboard</h3>' + order.map(function(o, r){
     var t2 = TEAMS[o.i];
-    return '<div class="lb-row"><span class="place ' + (r === 0 ? "p1" : r === 2 ? "p3" : "") + '">' + placeLabel(r, o.s, order) + '</span>' +
+    return '<div class="lb-row"><span class="place ' + placeCls(r, o.s, order) + '">' + placeLabel(r, o.s, order) + '</span>' +
       chipHTML(t2, "team-chip", ";width:25px;height:25px;font-size:11px") +
       '<span class="nm">' + esc(t2.name) + '</span>' +
       '<span class="dt">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles<br>' + o.s.pct + '% · ' + o.s.pts + ' pts</span></div>';
@@ -527,30 +565,33 @@ function renderMVP(){
     return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + esc(p.team) + '</div></div>';
   }).join("");
   if (!ranked.length){
-    document.getElementById("mvpBody").innerHTML = '<tr><td colspan="5" class="empty">Loading from Wise Old Man…</td></tr>';
+    document.getElementById("mvpBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
     return;
   }
   document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
   document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average per Player <b>' + fmt(total / ranked.length) + '</b>';
 }
 function renderEHB(){
-  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb; });
-  var total = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
-  document.getElementById("overallEhb").textContent = ranked.length ? total.toFixed(1) : "—";
-  document.getElementById("ehbBig").textContent = ranked.length ? total.toFixed(1) : "—";
+  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehp - a.ehp; });
+  var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
+  var totalEhp = ranked.reduce(function(a, p){ return a + p.ehp; }, 0);
+  document.getElementById("overallEhb").textContent = ranked.length ? totalEhb.toFixed(1) : "—";
+  document.getElementById("overallEhp").textContent = ranked.length ? totalEhp.toFixed(1) : "—";
+  document.getElementById("ehbBig").textContent = ranked.length ? totalEhb.toFixed(1) : "—";
+  document.getElementById("ehpBig").textContent = ranked.length ? totalEhp.toFixed(1) : "—";
   if (!ranked.length){
-    document.getElementById("ehbBody").innerHTML = '<tr><td colspan="3" class="empty">Loading from Wise Old Man…</td></tr>';
-    document.getElementById("ehbFullBody").innerHTML = '<tr><td colspan="5" class="empty">Loading from Wise Old Man…</td></tr>';
+    document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
+    document.getElementById("ehbFullBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
     return;
   }
   document.getElementById("ehbBody").innerHTML = ranked.slice(0, 10).map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
 }
 
@@ -573,7 +614,7 @@ function loadWOM(){
       var byTeam = {};
       PLAYERS = parts.map(function(p){
         var nm = (p.player && (p.player.displayName || p.player.username)) || "?";
-        return { name: nm, team: p.teamName || "", xp: deltaFor(p, "overall"), ehb: deltaFor(p, "ehb"), raw: p };
+        return { name: nm, team: p.teamName || "", xp: deltaFor(p, "overall"), ehb: deltaFor(p, "ehb"), ehp: deltaFor(p, "ehp"), raw: p };
       });
       PLAYERS.forEach(function(p){ (byTeam[p.team] = byTeam[p.team] || []).push(p); });
       TEAMS.forEach(function(tm, ti){
@@ -594,7 +635,7 @@ function loadWOM(){
       renderBoards(); renderTeam(); renderEHB(); renderMVP();
     })
     .catch(function(){
-      document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC and EHB progress is not shown. Refresh to try again.";
+      document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC, EHP and EHB progress is not shown. Refresh to try again.";
       renderEHB(); renderMVP();
     });
 }
@@ -607,16 +648,17 @@ function openTile(idx){
   document.getElementById("mPts").textContent = tile.p + " pts";
   document.getElementById("mRows").innerHTML = TEAMS.map(function(tm, ti){
     var done = tm.done.indexOf(idx) >= 0;
-    var foc = SHEET.focus[String(ti)] === idx;
     return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800">' + esc(tm.name) + '</span>' +
-      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : foc ? "★ Highlighted on the clan sheet" : teamProg(ti, tile, idx)) + '</span></div>';
+      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : teamProg(ti, tile, idx)) + '</span></div>';
   }).join("");
   document.getElementById("tileBackdrop").classList.add("open");
 }
 
 /* ============ WIRING ============ */
 function setView(v){
-  ["overview","team","ehb","mvp","luck"].forEach(function(x){
+  var views = ["overview","team","ehb","mvp"];
+  if (views.indexOf(v) < 0) v = "overview";
+  views.forEach(function(x){
     document.getElementById("view-" + x).classList.toggle("on", x === v);
   });
   document.querySelectorAll("#viewTabs button").forEach(function(b){
