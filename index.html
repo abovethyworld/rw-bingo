@@ -247,6 +247,12 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 @keyframes bubbleBob{0%,100%{margin-bottom:0}50%{margin-bottom:3px}}
 .pfp-badge.found{animation:pfpPulse .8s ease 4}
 @keyframes pfpPulse{0%,100%{box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85)}50%{box-shadow:0 0 0 4px #f2b134,0 0 22px #f2b134}}
+/* People tokens loop gently around their tile so the map always has
+   life; per-token duration/delay come from --drift-d/--drift-t so they
+   never move in sync. The .found pulse above still wins while applied. */
+.pfp-badge{animation:pfpDrift var(--drift-d,9s) ease-in-out var(--drift-t,0s) infinite}
+@keyframes pfpDrift{0%,100%{transform:translate(0,0)}25%{transform:translate(3px,-2px)}50%{transform:translate(0,-4px)}75%{transform:translate(-3px,-2px)}}
+@media (prefers-reduced-motion: reduce){.pfp-badge{animation:none}}
 .pfp-bubble{display:none}
 .pfp-bubble.show{display:block}
 .updated-line{color:var(--mut);font-size:12.5px;font-weight:700;margin-top:3px}
@@ -1210,7 +1216,7 @@ function buildPeopleLayer(){
     var gx = base[0], gy = base[1];
     nowSpots[key] = [gx, gy, k];
     var icon = L.divIcon({ className: "pfp-node", iconSize: [30, 30], iconAnchor: [15, 15],
-      html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
+      html: '<div class="pfp-badge" style="border-color:' + tm.color + ';--drift-d:' + (8 + (pi * 7) % 5) + 's;--drift-t:-' + ((pi * 13) % 10) + 's" title="' + esc(p.n) + '">' +
         (p.av ? '<img class="pfp-face" src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) +
         (p.b ? '<div class="pfp-bubble">' + esc(p.b) + '</div>' : '') + '<img class="pfp-cc" src="' + CC_ICONS[p.tm] + '" alt="">' + '</div>' });
     var prev = saved[key];
