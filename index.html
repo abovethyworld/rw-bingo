@@ -214,16 +214,17 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- OVERVIEW -->
   <section class="view" id="view-overview">
     <div class="boards" id="boards"></div>
+    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC and EHB progress comes from the event's Wise Old Man competition and updates as players update there.</div>
     <div class="lower">
       <div class="tcard">
         <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th class="r">Time ↓</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
       </div>
       <div class="tcard">
-        <h3>Top Contributors</h3>
-        <table><thead><tr><th>#</th><th>Player</th><th class="r">Tiles ↓</th></tr></thead>
-        <tbody id="contribBody"></tbody></table>
-        <div class="tfoot">Total tiles completed <b id="totalTiles">0</b></div>
+        <h3>EHB Leaderboard</h3>
+        <table><thead><tr><th>#</th><th>Player</th><th class="r">EHB ↓</th></tr></thead>
+        <tbody id="ehbBody"></tbody></table>
+        <div class="tfoot">Overall EHB <b id="overallEhb">—</b> · Tiles completed <b id="totalTiles">0</b></div>
       </div>
     </div>
   </section>
@@ -251,8 +252,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- EHB -->
   <section class="view" id="view-ehb">
     <div class="note-card">
-      <h3>EHB is not tracked for this event</h3>
-      <p>Raven's Watch tracks this bingo on tile points, line bonuses and XP gains, not Efficient Hours Bossed. The clan sheet has an <b style="color:#fff">XP Totals</b> tab; once the tracker is wired to the sheet, this view can carry the XP race instead.</p>
+      <h3>Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span></h3>
+      <p style="margin-bottom:12px">Detailed breakdown of Efficient Hours Bossed by player, from the event's Wise Old Man competition.</p>
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Total EHB ↓</th><th class="r">XP Gained</th></tr></thead>
+      <tbody id="ehbFullBody"></tbody></table>
     </div>
   </section>
 
@@ -260,9 +263,9 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <section class="view" id="view-mvp">
     <div class="podium" id="podium"></div>
     <div class="tcard" style="margin-top:20px">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">MVP Points</th><th class="r">Tiles Contributed</th></tr></thead>
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">XP Gained ↓</th><th class="r">EHB</th></tr></thead>
       <tbody id="mvpBody"></tbody></table>
-      <div class="tfoot">Total Contributors <b>0</b> · Total MVP Points <b>0</b> · Average per Player <b>0</b></div>
+      <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total XP Gained <b>0</b> · Average per Player <b>0</b></div>
     </div>
   </section>
 
@@ -318,13 +321,13 @@ var SKILL = function(s){ return "https://oldschool.runescape.wiki/images/" + s +
 var ITEM  = function(id){ return "https://chisel.weirdgloop.org/static/img/osrs-sprite/" + id + ".png"; };
 /* t: tile name, p: points, img: icon url or null, mono: fallback letters, prog: progress label for Team View */
 var TILES = [
- {t:"3m Slayer XP",p:7,img:SKILL("Slayer"),mono:"SL",prog:"0 / 3m XP"},
- {t:"5m Sailing XP",p:7,img:SKILL("Sailing"),mono:"SA",prog:"0 / 5m XP"},
- {t:"6m Crafting XP",p:7,img:SKILL("Crafting"),mono:"CR",prog:"0 / 6m XP"},
- {t:"4m Fishing XP",p:7,img:SKILL("Fishing"),mono:"FI",prog:"0 / 4m XP"},
- {t:"4m Runecrafting XP",p:7,img:SKILL("Runecraft"),mono:"RC",prog:"0 / 4m XP"},
- {t:"10m Firemaking XP",p:7,img:SKILL("Firemaking"),mono:"FM",prog:"0 / 10m XP"},
- {t:"5m Hunter XP",p:7,img:SKILL("Hunter"),mono:"HU",prog:"0 / 5m XP"},
+ {t:"3m Slayer XP",p:7,img:SKILL("Slayer"),mono:"SL",prog:"0 / 3m XP",metric:"slayer",target:3000000},
+ {t:"5m Sailing XP",p:7,img:SKILL("Sailing"),mono:"SA",prog:"0 / 5m XP",metric:"sailing",target:5000000},
+ {t:"6m Crafting XP",p:7,img:SKILL("Crafting"),mono:"CR",prog:"0 / 6m XP",metric:"crafting",target:6000000},
+ {t:"4m Fishing XP",p:7,img:SKILL("Fishing"),mono:"FI",prog:"0 / 4m XP",metric:"fishing",target:4000000},
+ {t:"4m Runecrafting XP",p:7,img:SKILL("Runecraft"),mono:"RC",prog:"0 / 4m XP",metric:"runecrafting",target:4000000},
+ {t:"10m Firemaking XP",p:7,img:SKILL("Firemaking"),mono:"FM",prog:"0 / 10m XP",metric:"firemaking",target:10000000},
+ {t:"5m Hunter XP",p:7,img:SKILL("Hunter"),mono:"HU",prog:"0 / 5m XP",metric:"hunter",target:5000000},
  {t:"Full Barrows Set",p:5,img:null,mono:"BA",prog:"0 / 1 set"},
  {t:"5 Abyssal Whips",p:3,img:ITEM(4151),mono:"AW",prog:"0 / 5"},
  {t:"Tome of Fire, Phoenix, or Dragon Axe",p:3,img:ITEM(20714),mono:"TF",prog:"0 / 1"},
@@ -362,7 +365,7 @@ var TILES = [
  {t:"3 God Wars Dungeon Uniques",p:4,img:null,mono:"GW",prog:"0 / 3"},
  {t:"2 ToB Purples",p:5,img:null,mono:"TB",prog:"0 / 2"},
  {t:"3 Araxxor Uniques",p:4,img:null,mono:"AR",prog:"0 / 3"},
- {t:"20 TFA KC",p:5,img:null,mono:"TFA",prog:"0 / 20 KC"},
+ {t:"20 TFA KC",p:5,img:null,mono:"TFA",prog:"0 / 20 KC",metric:"the_fractured_archive",target:20,kc:true},
  {t:"4 ToA Purples",p:5,img:null,mono:"TA",prog:"0 / 4"},
  {t:"3 CoX Purples",p:5,img:null,mono:"CX",prog:"0 / 3"},
  {t:"Any Colosseum Unique",p:4,img:null,mono:"CO",prog:"0 / 1"},
@@ -443,7 +446,7 @@ function renderClaims(){
   else { cb.innerHTML = CLAIMS.map(function(cl){
     return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.time) + '</td></tr>';
   }).join(""); }
-  document.getElementById("contribBody").innerHTML = '<tr><td colspan="3" class="empty">No contributions yet.</td></tr>';
+  document.getElementById("ehbBody").innerHTML = '<tr><td colspan="3" class="empty">Loading from Wise Old Man…</td></tr>';
   document.getElementById("teamClaimsBody").innerHTML = '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
 }
 
@@ -469,7 +472,7 @@ function renderTeam(){
     var done = tm.done.indexOf(idx) >= 0;
     return '<button class="tile tile-lg ' + (done ? "done" : "open") + '" data-tile="' + idx + '" aria-label="' + esc(tile.t) + '">' +
       (done ? '<span class="check">✓</span>' : '') + iconHTML(tile) +
-      '<span class="lab">' + esc(tile.t) + '</span><span class="prog">' + (done ? "Done" : tile.prog) + '</span></button>';
+      '<span class="lab">' + esc(tile.t) + '</span><span class="prog">' + (done ? "Done" : teamProg(curTeam, tile, idx)) + '</span></button>';
   }).join("");
   document.getElementById("teamBoard").innerHTML =
     '<div class="grid7">' + tiles + '</div>' +
@@ -486,12 +489,87 @@ function renderTeam(){
 }
 
 /* ============ MVP ============ */
+var PLAYERS = []; /* filled from WOM: {name, team, xp, ehb} */
+function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
 function renderMVP(){
-  var slots = [ {m:"🥈", l:"2nd"}, {m:"🥇", l:"1st"}, {m:"🥉", l:"3rd"} ];
-  document.getElementById("podium").innerHTML = slots.map(function(sl){
-    return '<div class="pod"><div class="medal">' + sl.m + '</div><div class="who">—</div><div class="pts2">0 MVP Points</div><div class="tm">' + sl.l + ' place</div></div>';
+  var ranked = PLAYERS.slice().sort(function(a, b){ return b.xp - a.xp; });
+  var top = [ranked[1], ranked[0], ranked[2]];
+  var medals = ["🥈","🥇","🥉"], labels = ["2nd","1st","3rd"];
+  document.getElementById("podium").innerHTML = top.map(function(p, i){
+    if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 XP</div><div class="tm">' + labels[i] + ' place</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + esc(p.team) + '</div></div>';
   }).join("");
-  document.getElementById("mvpBody").innerHTML = '<tr><td colspan="5" class="empty">No contributions yet. MVP points come from tiles a player helps complete.</td></tr>';
+  if (!ranked.length){
+    document.getElementById("mvpBody").innerHTML = '<tr><td colspan="5" class="empty">Loading from Wise Old Man…</td></tr>';
+    return;
+  }
+  document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+  }).join("");
+  var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
+  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average per Player <b>' + fmt(total / ranked.length) + '</b>';
+}
+function renderEHB(){
+  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb; });
+  var total = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
+  document.getElementById("overallEhb").textContent = ranked.length ? total.toFixed(1) : "—";
+  document.getElementById("ehbBig").textContent = ranked.length ? total.toFixed(1) : "—";
+  if (!ranked.length){
+    document.getElementById("ehbBody").innerHTML = '<tr><td colspan="3" class="empty">Loading from Wise Old Man…</td></tr>';
+    document.getElementById("ehbFullBody").innerHTML = '<tr><td colspan="5" class="empty">Loading from Wise Old Man…</td></tr>';
+    return;
+  }
+  document.getElementById("ehbBody").innerHTML = ranked.slice(0, 10).map(function(p, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+  }).join("");
+  document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+  }).join("");
+}
+
+/* ============ WISE OLD MAN (live) ============ */
+var PROG = {}; /* PROG[teamIdx][tileIdx] = progress label */
+function teamProg(ti, tile, idx){
+  if (PROG[ti] && PROG[ti][idx]) return PROG[ti][idx];
+  return tile.prog;
+}
+function deltaFor(part, metric){
+  var ds = part.deltas || [];
+  for (var i = 0; i < ds.length; i++) if (ds[i].metric === metric) return ds[i].values.gained || 0;
+  return 0;
+}
+function loadWOM(){
+  fetch("https://api.wiseoldman.net/v2/competitions/165771")
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var parts = d.participations || [];
+      var byTeam = {};
+      PLAYERS = parts.map(function(p){
+        var nm = (p.player && (p.player.displayName || p.player.username)) || "?";
+        return { name: nm, team: p.teamName || "", xp: deltaFor(p, "overall"), ehb: deltaFor(p, "ehb"), raw: p };
+      });
+      PLAYERS.forEach(function(p){ (byTeam[p.team] = byTeam[p.team] || []).push(p); });
+      TEAMS.forEach(function(tm, ti){
+        var ps = byTeam[tm.name] || byTeam[Object.keys(byTeam).filter(function(k){ return k.toLowerCase() === tm.name.toLowerCase(); })[0]] || [];
+        PROG[ti] = {};
+        TILES.forEach(function(tile, idx){
+          if (!tile.metric) return;
+          var sum = ps.reduce(function(a, p){ return a + deltaFor(p.raw, tile.metric); }, 0);
+          if (tile.kc){
+            PROG[ti][idx] = Math.floor(sum) + " / 20 KC";
+            if (sum >= tile.target && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+          } else {
+            PROG[ti][idx] = fmt(sum) + " / " + tile.prog.split("/ ")[1];
+            if (sum >= tile.target && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+          }
+        });
+      });
+      renderBoards(); renderTeam(); renderEHB(); renderMVP();
+    })
+    .catch(function(){
+      document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC and EHB progress is not shown. Refresh to try again.";
+      renderEHB(); renderMVP();
+    });
 }
 
 /* ============ TILE MODAL ============ */
@@ -500,10 +578,10 @@ function openTile(idx){
   document.getElementById("mIcon").innerHTML = iconHTML(tile);
   document.getElementById("mTitle").textContent = tile.t;
   document.getElementById("mPts").textContent = tile.p + " pts";
-  document.getElementById("mRows").innerHTML = TEAMS.map(function(tm){
+  document.getElementById("mRows").innerHTML = TEAMS.map(function(tm, ti){
     var done = tm.done.indexOf(idx) >= 0;
     return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800">' + esc(tm.name) + '</span>' +
-      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : tile.prog) + '</span></div>';
+      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : teamProg(ti, tile, idx)) + '</span></div>';
   }).join("");
   document.getElementById("tileBackdrop").classList.add("open");
 }
@@ -549,7 +627,7 @@ function tick(){
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
   document.getElementById("pctComplete").textContent = (Math.floor(pct * 10) / 10) + "% complete";
 }
-renderBoards(); renderClaims(); renderTeam(); renderMVP(); tick(); setInterval(tick, 60000);
+renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); loadWOM(); tick(); setInterval(tick, 60000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
 </body>
