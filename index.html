@@ -199,6 +199,8 @@ td.r,th.r{text-align:right}
 .modal p{color:var(--mut);line-height:1.55;font-weight:600}
 .modal p b{color:#fff}
 .rsec{color:#fff !important;font-weight:900 !important;font-size:16.5px;margin-top:20px}
+.tile-desc{color:var(--mut);font-size:13.5px;line-height:1.45;margin:8px 0 4px}
+.wiki-btn{display:inline-block;margin:8px 0 4px;padding:7px 13px;border-radius:9px;background:var(--card2,#1b2a47);border:1px solid var(--line);color:var(--acc,#ff9e1b);font-weight:800;font-size:13px;text-decoration:none}
 .modal ul{color:var(--mut);font-weight:600;line-height:1.55;margin:2px 0 10px 18px;padding:0}
 .modal ul b{color:#fff}
 
@@ -790,7 +792,10 @@ function openTile(idx){
   document.getElementById("mIcon").innerHTML = iconHTML(tile);
   document.getElementById("mTitle").textContent = tile.t;
   document.getElementById("mPts").textContent = tile.p + " pts";
-  document.getElementById("mRows").innerHTML = TEAMS.map(function(tm, ti){
+  var desc = TILE_DESC[idx] || TILE_BLURB[idx] || "";
+  var extra = (desc ? '<p class="tile-desc">' + esc(desc) + '</p>' : '') +
+    (WIKI[idx] ? '<a class="wiki-btn" href="https://oldschool.runescape.wiki/w/' + WIKI[idx] + '" target="_blank" rel="noopener">📖 Open the wiki page</a>' : '');
+  document.getElementById("mRows").innerHTML = extra + TEAMS.map(function(tm, ti){
     var done = tm.done.indexOf(idx) >= 0;
     return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800;color:' + tm.color + '">' + esc(tm.name) + '</span>' +
       '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : teamProg(ti, tile, idx)) + '</span></div>';
@@ -799,7 +804,7 @@ function openTile(idx){
 }
 
 /* ============ PROGRESS VIEW ============ */
-var MAP_POS = [[89,40],[52,68],[52,52],[52,42],[56,63],[16,9],[52,74],[89,52],[14,24],[19,12],[42,47],[15,33],[79,68],[82,75],[66,50],[73,22],[11,20],[12,38],[45,78],[76,63],[48,72],[71,27],[9,52],[69,17],[8,28],[57,94],[74,59],[11,70],[92,42],[14,60],[17,47],[13,30],[19,55],[67,13],[43,29],[40,44],[39,49],[76,19],[10,44],[85,46],[70,55],[62,26],[93,47],[87,44],[21,19],[80,84],[6,24],[24,60],[64,23]];
+var MAP_POS = [[3428,3538],[3029,3243],[2932,3283],[2824,3434],[3109,3163],[1629,3989],[2540,2900],[3565,3306],[3410,3560],[1629,3975],[2380,3360],[1300,3600],[3135,2840],[3427,2890],[3253,3266],[3150,3900],[2120,3970],[1550,3560],[2900,2700],[3140,2860],[3050,2750],[2575,3905],[1500,3000],[3130,3970],[1240,3555],[2650,2670],[3610,3030],[1380,2720],[3780,3460],[1450,2570],[1530,3270],[1600,3050],[1560,3240],[2910,3890],[2285,3610],[2380,3380],[2268,3074],[3120,3830],[1430,3660],[3500,3400],[3380,2740],[2910,3740],[3660,3210],[3620,3360],[1630,3830],[3350,2720],[1230,3580],[1710,3100],[2910,3720]];
 var progInit = false, progMap = null, mapTimer = null, mapStep = 0, momMode = "points";
 var mapDoneBy = {};
 
@@ -905,7 +910,7 @@ var mapMarkers = [];
 var mapEditing = false;
 function loadLivePos(){
   try {
-    var a = JSON.parse(localStorage.getItem("rw-pos"));
+    var a = JSON.parse(localStorage.getItem("rw-pos2"));
     if (!Array.isArray(a) || a.length !== 49) return;
     for (var i = 0; i < 49; i++){
       if (!Array.isArray(a[i]) || a[i].length !== 2 || typeof a[i][0] !== "number" || typeof a[i][1] !== "number" || !isFinite(a[i][0]) || !isFinite(a[i][1])) return;
@@ -919,25 +924,30 @@ function initMap(){
     wrap.innerHTML = '<div class="map-fallback">Map library could not load — the charts below still work.</div>';
     return;
   }
-  var H = 2706, Wd = 4800;
   loadLivePos();
-  progMap = L.map("map", { crs: L.CRS.Simple, zoomControl: true, attributionControl: false, minZoom: -2, maxZoom: 2 });
-  var bounds = [[0, 0], [H, Wd]];
-  L.imageOverlay("assets/gielinor-map.jpg", bounds).addTo(progMap);
-  progMap.fitBounds(bounds);
-  progMap.setMaxBounds(L.latLngBounds(bounds).pad(0.1));
+  var WikiCRS = L.extend({}, L.CRS.Simple, {
+    transformation: L.transformation(1, 0, 1, 0),
+    infinite: false,
+    projection: L.extend({}, L.Projection.LonLat, { bounds: L.bounds([0, 0], [12800, 12800]) })
+  });
+  progMap = L.map("map", { crs: WikiCRS, minZoom: -3, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
+  L.tileLayer('https://maps.runescape.wiki/osrs/tiles/{mapID}_{cacheVersion}/{z}/{p}_{x}_{-y}.png', {
+    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -3, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -3,
+    attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
+  }).addTo(progMap);
+  progMap.fitBounds([[8512, 1024], [10432, 4352]]);
   TILES.forEach(function(t, i){
     var p = livePos[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="node-badge" id="node-' + i + '">' + (t.img ? '<img src="' + esc(t.img) + '" alt="">' : '') + '</div>' });
-    var mk = L.marker([(1 - p[1] / 100) * H, (p[0] / 100) * Wd], { icon: icon, title: t.t, draggable: true }).addTo(progMap);
+    var mk = L.marker([12800 - p[1], p[0]], { icon: icon, title: t.t, draggable: true }).addTo(progMap);
     if (mk.dragging) mk.dragging.disable();
     mapMarkers[i] = mk;
     mk.on("click", function(){ if (mapEditing) return; openTile(i); });
     mk.on("dragend", function(){
       var ll = mk.getLatLng();
-      livePos[i] = [Math.round(ll.lng / Wd * 1000) / 10, Math.round((1 - ll.lat / H) * 1000) / 10];
-      try { localStorage.setItem("rw-pos", JSON.stringify(livePos)); } catch (e) {}
+      livePos[i] = [Math.round(ll.lng), Math.round(12800 - ll.lat)];
+      try { localStorage.setItem("rw-pos2", JSON.stringify(livePos)); } catch (e) {}
       document.getElementById("mapCaption").textContent = t.t + " moved — saved on this device.";
     });
   });
@@ -966,9 +976,9 @@ function initMap(){
     else fallback();
   });
   document.getElementById("mapResetPos").addEventListener("click", function(){
-    try { localStorage.removeItem("rw-pos"); } catch (e) {}
+    try { localStorage.removeItem("rw-pos2"); } catch (e) {}
     livePos = MAP_POS.map(function(p){ return p.slice(); });
-    mapMarkers.forEach(function(m, i){ if (m && livePos[i]) m.setLatLng([(1 - livePos[i][1] / 100) * H, (livePos[i][0] / 100) * Wd]); });
+    mapMarkers.forEach(function(m, i){ if (m && livePos[i]) m.setLatLng([12800 - livePos[i][1], livePos[i][0]]); });
     document.getElementById("mapCaption").textContent = "Pins reset to the shipped positions.";
   });
   mapReset();
@@ -1242,6 +1252,10 @@ var TILE_DESC = {
  8:"As a team, obtain 5 Abyssal Whips as drops from Abyssal Demons or the Unsired. Must submit a screenshot of your bank and inventory for any Unsireds.",
  9:"Receive a Tome of Fire, the Phoenix pet, or a Dragon Axe from Wintertodt. Must also submit a screenshot of your Wintertodt reward points beforehand.",
  10:"Obtain a Crystal Tool Seed, Zalcano Shard, Uncut Onyx, or Smolcano from Zalcano."
+};
+var WIKI = ["Slayer","Sailing","Crafting","Fishing","Runecrafting","Firemaking","Hunter","Barrows","Abyssal_whip","Wintertodt","Zalcano","Golden_tench","Tempoross","Dragon_cannon","Beef","Mad_Angel","Zenyte_shard","Hunter_rumours","Salvaging","Bottled_storm","Jeweller%27s_chisel","Tormented_Demon","Moons_of_Peril","Dragon_pickaxe","Raids","Pest_Control","Abyssal_pearl","Mastering_Mixology","The_Nightmare","Doom_of_Mokhaiotl","The_Hueycoatl","Gryphon","Twinflame_staff","Venator_shard","Kraken","The_Gauntlet","Zulrah","Revenants","Yama","Maggot_King","Virtus_armour","God_Wars_Dungeon","Theatre_of_Blood","Araxxor",null,"Tombs_of_Amascut","Chambers_of_Xeric","Fortis_Colosseum","Nex"];
+var TILE_BLURB = {
+11:"As a team, obtain a Golden Tench from aerial fishing at Lake Molch.",12:"As a team, obtain 3 uniques from Tempoross.",13:"As a team, obtain a Dragon Cannon Barrel.",14:"As a team, obtain 3 Beef pets.",15:"As a team, obtain 3 uniques from the Mad Angel.",16:"As a team, obtain 3 Zenyte Shards from Demonic Gorillas.",17:"As a team, obtain 5 uniques from Hunter rumours.",18:"As a team, obtain 4 uniques from Sailing salvaging.",19:"As a team, obtain 3 Bottled Storms.",20:"As a team, obtain 4 Jeweller's Chisels.",21:"As a team, obtain 3 uniques from Tormented Demons.",22:"As a team, obtain a full Moons of Peril equipment set.",23:"As a team, obtain 3 Dragon Pickaxes.",24:"As a team, take 3 first-time raiders through a raid.",25:"As a team, earn 1,000 Pest Control points.",26:"As a team, obtain 750 Abyssal Pearls from Guardians of the Rift.",27:"As a team, earn 50,000 Mastering Mixology points.",28:"As a team, obtain any unique from The Nightmare.",29:"As a team, obtain any unique from Doom of Mokhaiotl.",30:"As a team, obtain 4 uniques from The Hueycoatl.",31:"As a team, obtain 3 uniques from Gryphons.",32:"As a team, obtain a Twinflame Staff.",33:"As a team, obtain 5 Venator Shards from the Phantom Muspah.",34:"As a team, obtain 3 uniques from the Kraken.",35:"As a team, obtain an Enhanced Weapon Seed, or 3 Armour Seeds, from The Gauntlet.",36:"As a team, obtain 3 uniques from Zulrah.",37:"As a team, obtain any Revenant weapon from Revenants in the Wilderness.",38:"As a team, obtain 2 uniques from Yama.",39:"As a team, obtain any unique from the Maggot King.",40:"As a team, obtain any piece of Virtus armour.",41:"As a team, obtain 3 uniques from the God Wars Dungeon.",42:"As a team, obtain 2 purples from the Theatre of Blood.",43:"As a team, obtain 3 uniques from Araxxor.",44:"As a team, reach 20 kill count in The Fractured Archive.",45:"As a team, obtain 4 purples from the Tombs of Amascut.",46:"As a team, obtain 3 purples from the Chambers of Xeric.",47:"As a team, obtain any unique from the Fortis Colosseum.",48:"As a team, obtain any unique from Nex, or 400 Nihil Shards."
 };
 document.getElementById("tileInfo").innerHTML = TILES.map(function(t, i){
   return '<p><b>' + esc(t.t) + ' — ' + t.p + (t.p === 1 ? ' point.' : ' points.') + '</b>' + (TILE_DESC[i] ? ' ' + esc(TILE_DESC[i]) : '') + '</p>';
