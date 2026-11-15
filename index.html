@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#ff9e1b" />
 <link rel="icon" type="image/png" href="assets/rw-icon.png" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 :root{
   --bg:#070a12; --card:#0d1526; --card2:#101b31; --line:#22335a; --hair:#1a2745;
@@ -215,6 +216,39 @@ td.r,th.r{text-align:right}
 .view{display:none}.view.on{display:block}
 footer{margin-top:38px;text-align:center;color:var(--mut);font-weight:800}
 footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto 8px}
+/* progress view */
+#map{height:520px;background:#0a1120;border-radius:12px;border:1px solid var(--line)}
+@media(max-width:700px){#map{height:340px}}
+.map-node{background:none;border:none}
+.node-badge{width:30px;height:30px;border-radius:50%;background:#101c33;border:2px solid #5a6c8c;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:.55;cursor:pointer}
+.node-badge img{width:22px;height:22px;object-fit:contain}
+.node-badge.done{opacity:1;border-color:var(--tc);box-shadow:0 0 10px var(--tc)}
+.map-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.map-controls button,.mom-toggle button{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:7px 16px;font-weight:900;font-size:14px}
+.map-controls button:hover{color:#fff;border-color:var(--acc)}
+.mom-toggle button.on{color:#fff;border-color:var(--acc);background:var(--card2)}
+#mapCaption{color:var(--mut);font-weight:700;font-size:14px}
+.map-legend,.mom-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;color:var(--mut);font-weight:800;font-size:13.5px}
+.map-legend span,.mom-legend span{display:inline-flex;align-items:center;gap:6px}
+.map-dot{width:11px;height:11px;border-radius:99px;display:inline-block;flex:none}
+.map-fallback{color:var(--mut);font-weight:700;padding:14px 0}
+.mom-toggle{display:flex;gap:8px;margin:6px 0 4px}
+.mom-note{color:var(--mut);font-weight:700;margin:8px 0 0;font-size:14px}
+.mom-svg{width:100%;height:auto;display:block;margin-top:8px}
+.hm-table{border-collapse:separate;border-spacing:2px;width:100%}
+.hm-table th{color:var(--mut);font-size:12px;font-weight:800;padding:4px 6px;white-space:nowrap}
+.hm-name{white-space:nowrap;font-weight:800;font-size:13px;padding:2px 8px 2px 4px;text-align:left}
+.hm-cell{font-size:11px;text-align:center;padding:5px 6px;border-radius:4px;min-width:46px;font-weight:700}
+.hm-empty{background:rgba(143,163,200,.05)}
+.hm-zero{color:var(--mut2);opacity:.5}
+.hm-note{color:var(--mut);font-weight:600;font-size:13px;margin:10px 0 4px;line-height:1.5}
+.feed-box{max-height:420px;overflow-y:auto}
+.feed-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--hair);font-weight:700;font-size:14px}
+.feed-time{color:var(--mut);font-size:12.5px;width:128px;flex:none}
+.feed-team{display:flex;align-items:center;gap:6px;font-weight:800;flex:none;max-width:170px}
+.feed-tile{flex:1;min-width:0;overflow-wrap:anywhere}
+.feed-pts{color:var(--acc);font-weight:900;flex:none}
+@media(max-width:640px){.feed-row{flex-wrap:wrap;gap:4px 10px}.feed-time{width:100%}}
 </style>
 </head>
 <body>
@@ -250,6 +284,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <button data-view="team">👥 Team View</button>
     <button data-view="ehb">📊 EHB / EHP</button>
     <button data-view="mvp">🏆 MVP</button>
+    <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
   </div>
   <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timeline</button></div>
   <div class="tl-panel" id="tlPanel">
@@ -331,6 +366,40 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     </div>
   </section>
 
+  <!-- PROGRESS -->
+  <section class="view" id="view-progress">
+    <div class="tcard" style="margin-top:20px">
+      <h2>🗺️ The Week on Gielinor</h2>
+      <div id="mapWrap">
+        <div id="map"></div>
+        <div class="map-controls">
+          <button id="mapPlay">▶ Play the week</button>
+          <button id="mapReset">Reset</button>
+          <span id="mapCaption"></span>
+        </div>
+        <div class="map-legend" id="mapLegend"></div>
+      </div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h2>📈 Momentum</h2>
+      <div class="mom-toggle" id="momToggle">
+        <button data-mode="points" class="on">Points</button>
+        <button data-mode="xp">Team XP</button>
+      </div>
+      <div class="mom-legend" id="momLegend"></div>
+      <div id="momChart"></div>
+      <div class="mom-note" id="momNote"></div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h2>🔥 Who's Grinding — XP per day</h2>
+      <div id="hmBody"></div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h2>🕘 Timeline</h2>
+      <div id="feedBody"></div>
+    </div>
+  </section>
+
   <footer>
     <img src="assets/rw-icon.png" alt="" />
     Raven's Watch · Fall Bingo 2026
@@ -394,6 +463,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <div id="tileInfo"></div>
   </div>
 </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 "use strict";
 /* ============ DATA (starts empty: bingo began Nov 14, 1:00 PM ET) ============ */
@@ -480,6 +550,8 @@ var DROPS = {"claims": [], "prog": {}}; /* baked by the sheet sync from the clan
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
 CLAIMS = DROPS.claims;
 var TIMELINE = [{"t": 1794717324404, "team": 0, "tile": 25}, {"t": 1794717324404, "team": 0, "tile": 31}, {"t": 1794717324404, "team": 0, "tile": 46}, {"t": 1794717324404, "team": 1, "tile": 11}, {"t": 1794717324404, "team": 1, "tile": 24}, {"t": 1794717324404, "team": 2, "tile": 39}, {"t": 1794717361508, "team": 1, "tile": 44}, {"t": 1794721142610, "team": 1, "tile": 28}]; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
+var HIST = {"t": [], "txp": [[], [], []], "tehp": [[], [], []], "tehb": [[], [], []]};
+var HEAT = {"days": [], "players": []};
 TEAMS.forEach(function(tm, ti){
   Object.keys(DROPS.prog).forEach(function(k){
     var idx = +k, cnt = DROPS.prog[k][ti];
@@ -714,9 +786,277 @@ function openTile(idx){
   document.getElementById("tileBackdrop").classList.add("open");
 }
 
+/* ============ PROGRESS VIEW ============ */
+var MAP_POS = [[89,40],[52,68],[52,52],[52,42],[56,63],[16,9],[52,74],[89,52],[14,24],[19,12],[42,47],[15,33],[79,68],[82,75],[66,50],[73,22],[11,20],[12,38],[45,78],[76,63],[48,72],[71,27],[9,52],[69,17],[8,28],[57,94],[74,59],[11,70],[92,42],[14,60],[17,47],[13,30],[19,55],[67,13],[43,29],[40,44],[39,49],[76,19],[10,44],[85,46],[70,55],[62,26],[93,47],[87,44],[21,19],[80,84],[6,24],[24,60],[64,23]];
+var progInit = false, progMap = null, mapTimer = null, mapStep = 0, momMode = "points";
+var mapDoneBy = {};
+
+function compact(n){
+  if (n >= 1e6) return (Math.round(n / 1e5) / 10) + "m";
+  if (n >= 1e3) return Math.round(n / 1e3) + "k";
+  return String(Math.round(n));
+}
+function sortedTimeline(){
+  return TIMELINE.slice().sort(function(a, b){ return a.t - b.t; });
+}
+/* same maths as teamStats, for an arbitrary done-set (object keyed by tile idx) */
+function ptsForSet(done){
+  var pts = 0, r, c, ok, k;
+  for (k in done) if (done[k] && TILES[k]) pts += TILES[k].p;
+  for (r = 0; r < 7; r++){ ok = true; for (c = 0; c < 7; c++) if (!done[r*7+c]) ok = false; if (ok) pts += 3; }
+  for (c = 0; c < 7; c++){ ok = true; for (r = 0; r < 7; r++) if (!done[r*7+c]) ok = false; if (ok) pts += 3; }
+  ok = true; for (r = 0; r < 7; r++) if (!done[r*7+r]) ok = false; if (ok) pts += 10;
+  ok = true; for (r = 0; r < 7; r++) if (!done[r*7+(6-r)]) ok = false; if (ok) pts += 10;
+  return pts;
+}
+/* walk the sorted timeline: [{e, team, before, after, delta}] */
+function pointSteps(){
+  var sets = TEAMS.map(function(){ return {}; });
+  var pts = TEAMS.map(function(){ return 0; });
+  return sortedTimeline().map(function(e){
+    var s = sets[e.team]; if (!s) return null;
+    var before = pts[e.team];
+    s[e.tile] = true;
+    var after = ptsForSet(s);
+    pts[e.team] = after;
+    return { e:e, team:e.team, before:before, after:after, delta:after - before };
+  }).filter(function(x){ return x; });
+}
+function fmtEventTime(t, withDay){
+  var o = {timeZone:"America/New_York", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"};
+  if (withDay) o.weekday = "short";
+  return new Date(t).toLocaleString("en-US", o);
+}
+
+/* ---- map ---- */
+function mapNodeEl(idx){ return document.getElementById("node-" + idx); }
+function mapLight(idx, team){
+  var el = mapNodeEl(idx); if (!el || !TEAMS[team]) return;
+  var list = mapDoneBy[idx] || (mapDoneBy[idx] = []);
+  if (list.indexOf(team) < 0) list.push(team);
+  el.classList.add("done");
+  el.style.setProperty("--tc", TEAMS[list[0]].color);
+  if (list.length === 2) el.style.outline = "2px solid " + TEAMS[list[1]].color;
+  else if (list.length >= 3) el.style.outline = "2px solid #ffd75e";
+  else el.style.outline = "";
+}
+function mapClear(){
+  mapDoneBy = {};
+  TILES.forEach(function(t, i){
+    var el = mapNodeEl(i); if (!el) return;
+    el.classList.remove("done"); el.style.outline = ""; el.style.removeProperty("--tc");
+  });
+}
+function mapShowLive(){
+  mapClear();
+  TIMELINE.forEach(function(e){ mapLight(e.tile, e.team); });
+}
+function mapFinalCaption(){
+  var n = {}, c = 0;
+  TIMELINE.forEach(function(e){ if (!n[e.tile]){ n[e.tile] = 1; c++; } });
+  return "Final board — " + c + " tiles claimed across Gielinor.";
+}
+function mapStop(){
+  if (mapTimer){ clearInterval(mapTimer); mapTimer = null; }
+  document.getElementById("mapPlay").textContent = "▶ Play the week";
+}
+function mapPlayToggle(){
+  var btn = document.getElementById("mapPlay");
+  if (mapTimer){ clearInterval(mapTimer); mapTimer = null; btn.textContent = "▶ Resume"; return; }
+  var seq = sortedTimeline();
+  if (!seq.length){ document.getElementById("mapCaption").textContent = "No tiles claimed yet."; return; }
+  if (mapStep <= 0 || mapStep >= seq.length){ mapClear(); mapStep = 0; }
+  btn.textContent = "⏸ Pause";
+  mapTimer = setInterval(function(){
+    if (mapStep >= seq.length){
+      mapStop(); mapStep = 0;
+      document.getElementById("mapCaption").textContent = mapFinalCaption();
+      return;
+    }
+    var e = seq[mapStep++];
+    mapLight(e.tile, e.team);
+    var tm = TEAMS[e.team], tile = TILES[e.tile];
+    document.getElementById("mapCaption").textContent = fmtEventTime(e.t, true) + " — " + (tm ? tm.name : "?") + " claimed " + (tile ? tile.t : "a tile");
+    if (mapStep >= seq.length){
+      mapStop(); mapStep = 0;
+      setTimeout(function(){ if (!mapTimer) document.getElementById("mapCaption").textContent = mapFinalCaption(); }, 800);
+    }
+  }, 800);
+}
+function mapReset(){
+  mapStop(); mapStep = 0;
+  mapShowLive();
+  document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
+}
+function initMap(){
+  var wrap = document.getElementById("mapWrap");
+  if (!window.L){
+    wrap.innerHTML = '<div class="map-fallback">Map library could not load — the charts below still work.</div>';
+    return;
+  }
+  var H = 2706, Wd = 4800;
+  progMap = L.map("map", { crs: L.CRS.Simple, zoomControl: true, attributionControl: false, minZoom: -2, maxZoom: 2 });
+  var bounds = [[0, 0], [H, Wd]];
+  L.imageOverlay("assets/gielinor-map.jpg", bounds).addTo(progMap);
+  progMap.fitBounds(bounds);
+  progMap.setMaxBounds(L.latLngBounds(bounds).pad(0.1));
+  TILES.forEach(function(t, i){
+    var p = MAP_POS[i]; if (!p) return;
+    var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
+      html: '<div class="node-badge" id="node-' + i + '">' + (t.img ? '<img src="' + esc(t.img) + '" alt="">' : '') + '</div>' });
+    var mk = L.marker([(1 - p[1] / 100) * H, (p[0] / 100) * Wd], { icon: icon, title: t.t }).addTo(progMap);
+    mk.on("click", function(){ openTile(i); });
+  });
+  document.getElementById("mapLegend").innerHTML = '<span><i class="map-dot" style="background:#5a6c8c"></i>Open</span>' +
+    TEAMS.map(function(tm){ return '<span><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + '</span>'; }).join("");
+  document.getElementById("mapPlay").addEventListener("click", mapPlayToggle);
+  document.getElementById("mapReset").addEventListener("click", mapReset);
+  mapReset();
+  setTimeout(function(){ progMap.invalidateSize(); }, 50);
+}
+
+/* ---- momentum ---- */
+function niceCeil(maxV, mode){
+  var v = maxV * 1.1;
+  if (mode === "xp") return Math.max(1e6, Math.ceil(v / 1e6) * 1e6);
+  return Math.max(10, Math.ceil(v / 10) * 10);
+}
+function nyMidnights(from, to){
+  var out = [], seen = {}, t = from;
+  var fmtp = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York", year:"numeric", month:"numeric", day:"numeric", hour:"numeric", minute:"numeric", hour12:false});
+  function parts(ms){
+    var o = {}; fmtp.formatToParts(new Date(ms)).forEach(function(p){ o[p.type] = p.value; });
+    return { d:+o.day, h:(+o.hour) % 24, m:+o.minute, key:o.year + "-" + o.month + "-" + o.day };
+  }
+  for (var guard = 0; t <= to + 864e5 && guard < 4000; guard++){
+    var p = parts(t);
+    var mid = t - (p.h * 60 + p.m) * 60000;
+    if (!seen[p.key]){
+      seen[p.key] = 1;
+      out.push({ t: mid, d: p.d });
+    }
+    t += 36e5;
+  }
+  return out.filter(function(x){ return x.t > from && x.t < to; });
+}
+function renderMomentum(){
+  var mode = momMode, xEnd = Math.min(Date.now(), END);
+  if (xEnd <= START) xEnd = START + 36e5;
+  var series = [], maxV = 0, i;
+  if (mode === "points"){
+    var steps = pointSteps();
+    TEAMS.forEach(function(tm, ti){
+      var pts = [[START, 0]], cur = 0;
+      steps.forEach(function(s){
+        if (s.team !== ti) return;
+        pts.push([s.e.t, cur]); pts.push([s.e.t, s.after]); cur = s.after;
+      });
+      pts.push([xEnd, cur]);
+      series.push({ pts: pts, last: cur });
+      if (cur > maxV) maxV = cur;
+    });
+  } else {
+    var ht = (HIST && HIST.t) || [];
+    TEAMS.forEach(function(tm, ti){
+      var arr = (HIST && HIST.txp && HIST.txp[ti]) || [], pts = [];
+      for (i = 0; i < ht.length; i++) if (arr[i] != null){ pts.push([ht[i], arr[i]]); if (arr[i] > maxV) maxV = arr[i]; }
+      series.push({ pts: pts, last: pts.length ? pts[pts.length - 1][1] : 0 });
+    });
+  }
+  document.getElementById("momLegend").innerHTML = TEAMS.map(function(tm, ti){
+    var v = series[ti].last;
+    return '<span><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + ' <b style="color:#fff">' + (mode === "xp" ? compact(v) : fmt(v)) + '</b></span>';
+  }).join("");
+  var note = document.getElementById("momNote");
+  var empty = mode === "xp" && !((HIST && HIST.t) || []).length;
+  note.textContent = empty ? "XP recording runs from Nov 15 — the curve appears after the first snapshots land." : "";
+  if (empty){ document.getElementById("momChart").innerHTML = ""; return; }
+
+  var VW = 920, VH = 300, L0 = 54, R0 = 14, T0 = 12, B0 = 30;
+  var pw = VW - L0 - R0, ph = VH - T0 - B0;
+  var top = niceCeil(maxV, mode);
+  function X(t){ return L0 + (t - START) / (xEnd - START) * pw; }
+  function Y(v){ return T0 + ph - v / top * ph; }
+  var s = '<svg class="mom-svg" viewBox="0 0 920 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,Segoe UI,sans-serif">';
+  nyMidnights(START, xEnd).forEach(function(m){
+    var x = X(m.t).toFixed(1);
+    s += '<line x1="' + x + '" y1="' + T0 + '" x2="' + x + '" y2="' + (T0 + ph) + '" stroke="#1a2745" stroke-width="1"/>' +
+         '<text x="' + x + '" y="' + (VH - 10) + '" fill="#64769c" font-size="11" font-weight="700" text-anchor="middle">' + m.d + '</text>';
+  });
+  for (i = 0; i <= 4; i++){
+    var v = top * i / 4, y = Y(v).toFixed(1);
+    s += '<line x1="' + L0 + '" y1="' + y + '" x2="' + (L0 + pw) + '" y2="' + y + '" stroke="#22335a" stroke-width="1"' + (i ? ' stroke-dasharray="3 4"' : '') + '/>' +
+         '<text x="' + (L0 - 8) + '" y="' + (+y + 4) + '" fill="#8fa3c8" font-size="11" font-weight="700" text-anchor="end">' + (mode === "xp" ? compact(v) : fmt(v)) + '</text>';
+  }
+  series.forEach(function(sr, ti){
+    if (!sr.pts.length) return;
+    var d = sr.pts.map(function(p, k){ return (k ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join(" ");
+    s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    var lp = sr.pts[sr.pts.length - 1];
+    s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5"/>';
+  });
+  s += '</svg>';
+  document.getElementById("momChart").innerHTML = s;
+}
+
+/* ---- heat map ---- */
+function renderHeat(){
+  var box = document.getElementById("hmBody");
+  var pl = (HEAT && HEAT.players) || [], days = (HEAT && HEAT.days) || [];
+  if (!pl.length){ box.innerHTML = '<p class="hm-note">Heat map data starts landing with the Nov 15 snapshots.</p>'; return; }
+  var maxG = 0;
+  pl.forEach(function(p){ (p.g || []).forEach(function(g){ if (g != null && g > maxG) maxG = g; }); });
+  var h = '<div class="tblwrap"><table class="hm-table"><thead><tr><th></th>' +
+    days.map(function(d){ return '<th>' + esc(d) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  pl.forEach(function(p){
+    var tm = TEAMS[p.tm];
+    h += '<tr><td class="hm-name"><i class="map-dot" style="background:' + (tm ? tm.color : "#5a6c8c") + ';margin-right:7px"></i>' + esc(p.n) + '</td>';
+    days.forEach(function(d, k){
+      var g = p.g ? p.g[k] : null;
+      if (g == null) h += '<td class="hm-cell hm-empty"></td>';
+      else if (g <= 0) h += '<td class="hm-cell hm-zero">0</td>';
+      else h += '<td class="hm-cell" style="background:rgba(255,158,27,' + (0.07 + 0.88 * (maxG ? g / maxG : 0)).toFixed(3) + ')">' + compact(g) + '</td>';
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table></div><p class="hm-note">XP gained per day from Wise Old Man snapshots, recorded every 30 minutes from Nov 15. Nov 14 has no snapshot data, so its column stays blank.</p>';
+  box.innerHTML = h;
+}
+
+/* ---- feed ---- */
+function renderFeed(){
+  var box = document.getElementById("feedBody");
+  if (!TIMELINE.length){ box.innerHTML = '<p class="hm-note">No tiles claimed yet.</p>'; return; }
+  box.innerHTML = '<div class="feed-box">' + pointSteps().reverse().map(function(s){
+    var tm = TEAMS[s.team], tile = TILES[s.e.tile];
+    return '<div class="feed-row"><span class="feed-time">' + fmtEventTime(s.e.t, false) + '</span>' +
+      '<span class="feed-team" style="color:' + tm.color + '"><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + '</span>' +
+      '<span class="feed-tile">' + esc(tile ? tile.t : "?") + '</span>' +
+      '<span class="feed-pts">+' + s.delta + ' pts</span></div>';
+  }).join("") + '</div>';
+}
+
+function renderProgress(){
+  if (!progInit){
+    progInit = true;
+    try { initMap(); } catch (err) { if (window.console) console.error(err); }
+    document.getElementById("momToggle").addEventListener("click", function(e){
+      var b = e.target.closest("button[data-mode]"); if (!b) return;
+      momMode = b.getAttribute("data-mode");
+      document.querySelectorAll("#momToggle button").forEach(function(x){ x.classList.toggle("on", x === b); });
+      renderMomentum();
+    });
+    try { renderMomentum(); } catch (err2) { if (window.console) console.error(err2); }
+    try { renderHeat(); } catch (err3) { if (window.console) console.error(err3); }
+    try { renderFeed(); } catch (err4) { if (window.console) console.error(err4); }
+  } else if (progMap){
+    setTimeout(function(){ progMap.invalidateSize(); }, 50);
+  }
+}
+
 /* ============ WIRING ============ */
 function setView(v){
-  var views = ["overview","team","ehb","mvp"];
+  var views = ["overview","team","ehb","mvp","progress"];
   if (views.indexOf(v) < 0) v = "overview";
   views.forEach(function(x){
     document.getElementById("view-" + x).classList.toggle("on", x === v);
@@ -730,6 +1070,7 @@ function setView(v){
   var url = new URL(window.location.href); url.searchParams.set("view", v);
   history.replaceState(null, "", url);
   window.scrollTo({ top: 0 });
+  if (v === "progress") renderProgress();
 }
 document.getElementById("viewTabs").addEventListener("click", function(e){
   var b = e.target.closest("button[data-view]"); if (b) setView(b.getAttribute("data-view"));
