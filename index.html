@@ -140,7 +140,7 @@ td.r,th.r{text-align:right}
 .team-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .team-tabs button{border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:999px;padding:8px 18px;font-weight:900;font-size:15px}
 .team-tabs button.on{color:#fff;border-color:var(--acc);background:var(--card2)}
-.team-cols{display:grid;grid-template-columns:300px minmax(0,1fr) 330px;gap:18px;margin-top:18px;align-items:start}
+.team-cols{display:grid;grid-template-columns:320px minmax(0,1fr) 320px;gap:18px;margin-top:18px;align-items:start}
 .team-cols>*{min-width:0}
 .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tblwrap th{white-space:nowrap}
@@ -265,11 +265,11 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- OVERVIEW -->
   <section class="view" id="view-overview">
     <div class="boards" id="boards"></div>
-    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there.</div>
+    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there. Drop tiles and the items table come from the clan's drop log sheet.</div>
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th class="r">Time ↓</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th class="r">Count</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
         </div>
       </div>
@@ -293,7 +293,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th class="r">Time ↓</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th class="r">Count</th></tr></thead>
         <tbody id="teamClaimsBody"></tbody></table>
         </div>
       </div>
@@ -472,7 +472,16 @@ var TEAMS = [
  { name:"2B for Unpossible GFs", color:"#e8ecf2", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
    members:[C("Aaron","This Hellboy"),C("Cinderbulk"),M("DJRookies","Abg Hunts"),M("Apple Blood"),M("Huge swords"),M("Casval","Casval8"),M("scylla","scyllacybin"),M("Martel","Holy Martel"),M("Bottled Up","Cev"),M("Louie","IronMamba34"),M("Rad","Iron Tomoko"),M("HappyShake","Danni"),M("SPOOSER"),M("HappyTweak","Chris"),M("Potato","Ptaters"),M("ShaolinDildo","Washiiii"),M("Dave","Crab Admiral"),M("Rhombusaurus")] }
 ];
-var CLAIMS = []; /* {item, player, team, source, time} — fills in as drops are logged */
+var CLAIMS = []; /* {item, player, team, source, count} - filled from DROPS below */
+var DROPS = {"claims": [], "prog": {}}; /* baked by the sheet sync from the clan drop-log sheet */
+var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
+CLAIMS = DROPS.claims;
+TEAMS.forEach(function(tm, ti){
+  Object.keys(DROPS.prog).forEach(function(k){
+    var idx = +k, cnt = DROPS.prog[k][ti];
+    if (cnt != null && DROP_GOALS[idx] && cnt >= DROP_GOALS[idx] && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+  });
+});
 /* === SHEET-SYNC (rewritten by sync-sheet.py from the clan sheet; do not hand-edit) === */
 var SHEET = {"scores": [1, 1, 1], "skips": [0, 0, 0]};
 /* === END SHEET-SYNC === */
@@ -550,10 +559,9 @@ function renderClaims(){
   var cb = document.getElementById("claimsBody");
   if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="5" class="empty">No items received yet.</td></tr>'; }
   else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.time) + '</td></tr>';
+    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join(""); }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
-  document.getElementById("teamClaimsBody").innerHTML = '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
 }
 
 /* ============ TEAM VIEW ============ */
@@ -592,6 +600,10 @@ function renderTeam(){
       '<span class="dt">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles<br>' + o.s.pct + '% · ' + o.s.pts + ' pts</span></div>';
   }).join("");
   document.getElementById("skipsBox").innerHTML = '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span> has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
+  var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
+  document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
+    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+  }).join("") : '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
 }
 
 /* ============ MVP ============ */
@@ -640,6 +652,8 @@ function renderEHB(){
 var PROG = {}; /* PROG[teamIdx][tileIdx] = progress label */
 function teamProg(ti, tile, idx){
   if (PROG[ti] && PROG[ti][idx]) return PROG[ti][idx];
+  var dp = DROPS.prog[idx];
+  if (dp && dp[ti] != null && DROP_GOALS[idx]) return fmt(dp[ti]) + " / " + fmt(DROP_GOALS[idx]);
   return tile.prog;
 }
 function deltaFor(part, metric){
