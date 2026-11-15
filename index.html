@@ -2111,15 +2111,21 @@ function claimsAt(){
   return CLAIMS.filter(function(cl){ return !cl.t || cl.t <= c; });
 }
 function allDrops(){
-  var out = claimsAt().slice(), seen = {};
-  function key(p, item, tile){ return (canonName(p) || p).toLowerCase() + "|" + String(item).toLowerCase().replace(/[^a-z0-9]+/g, "") + "|" + tile; }
-  out.forEach(function(cl){ seen[key(cl.player, cl.item, cl.tile)] = 1; });
+  var out = claimsAt().slice();
+  function ikey(item){ return String(item).toLowerCase().replace(/[^a-z0-9]+/g, ""); }
+  function sameDrop(a, b){
+    if (a.tile !== b.tile) return false;
+    if ((canonName(a.player) || a.player).toLowerCase() !== (canonName(b.player) || b.player).toLowerCase()) return false;
+    if (a.img && b.img && a.img === b.img) return true;
+    var x = ikey(a.item), y = ikey(b.item);
+    return x === y || (x.length >= 4 && y.endsWith(x)) || (y.length >= 4 && x.endsWith(y));
+  }
   (SHOTS || []).forEach(function(e){
     if (e.team == null || !TEAMS[e.team]) return;
     if (tlActive && e.t && e.t > tlCutoff()) return;
-    var k = key(e.p, e.item, e.tile);
-    if (seen[k]) return; seen[k] = 1;
-    out.push({ player: e.p, item: e.item, tile: e.tile, team: TEAMS[e.team].name, t: e.t, img: e.img || "" });
+    var cand = { player: e.p, item: e.item, tile: e.tile, team: TEAMS[e.team].name, t: e.t, img: e.img || "" };
+    if (out.some(function(o){ return sameDrop(o, cand); })) return;
+    out.push(cand);
   });
   return out;
 }
