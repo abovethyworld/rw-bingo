@@ -752,7 +752,10 @@ function tick(){
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
   document.getElementById("pctComplete").textContent = (Math.floor(pct * 10) / 10) + "% complete";
 }
-TEAMS.forEach(function(tm, i){ tm.skips = SHEET.skips[i] || 0; });
+TEAMS.forEach(function(tm, i){
+  tm.skips = SHEET.skips[i] || 0;
+  (SHEET.marks[i] || []).forEach(function(idx){ if (tm.done.indexOf(idx) < 0) tm.done.push(idx); });
+});
 /* Tile information from the official bingo post (tiles with a written description). */
 var TILE_DESC = {
  0:"As a team, gain 3M total XP in the Slayer skill. No screenshots required.",
