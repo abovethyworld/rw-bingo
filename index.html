@@ -1547,10 +1547,14 @@ function renderCaptain(){
 /* ============ RECAP ============ */
 function progRatio(ti, tile, idx){
   var lbl = String(teamProg(ti, tile, idx)).replace(/,/g, "");
-  var m = lbl.match(/([\d.]+)\s*\/\s*([\d.]+)/);
+  var m = lbl.match(/([\d.]+)\s*\//);
   if (!m) return 0;
-  var cur = parseFloat(m[1]), tgt = parseFloat(m[2]);
-  return tgt > 0 ? cur / tgt : 0;
+  var cur = parseFloat(m[1]);
+  /* The label's target text is not a number ("3m XP" parses as 3), so take
+     the goal from the tile itself, then the drop goals, then the label. */
+  var tgt = tile.target || DROP_GOALS[idx] || 0;
+  if (!tgt){ var m2 = lbl.match(/\/\s*([\d.]+)/); tgt = m2 ? parseFloat(m2[1]) : 0; }
+  return tgt > 0 ? Math.min(cur / tgt, 1) : 0;
 }
 function recapLineList(tm){
   var doneSet = {};
