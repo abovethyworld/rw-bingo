@@ -222,9 +222,17 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 #map{height:520px;background:#0a1120;border-radius:12px;border:1px solid var(--line);z-index:0}
 @media(max-width:700px){#map{height:340px}}
 .map-node{background:none;border:none}
-.node-badge{width:30px;height:30px;border-radius:50%;background:#101c33;border:2px solid #5a6c8c;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:.55;cursor:pointer}
-.node-badge img{width:22px;height:22px;object-fit:contain}
+.node-badge{width:30px;height:30px;border-radius:50%;background:#0d1830;border:2px solid #93a7cc;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:.92;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.6)}
+.node-badge img{width:24px;height:24px;object-fit:contain}
 .node-badge.done{opacity:1;border-color:var(--tc);box-shadow:0 0 10px var(--tc)}
+.pfp-node{background:none;border:none}
+.pfp-badge{width:26px;height:26px;border-radius:50%;border:2px solid #fff;overflow:hidden;background:#1a2438;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;box-shadow:0 1px 5px rgba(0,0,0,.65);cursor:pointer}
+.pfp-badge img{width:100%;height:100%;object-fit:cover}
+.pfp-pop{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.45;color:#e8ecf2}
+.pfp-pop img{width:44px;height:44px;border-radius:50%}
+.leaflet-popup-content-wrapper{background:#0d1526;color:#e8ecf2;border-radius:10px}
+.leaflet-popup-tip{background:#0d1526}
+.leaflet-popup-close-button{color:#aab4c8 !important}
 .map-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
 .map-controls button,.mom-toggle button{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:7px 16px;font-weight:900;font-size:14px}
 .map-controls button:hover{color:#fff;border-color:var(--acc)}
@@ -378,6 +386,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
         <div class="map-controls">
           <button id="mapPlay">▶ Play the week</button>
           <button id="mapReset">Reset</button>
+          <button id="mapPeople" class="on">👥 People</button>
           <span id="mapCaption"></span>
         </div>
         <div class="map-legend" id="mapLegend"></div>
@@ -550,6 +559,7 @@ var TEAMS = [
 ];
 var CLAIMS = []; /* {item, player, team, source, count} - filled from DROPS below */
 var DROPS = {"claims": [], "prog": {}}; /* baked by the sheet sync from the clan drop-log sheet */
+var PEOPLE = []; /* baked by the sync: {n, r, tm, av, un, t, w} per roster member for the map's pfp layer */
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
 CLAIMS = DROPS.claims;
 var TIMELINE = [{"t": 1794717324404, "team": 0, "tile": 25}, {"t": 1794717324404, "team": 0, "tile": 31}, {"t": 1794717324404, "team": 0, "tile": 46}, {"t": 1794717324404, "team": 1, "tile": 11}, {"t": 1794717324404, "team": 2, "tile": 39}, {"t": 1794717361508, "team": 1, "tile": 44}, {"t": 1794721142610, "team": 1, "tile": 28}]; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
@@ -895,6 +905,29 @@ function mapReset(){
   document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
 }
 var mapMarkers = [];
+var peopleLayer = null;
+function buildPeopleLayer(){
+  if (!window.PEOPLE || !PEOPLE.length || !progMap) return;
+  peopleLayer = L.layerGroup();
+  var byTile = {};
+  var ring = [[0,0],[36,0],[-36,0],[0,36],[0,-36],[26,26],[-26,26],[26,-26],[-26,-26],[52,0],[-52,0],[0,52],[0,-52],[40,40],[-40,40],[40,-40],[-40,-40],[68,0],[-68,0]];
+  PEOPLE.forEach(function(p){
+    var base = p.t >= 0 ? MAP_POS[p.t] : [3222, 3218];
+    if (!base) return;
+    var k = byTile[p.t] || 0; byTile[p.t] = k + 1;
+    var off = ring[k % ring.length];
+    var tm = TEAMS[p.tm]; if (!tm) return;
+    var icon = L.divIcon({ className: "pfp-node", iconSize: [26, 26], iconAnchor: [13, 13],
+      html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
+        (p.av ? '<img src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) + '</div>' });
+    var mk = L.marker([12800 - (base[1] + off[1]), base[0] + off[0]], { icon: icon }).addTo(peopleLayer);
+    mk.bindPopup('<div class="pfp-pop">' + (p.av ? '<img src="' + esc(p.av) + '" alt="">' : '') +
+      '<div><b>' + esc(p.un || p.n) + '</b><br>' +
+      (p.r ? 'RSN: ' + esc(p.r) + '<br>' : '') +
+      '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span><br>' + esc(p.w) + '</div></div>');
+  });
+  peopleLayer.addTo(progMap);
+}
 function initMap(){
   var wrap = document.getElementById("mapWrap");
   if (!window.L){
@@ -927,6 +960,12 @@ function initMap(){
     TEAMS.map(function(tm){ return '<span><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + '</span>'; }).join("");
   document.getElementById("mapPlay").addEventListener("click", mapPlayToggle);
   document.getElementById("mapReset").addEventListener("click", mapReset);
+  buildPeopleLayer();
+  document.getElementById("mapPeople").addEventListener("click", function(){
+    if (!peopleLayer) return;
+    if (progMap.hasLayer(peopleLayer)){ progMap.removeLayer(peopleLayer); this.classList.remove("on"); }
+    else { peopleLayer.addTo(progMap); this.classList.add("on"); }
+  });
   mapReset();
   setTimeout(function(){ progMap.invalidateSize(); }, 50);
 }
