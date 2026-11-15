@@ -931,13 +931,14 @@ function initMap(){
     projection: L.extend({}, L.Projection.LonLat, { bounds: L.bounds([0, 0], [12800, 12800]) })
   });
   progMap = L.map("map", { crs: WikiCRS, minZoom: -2, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
-  // One stitched picture of the wiki's own map render (their live tile
-  // service has missing tiles and black void patches, so the map is baked
-  // into a single image aligned to game coordinates).
-  L.imageOverlay('assets/gielinor-wiki.jpg', [[8448, 1024], [10496, 4480]], {
+  // The current world map picture (post-Sailing release), baked in as one
+  // image aligned to game coordinates at exactly 1px per game tile:
+  // x 1024..3968, y 2112..4160. (The live tile service's zoomed-out
+  // renders are stale — Varlamore and the Sailing seas are missing.)
+  L.imageOverlay('assets/gielinor-sailing.jpg', [[8640, 1024], [10688, 3968]], {
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
-  progMap.fitBounds([[8512, 1024], [10432, 4352]]);
+  progMap.fitBounds([[8750, 1150], [10450, 4000]]);
   TILES.forEach(function(t, i){
     var p = livePos[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
