@@ -511,10 +511,10 @@ td.when{white-space:nowrap}
       </div>
       <div class="tcard">
         <h3>⛏️ Skilling MVP</h3>
-        <p style="color:var(--mut);font-weight:700;margin:0 0 6px">Ranked by EHP: skilling XP, weighted by how efficient it is.</p>
+        <p style="color:var(--mut);font-weight:700;margin:0 0 6px">Ranked by raw XP gained since the bingo started.</p>
         <div class="podium" id="skillPodium"></div>
         <div class="tblwrap">
-        <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHP ↓</th><th class="r">EHB</th><th class="r">XP Gained</th></tr></thead>
+        <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">XP Gained ↓</th><th class="r">EHP</th><th class="r">EHB</th></tr></thead>
         <tbody id="skillBody"></tbody></table>
         </div>
       </div>
@@ -925,19 +925,20 @@ function renderTeam(){
 /* ============ MVP ============ */
 var PLAYERS = []; /* filled from WOM: {name, team, xp, ehb} */
 function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
-function podiumHTML(ranked, key, unit){
+function podiumHTML(ranked, key, unit, fmtFn){
   var top = [ranked[1], ranked[0], ranked[2]];
   var medals = ["\uD83E\uDD48","\uD83E\uDD47","\uD83E\uDD49"], labels = ["2nd","1st","3rd"];
+  var show = fmtFn || function(v){ return v.toFixed(1); };
   return top.map(function(p, i){
     if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">\u2014</div><div class="pts2">0 ' + unit + '</div><div class="tm">' + labels[i] + ' place</div></div>';
-    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + p[key].toFixed(1) + ' ' + unit + '</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + show(p[key]) + ' ' + unit + '</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
   }).join("");
 }
 function renderMVP(){
   var byEhb = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
-  var byEhp = PLAYERS.slice().sort(function(a, b){ return b.ehp - a.ehp || b.ehb - a.ehb; });
+  var byXp = PLAYERS.slice().sort(function(a, b){ return b.xp - a.xp || b.ehp - a.ehp; });
   document.getElementById("pvmPodium").innerHTML = podiumHTML(byEhb, "ehb", "EHB");
-  document.getElementById("skillPodium").innerHTML = podiumHTML(byEhp, "ehp", "EHP");
+  document.getElementById("skillPodium").innerHTML = podiumHTML(byXp, "xp", "XP", fmt);
   if (!PLAYERS.length){
     document.getElementById("pvmBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man\u2026</td></tr>';
     document.getElementById("skillBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man\u2026</td></tr>';
@@ -946,8 +947,8 @@ function renderMVP(){
   document.getElementById("pvmBody").innerHTML = byEhb.slice(0, 10).map(function(p, i){
     return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
-  document.getElementById("skillBody").innerHTML = byEhp.slice(0, 10).map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+  document.getElementById("skillBody").innerHTML = byXp.slice(0, 10).map(function(p, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   var totalXp = PLAYERS.reduce(function(a, p){ return a + p.xp; }, 0);
   var totalEhb = PLAYERS.reduce(function(a, p){ return a + p.ehb; }, 0);
