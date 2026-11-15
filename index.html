@@ -54,6 +54,8 @@ button{font-family:inherit;cursor:pointer}
 .pillbtn{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 18px;font-weight:800;font-size:14.5px}
 .pillbtn:hover{border-color:var(--acc);color:var(--acc2)}
 .shot-thumb{width:38px;height:38px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-left:8px;cursor:pointer;border:1px solid #2c3d5f}
+.itemcell{display:flex;align-items:center;gap:8px}.itemcell .shot-thumb{margin-left:0;flex:0 0 auto}
+@media(max-width:640px){.claims-tbl .src{display:none}}
 #shotBox{position:fixed;inset:0;background:rgba(4,8,16,.93);z-index:4000;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 #shotBox[hidden]{display:none}
 #shotBox img{max-width:94vw;max-height:92vh;border-radius:10px}
@@ -445,7 +447,7 @@ td.when{white-space:nowrap}
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
+        <table class="claims-tbl"><thead><tr><th>Item</th><th>Player</th><th>Team</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
         </div>
         <div id="claimsMore" style="margin-top:10px"></div>
@@ -477,7 +479,7 @@ td.when{white-space:nowrap}
     </div>
     <div class="tcard" style="margin-top:20px">
       <div class="tblwrap">
-      <table><thead><tr><th>Item</th><th>Player</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
+      <table class="claims-tbl"><thead><tr><th>Item</th><th>Player</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
       <tbody id="teamClaimsBody"></tbody></table>
       </div>
     </div>
@@ -831,7 +833,7 @@ function renderClaims(){
   else {
     var rows = ovShowAll ? CLAIMS : CLAIMS.slice(0, 10);
     cb.innerHTML = rows.map(function(cl){
-      return '<tr><td>' + itemIcon(cl) + itemLink(cl) + shotThumb(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+      return '<tr><td><div class="itemcell">' + shotThumb(cl) + itemIcon(cl) + itemLink(cl) + '</div></td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
     }).join("");
     if (more) more.innerHTML = CLAIMS.length > 10 ? '<button class="pillbtn" onclick="toggleOvClaims()">' + (ovShowAll ? "Show less" : "Show all " + CLAIMS.length) + '</button>' : "";
   }
@@ -912,7 +914,7 @@ function renderTeam(){
   }).join("");
   var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
   document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
-    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + shotThumb(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td><div class="itemcell">' + shotThumb(cl) + itemIcon(cl) + itemLink(cl) + '</div></td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join("") : '<tr><td colspan="5" class="empty">No items received yet.</td></tr>';
   renderRecap();
 }
