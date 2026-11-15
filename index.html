@@ -263,6 +263,18 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .chase-bar{flex:1;display:flex;height:12px;border-radius:6px;overflow:hidden;background:#131f3a}
 .chase-bar i{display:block;height:100%}
 .chase-lbl{flex:0 0 170px;color:var(--mut);font-weight:700;font-size:12.5px;text-align:right}
+.chase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.tc-card{background:#0d1730;border:1px solid #22335a;border-radius:12px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%}
+.tc-card:hover{border-color:var(--acc2)}
+.tc-name{font-weight:800;font-size:14px;line-height:1.3;min-height:36px}
+.tc-big{font-size:24px;font-weight:900;margin:4px 0 2px}
+.tc-unit{color:var(--mut);font-weight:700;font-size:12px}
+.tc-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#131f3a;margin:8px 0 6px}
+.tc-bar i{display:block;height:100%}
+.tc-teams{display:flex;justify-content:space-between;color:var(--mut);font-weight:700;font-size:12px}
+.gr-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid #1a2745}
+.gr-row img{width:24px;height:24px;border-radius:50%;flex:none}
+.gr-row .gv{margin-left:auto;font-weight:800;white-space:nowrap}
 .rest-chip{display:flex;align-items:center;gap:6px;background:#0d1830;border:2px solid #5a6c8c;border-radius:999px;padding:4px 10px;font:800 11.5px Nunito,'Segoe UI',sans-serif;color:#dbe6ff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.85);cursor:pointer}
 .rest-node,.stack-node{background:none;border:none}
 .stack-chip{width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;background:#0d1830;display:flex;align-items:center;justify-content:center;font:900 12px Nunito,'Segoe UI',sans-serif;color:#fff;box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85);cursor:pointer}
@@ -327,6 +339,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <button data-view="ehb">📊 EHB / EHP</button>
     <button data-view="mvp">🏆 MVP</button>
     <button data-view="captain">🧭 Captain's Table</button>
+    <button data-view="chase">🔥 Most Chased</button>
     <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
   </div>
   <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timeline</button></div>
@@ -425,14 +438,20 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
       <div id="capPicks"></div>
     </div>
     <div class="tcard" style="margin-top:20px">
-      <h3>🔥 Most Chased Tiles</h3>
-      <div id="capChase"></div>
-    </div>
-    <div class="tcard" style="margin-top:20px">
       <h3>🏆 Top Grinders</h3>
       <div id="capGrinders"></div>
     </div>
     <div style="color:var(--mut);font-weight:700;font-size:12.5px;margin-top:14px" id="capFoot"></div>
+  </section>
+
+  <!-- MOST CHASED -->
+  <section class="view" id="view-chase">
+    <div class="tcard" style="margin-top:20px">
+      <h3>🔥 Most Chased Tiles</h3>
+      <p style="color:var(--mut);font-weight:700;margin:0 0 12px">Every tile, ranked by how much work all three teams have put into it. KC and XP come from Wise Old Man, drop-only tiles from the drop logs. Tap a tile for the breakdown.</p>
+      <div id="chaseKpis" style="margin-bottom:14px"></div>
+      <div class="chase-grid" id="chaseGrid"></div>
+    </div>
   </section>
 
   <!-- PROGRESS -->
@@ -623,6 +642,7 @@ var DROPS = {"claims": [{"item": "Guthan's Spear", "player": "Nayrune", "team": 
 var PEOPLE = [{"n": "Ross", "r": "itsachocobo", "tm": 0, "av": "https://cdn.discordapp.com/avatars/275238803000524800/8328a2ee593ad49e77d288d8111d1dee.png?size=64", "un": "ARareChocobo", "t": 39, "w": "+83 Maggot King KC in the last hour"}, {"n": "Elle", "r": "nayrune", "tm": 0, "av": "https://cdn.discordapp.com/avatars/684571307337318402/5ffafa714153b26b90a57f6c72c88b5c.png?size=64", "un": "elle", "t": 35, "w": "+3 Corrupted Gauntlet KC in the last hour"}, {"n": "Maeve", "r": "Kiwi1281Iron", "tm": 0, "av": "https://cdn.discordapp.com/avatars/218086418059100160/f1c78d1a7efc9000b11b78a1ab4aa2ca.png?size=64", "un": "maeve", "t": 39, "w": "+10 Maggot King KC in the last hour"}, {"n": "MightyHonk", "r": "", "tm": 0, "av": "https://cdn.discordapp.com/avatars/245404473390792705/c993a812867c02c59b7aa4dc98862996.png?size=64", "un": "Caboose", "t": 45, "w": "No new gains in the last hour"}, {"n": "Limp", "r": "Sheslimp", "tm": 0, "av": "https://cdn.discordapp.com/avatars/371074254625832961/ae1fa0a6febeccc7382a43c26779482b.png?size=64", "un": "Limp Here", "t": 14, "w": "+200 Brutus KC in the last hour"}, {"n": "Dr. Pearls", "r": "Pearls | Dr Tim", "tm": 0, "av": "https://cdn.discordapp.com/avatars/991381637944320100/0ed2a430dee2c6c255fe76d3eb387c45.png?size=64", "un": "Gas", "t": 14, "w": "+166 Brutus KC in the last hour"}, {"n": "Eric", "r": "EvilFarore", "tm": 0, "av": "https://cdn.discordapp.com/avatars/168412373223211008/f4f95a85f2795e5092263b958577537f.png?size=64", "un": "RoonerSpism", "t": 28, "w": "+13 Phosani's Nightmare KC in the last hour"}, {"n": "BoilShad0w5", "r": "Boilshadows", "tm": 0, "av": "https://cdn.discordapp.com/avatars/141691395017539585/a96aa95fdc30dfe36e3957bfc14d7029.png?size=64", "un": "BoilingShadows", "t": 14, "w": "+325 Brutus KC in the last hour"}, {"n": "Kenna", "r": "sunshine4evr", "tm": 0, "av": "https://cdn.discordapp.com/avatars/187739693272530945/13f65363662db836acb6ecf001e62f1b.png?size=64", "un": "Sundress Season", "t": 12, "w": "+3 Tempoross KC in the last hour", "b": "Secured the Soaked Pages"}, {"n": "Suga", "r": "Ikuradon", "tm": 0, "av": "https://cdn.discordapp.com/avatars/273498454485893120/1dbb80a3597ac84a2c5beff1063aa53f.png?size=64", "un": "Suga", "t": 7, "w": "+1 Barrows KC in the last hour"}, {"n": "Jo", "r": "JobeeFe / Jo be safer", "tm": 0, "av": "https://cdn.discordapp.com/avatars/865564036907925545/f8650f868baef1a6046d7d1e1684ba6d.png?size=64", "un": "Jobee", "t": 14, "w": "+484 Brutus KC in the last hour"}, {"n": "Dan", "r": "Thaidacar", "tm": 0, "av": "https://cdn.discordapp.com/avatars/701626878603034737/a15b7ed185721a48ea614b3b80479541.png?size=64", "un": "Mrtibbles", "t": 36, "w": "+57 Zulrah KC in the last hour"}, {"n": "Taylay", "r": "Taylays", "tm": 0, "av": "https://cdn.discordapp.com/avatars/214396125384409089/c34d7f0603948d97111f49013615b45b.png?size=64", "un": "Taylay", "t": 36, "w": "+2 Zulrah KC in the last hour"}, {"n": "Oden", "r": "Dredlax", "tm": 0, "av": "https://cdn.discordapp.com/avatars/179322515297009665/a_22f7b151fa9099c91f0ed85f6e0fa0dd.png?size=64", "un": "Oden", "t": 8, "w": "+3 Abyssal Sire KC in the last hour"}, {"n": "iKronken", "r": "", "tm": 0, "av": "https://cdn.discordapp.com/avatars/325711467645239296/ad55c4fd9b40c003d09f6b38e570cc3c.png?size=64", "un": "The Kronken", "t": 31, "w": "+57 Shellbane Gryphon KC in the last hour", "b": "EZ Belle's Folly"}, {"n": "Zefy", "r": "Zefy Sunless", "tm": 0, "av": "https://cdn.discordapp.com/avatars/877691416799744001/b3b21433e1b996fd790b70604cd3c3aa.png?size=64", "un": "Zefy", "t": -1, "w": "No gains yet this bingo"}, {"n": "r\u014dnin", "r": "i Ronin", "tm": 0, "av": "https://cdn.discordapp.com/avatars/595431865297403904/1c9576718bc6c94e351b82d456c566fe.png?size=64", "un": "r\u014cnin", "t": 7, "w": "+7 Barrows KC in the last hour"}, {"n": "Buf", "r": "uBeeez", "tm": 0, "av": "https://cdn.discordapp.com/avatars/1321552101322522709/08d0da48416e31d661ea2814755a7a85.png?size=64", "un": "Buf", "t": 7, "w": "+11 Barrows KC in the last hour"}, {"n": "Nama", "r": "Namasar", "tm": 0, "av": "https://cdn.discordapp.com/avatars/470445964591759370/44ae21af2cfba0ef20fa5634237e6270.png?size=64", "un": "Namaser", "t": 10, "w": "+54 Zalcano KC in the last hour"}, {"n": "Door Man Nic", "r": "Azzyl", "tm": 1, "av": "https://cdn.discordapp.com/avatars/185940848494641153/5b7c62c5913f87135afb5d685b021d2a.png?size=64", "un": "Azzyl", "t": 14, "w": "+160 Brutus KC in the last hour"}, {"n": "Kelsen", "r": "Idne", "tm": 1, "av": "https://cdn.discordapp.com/avatars/611000024536449026/cf376d9f166be0c0d46076a5ec6bfb41.png?size=64", "un": "Idne", "t": 40, "w": "+36 Duke Sucellus KC in the last hour"}, {"n": "Dake", "r": "Dake_st_farm", "tm": 1, "av": "https://cdn.discordapp.com/avatars/747644320806600805/949284035a0d09975449f6fa7151086f.png?size=64", "un": "Dakevinat0r", "t": 45, "w": "No new gains in the last hour"}, {"n": "Chowder", "r": "IronClamChow", "tm": 1, "av": "https://cdn.discordapp.com/avatars/210259442317524993/af954e1d029592bf9f8b1fa6b452fa50.png?size=64", "un": "Chowder", "t": 36, "w": "+7 Zulrah KC in the last hour"}, {"n": "Lath", "r": "Latheon", "tm": 1, "av": "https://cdn.discordapp.com/avatars/402756853748072448/ca2680b8522fadd65f5007a7260f2236.png?size=64", "un": "Perspex", "t": 34, "w": "+205 Kraken KC in the last hour", "b": "Another Jar of Dirt for the log"}, {"n": "Nick", "r": "Ferric Niko", "tm": 1, "av": "https://cdn.discordapp.com/avatars/1222683261457797121/4864dc74bacc370e1f9b532e5294ae94.png?size=64", "un": "Nicks", "t": 44, "w": "No new gains in the last hour"}, {"n": "Donnie", "r": "Dontropic", "tm": 1, "av": "https://cdn.discordapp.com/avatars/163429410043723776/fd9b4ccf97b64123e7c23ad0f0e20f91.png?size=64", "un": "donniekim", "t": 7, "w": "+9 Barrows KC in the last hour"}, {"n": "Rob", "r": "Its Me Cia", "tm": 1, "av": "https://cdn.discordapp.com/avatars/455050560975142923/a_cc4719e97ec8183e0d853243576a2dd7.png?size=64", "un": "IdleRobin", "t": 36, "w": "+97 Zulrah KC in the last hour"}, {"n": "riir", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/588493413989613569/afbe471fb6d4475f37f6619def0ca77b.png?size=64", "un": "Todd Dillerson", "t": 2, "w": "No new gains in the last hour"}, {"n": "Ami", "r": "Amaris Eden", "tm": 1, "av": "https://cdn.discordapp.com/avatars/239082356877557760/1986c6fd953c55943b335049b9a9ee78.png?size=64", "un": "Robbe517", "t": 43, "w": "+114 Araxxor KC in the last hour"}, {"n": "Marcy", "r": "Have Marcy", "tm": 1, "av": "https://cdn.discordapp.com/avatars/102487935772815360/61b31c3857e0e48039f21ede19fe5c53.png?size=64", "un": "PleaseHaveMarcy", "t": 36, "w": "+3 Zulrah KC in the last hour"}, {"n": "Chris", "r": "StrKes", "tm": 1, "av": "https://cdn.discordapp.com/avatars/802320961399029865/2ff6edefba76184b0a1f83df5a77c293.png?size=64", "un": "chris", "t": 35, "w": "+6 Corrupted Gauntlet KC in the last hour"}, {"n": "Tydreamt", "r": "ni Dream", "tm": 1, "av": "https://cdn.discordapp.com/avatars/110780984311431168/cf5c46dc655295f198a691d71ec85155.png?size=64", "un": "Flux", "t": 1, "w": "No new gains in the last hour"}, {"n": "Raven", "r": "Ultimate RVN", "tm": 1, "av": "https://cdn.discordapp.com/avatars/151685984386416640/a_e080421636b9eff132f3a20008f0ff23.png?size=64", "un": "RavenSire", "t": 9, "w": "+12 Wintertodt KC in the last hour"}, {"n": "Quough", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/125159198936793088/51798fd98ca90fcc1fa1eb3af9b7de79.png?size=64", "un": "nezticle", "t": 26, "w": "+16 Guardians of the Rift KC in the last hour"}, {"n": "Allie", "r": "Hex Bun", "tm": 1, "av": "https://cdn.discordapp.com/avatars/554315330466611210/2400772f045018bc5e3a05973e94a03d.png?size=64", "un": "Allie Star", "t": 7, "w": "+1 Barrows KC in the last hour"}, {"n": "MrKulaid", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/155961976449794058/df27e6a05019bc8a64c7799a1a6c7168.png?size=64", "un": "Kulaid", "t": 14, "w": "+90 Brutus KC in the last hour"}, {"n": "Andy", "r": "cutedog jpeg", "tm": 1, "av": "https://cdn.discordapp.com/avatars/709103581885890602/da8612fd50f70e00c8f06be06569c5fb.png?size=64", "un": "I Andy I", "t": 26, "w": "+22 Guardians of the Rift KC in the last hour"}, {"n": "Aaron", "r": "This Hellboy", "tm": 2, "av": "https://cdn.discordapp.com/avatars/210217511222771712/4dca4a4cec63e3a12867326e744f1b40.png?size=64", "un": "aronthabeast", "t": 40, "w": "+16 Duke Sucellus KC in the last hour"}, {"n": "Cinderbulk", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/1400988474672414850/285d60c86fb91503bd8c3f350b714fa4.png?size=64", "un": "Cinderbulk", "t": 33, "w": "+17 Phantom Muspah KC in the last hour"}, {"n": "DJRookies", "r": "Abg Hunts", "tm": 2, "av": "https://cdn.discordapp.com/avatars/452744678891192320/47aa4de84ca77ea3d1742be9ebec1c14.png?size=64", "un": "DjRookies", "t": 28, "w": "+29 Phosani's Nightmare KC in the last hour"}, {"n": "Apple Blood", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/449414018549940244/a628461a5d5dd822f75281a276f06757.png?size=64", "un": "Cosmetric", "t": 43, "w": "+55 Araxxor KC in the last hour"}, {"n": "Huge swords", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/234279444154548225/9d1cba0a6892f11e57367132081531c9.png?size=64", "un": "cryo", "t": 10, "w": "+13 Zalcano KC in the last hour"}, {"n": "Casval", "r": "Casval8", "tm": 2, "av": "https://cdn.discordapp.com/avatars/164603230192533504/53a470ac8909fcc24786eee300106820.png?size=64", "un": "", "t": 35, "w": "+18 Corrupted Gauntlet KC in the last hour"}, {"n": "scylla", "r": "scyllacybin", "tm": 2, "av": "https://cdn.discordapp.com/avatars/1017533174894579763/3e33268bfb9b1df83493e0a0b93e2eb3.png?size=64", "un": "scylla", "t": 10, "w": "+5 Zalcano KC in the last hour"}, {"n": "Martel", "r": "Holy Martel", "tm": 2, "av": "https://cdn.discordapp.com/avatars/402764919184949249/d4482e4278f1ad44297f8bf09956e566.png?size=64", "un": "ilyanna119", "t": 35, "w": "+17 Corrupted Gauntlet KC in the last hour"}, {"n": "Bottled Up", "r": "Cev", "tm": 2, "av": "https://cdn.discordapp.com/avatars/99317974350966784/8c82004c603af57110a01a8a9421cba2.png?size=64", "un": "Cev", "t": 26, "w": "+44 Guardians of the Rift KC in the last hour"}, {"n": "Louie", "r": "IronMamba34", "tm": 2, "av": "https://cdn.discordapp.com/avatars/444711864006606850/32f06e1482e3e5456417d71e0aff1ca1.png?size=64", "un": "Mamba", "t": 14, "w": "+367 Brutus KC in the last hour"}, {"n": "Rad", "r": "Iron Tomoko", "tm": 2, "av": "https://cdn.discordapp.com/avatars/94808640086609920/24a7ce00a469116420659cea17453c23.png?size=64", "un": "Rad", "t": -1, "w": "No gains yet this bingo"}, {"n": "HappyShake", "r": "Danni", "tm": 2, "av": "https://cdn.discordapp.com/avatars/147168597205057537/c7fd0959cf10a8e9227c701de91edd70.png?size=64", "un": "Meko-Isa", "t": 36, "w": "+26 Zulrah KC in the last hour"}, {"n": "SPOOSER", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/363132948666646529/90800de35f43f7f87462ad82175a1ff8.png?size=64", "un": "SPOOSER", "t": 10, "w": "+13 Zalcano KC in the last hour"}, {"n": "HappyTweak", "r": "Chris", "tm": 2, "av": "https://cdn.discordapp.com/avatars/191014449883250688/12c116307695c3c360e0e3d81ecfa723.png?size=64", "un": "Chizzey", "t": 0, "w": "No new gains in the last hour"}, {"n": "Potato", "r": "Ptaters", "tm": 2, "av": "https://cdn.discordapp.com/avatars/148261592578916352/39ee0c02b7b61a4bea57f57960d4d807.png?size=64", "un": "Potato", "t": 1, "w": "No new gains in the last hour"}, {"n": "ShaolinDildo", "r": "Washiiii", "tm": 2, "av": "https://cdn.discordapp.com/avatars/202313096323268608/65c8eca80e6bbe093933e5f850cda9b7.png?size=64", "un": "WashableSteak", "t": 31, "w": "+39 Shellbane Gryphon KC in the last hour"}, {"n": "Dave", "r": "Crab Admiral", "tm": 2, "av": "https://cdn.discordapp.com/avatars/144184605782704129/49dee283b95c0515d54ed6dee3d8d1b1.png?size=64", "un": "Dave", "t": 6, "w": "No new gains in the last hour"}, {"n": "Rhombusaurus", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/380506243103719424/62068c26e7cc26e5d3fc04a905fe44df.png?size=64", "un": "Rhombusaurus", "t": 14, "w": "+745 Brutus KC in the last hour"}]; /* baked by the sync: {n, r, tm, av, un, t, w} per roster member for the map's pfp layer */
 var FLAGS = {}; /* baked by the sync: "team:tile" -> why a sheet-marked completion is not backed by Wise Old Man */
 var UPDATED = 1794735523827; /* baked by the sync: ms epoch of the last data bake */
+var TILESTATS = {}; /* baked by the sync: per-tile {u, tot[3], top[[name, teamIdx, value]]} for the Most Chased tab */
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
 CLAIMS = DROPS.claims;
 var TIMELINE = [{"t": 1794712334722, "team": 0, "tile": 46}, {"t": 1794713081426, "team": 0, "tile": 31}, {"t": 1794717324404, "team": 0, "tile": 25}, {"t": 1794717324404, "team": 1, "tile": 11}, {"t": 1794717324404, "team": 2, "tile": 39}, {"t": 1794717361508, "team": 1, "tile": 44}, {"t": 1794721142610, "team": 1, "tile": 28}]; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
@@ -1421,6 +1441,70 @@ function picksForTile(ti, tile, idx){
     return { p: p, score: score, why: why };
   }).filter(function(c){ return c.score > 0; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
 }
+/* ============ MOST CHASED ============ */
+function avFor(name){
+  var k = String(name || "").toLowerCase();
+  for (var i = 0; i < PEOPLE.length; i++){
+    if (PEOPLE[i].n.toLowerCase() === k || PEOPLE[i].r.toLowerCase() === k) return PEOPLE[i].av || "";
+  }
+  return "";
+}
+function renderChase(){
+  var entries = TILES.map(function(tile, idx){
+    var st = TILESTATS[idx];
+    return { idx: idx, tile: tile, st: st, total: st ? st.tot.reduce(function(a, b){ return a + b; }, 0) : 0 };
+  }).sort(function(a, b){ return b.total - a.total; });
+  var withData = entries.filter(function(e){ return e.total > 0; }).length;
+  var kcTotal = entries.reduce(function(a, e){ return a + (e.st && e.st.u === "KC" ? e.total : 0); }, 0);
+  document.getElementById("chaseKpis").innerHTML =
+    '<span class="big-chip" style="margin-right:8px">Tiles with work logged <b>' + withData + ' / 49</b></span>' +
+    '<span class="big-chip" style="margin-right:8px">Boss KC tracked <b>' + fmt(kcTotal) + '</b></span>' +
+    (entries[0] && entries[0].total > 0 ? '<span class="big-chip">Most chased <b>' + esc(entries[0].tile.t) + '</b></span>' : '');
+  document.getElementById("chaseGrid").innerHTML = entries.map(function(e){
+    var st = e.st;
+    var segs = st ? st.tot.map(function(v, ti){ return e.total ? '<i style="width:' + (v / e.total * 100).toFixed(1) + '%;background:' + TEAMS[ti].color + '"></i>' : ''; }).join("") : "";
+    var counts = TEAMS.map(function(tm, ti){
+      var done = tm.done.indexOf(e.idx) >= 0;
+      return '<span style="color:' + tm.color + '">' + (done ? "✓ " : "") + (st ? fmt(st.tot[ti]) : "0") + '</span>';
+    }).join("");
+    return '<button class="tc-card" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
+      '<div class="tc-big">' + (st ? fmt(e.total) : "0") + ' <span class="tc-unit">' + (st ? st.u : "KC") + ' total</span></div>' +
+      '<div class="tc-bar">' + segs + '</div><div class="tc-teams">' + counts + '</div></button>';
+  }).join("");
+}
+function openChaseTile(idx){
+  var tile = TILES[idx], st = TILESTATS[idx];
+  document.getElementById("mTitle").textContent = tile.t;
+  document.getElementById("mPts").textContent = tile.pts + " pts";
+  var desc = TILE_DESC[idx] || TILE_BLURB[idx] || "";
+  var mDesc = document.getElementById("mDesc");
+  mDesc.textContent = desc;
+  mDesc.style.display = desc ? "" : "none";
+  var wb = document.getElementById("wikiBtn");
+  if (WIKI[idx]){ wb.style.display = ""; wb.onclick = function(){ window.open("https://oldschool.runescape.wiki/w/" + WIKI[idx], "_blank"); }; }
+  else wb.style.display = "none";
+  var h = "";
+  if (st){
+    var total = st.tot.reduce(function(a, b){ return a + b; }, 0);
+    h += '<div style="font-weight:800;margin-bottom:6px">Team effort · ' + fmt(total) + ' ' + st.u + ' total</div>';
+    h += st.tot.map(function(v, ti){
+      var pct = total ? Math.round(v / total * 100) : 0;
+      return '<div class="m-team"><span class="dot" style="background:' + TEAMS[ti].color + '"></span><span class="nm">' + esc(TEAMS[ti].name) + (TEAMS[ti].done.indexOf(idx) >= 0 ? ' ✓' : '') + '</span><span class="st2">' + fmt(v) + ' ' + st.u + ' · ' + pct + '%</span></div>';
+    }).join("");
+    if (st.top && st.top.length){
+      h += '<div style="font-weight:800;margin:12px 0 2px">Top grinders</div>' + st.top.map(function(g){
+        var av = avFor(g[0]);
+        return '<div class="gr-row">' + (av ? '<img src="' + esc(av) + '" alt="" onerror="this.remove()">' : '') + '<span>' + esc(g[0]) + '</span><span style="color:' + TEAMS[g[1]].color + ';font-weight:700">' + esc(TEAMS[g[1]].name) + '</span><span class="gv">' + fmt(g[2]) + ' ' + st.u + '</span></div>';
+      }).join("");
+    }
+    h += '<div style="color:var(--mut);font-weight:700;font-size:12px;margin-top:10px">Source: ' + (st.u === "drops" ? "clan drop logs (no Wise Old Man metric for this tile)" : "Wise Old Man, gains since the bingo started") + '</div>';
+  } else {
+    h = '<div class="empty">No work logged on this tile yet.</div>';
+  }
+  document.getElementById("mTeams").innerHTML = h;
+  document.getElementById("backdrop").classList.add("open");
+}
+
 function renderCaptain(){
   document.getElementById("capTeamTabs").innerHTML = TEAMS.map(function(tm, i){
     return '<button data-team="' + i + '" style="color:' + tm.color + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
@@ -1448,17 +1532,6 @@ function renderCaptain(){
         '<div class="pick-who">' + (who.length ? who.map(function(c){ return '<b style="color:#fff">' + esc(c.p.name) + '</b> · ' + esc(c.why); }).join("<br>") : "Nobody on the team has a head start logged yet.") + '</div></div>';
     }).join("") : '<div class="empty">No urgent tiles right now.</div>';
   }
-  var chase = TILES.map(function(tile, idx){
-    var rs = TEAMS.map(function(t2, ti){ return t2.done.indexOf(idx) >= 0 ? 1 : progRatio(ti, tile, idx); });
-    var sum = rs.reduce(function(a, b){ return a + b; }, 0);
-    return { idx: idx, rs: rs, sum: sum };
-  }).filter(function(c){ return c.sum > 0 && c.sum < 3; }).sort(function(a, b){ return b.sum - a.sum; }).slice(0, 8);
-  document.getElementById("capChase").innerHTML = chase.length ? chase.map(function(c){
-    var tile = TILES[c.idx];
-    var segs = c.rs.map(function(r, ti){ return '<i style="width:' + (r * 33.33).toFixed(1) + '%;background:' + TEAMS[ti].color + '"></i>'; }).join("");
-    var lbl = c.rs.map(function(r, ti){ return TEAMS[ti].done.indexOf(c.idx) >= 0 ? "✓" : Math.round(r * 100) + "%"; }).join(" · ");
-    return '<div class="chase-row"><span class="chase-name">' + esc(tile.t) + '</span><span class="chase-bar">' + segs + '</span><span class="chase-lbl">' + lbl + '</span></div>';
-  }).join("") : '<div class="empty">No progress logged yet.</div>';
   var helped = {};
   CLAIMS.forEach(function(cl){
     var k = cl.player.toLowerCase();
@@ -1581,7 +1654,7 @@ document.getElementById("recapCopy").addEventListener("click", function(){
 
 /* ============ WIRING ============ */
 function setView(v){
-  var views = ["overview","team","ehb","mvp","captain","progress"];
+  var views = ["overview","team","ehb","mvp","captain","chase","progress"];
   if (views.indexOf(v) < 0) v = "overview";
   views.forEach(function(x){
     document.getElementById("view-" + x).classList.toggle("on", x === v);
@@ -1598,6 +1671,7 @@ function setView(v){
   window.scrollTo({ top: 0 });
   if (v === "progress") renderProgress();
   if (v === "captain") renderCaptain();
+  if (v === "chase") renderChase();
 }
 document.getElementById("viewTabs").addEventListener("click", function(e){
   var b = e.target.closest("button[data-view]"); if (b) setView(b.getAttribute("data-view"));
