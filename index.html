@@ -799,6 +799,8 @@ function renderBoards(){
   var rankOf = {}; order.forEach(function(o, r){ rankOf[o.i] = r; });
   document.getElementById("boards").innerHTML = TEAMS.map(function(tm, ti){
     var s = teamStats(tm);
+    var ehbArr = (typeof HIST !== "undefined" && HIST.tehb && HIST.tehb[ti]) || [];
+    var ehb = ehbArr.length ? ehbArr[ehbArr.length - 1] : null;
     var rank = rankOf[ti];
     var tiles = TILES.map(function(tile, idx){
       var done = tm.done.indexOf(idx) >= 0;
@@ -816,6 +818,7 @@ function renderBoards(){
           '<div class="hstat"><div class="v grn">' + s.tiles + '</div><div class="k">✓ Tiles</div></div>' +
           '<div class="hstat"><div class="v">' + s.pct + '%</div><div class="k">Complete</div></div>' +
           '<div class="hstat"><div class="v acc">' + s.pts + '</div><div class="k">Points</div></div>' +
+          '<div class="hstat"><div class="v">' + (ehb == null ? '&mdash;' : ehb.toFixed(1)) + '</div><div class="k">EHB</div></div>' +
         '</div></div>' +
       '<div class="grid7">' + tiles + '</div>' +
       '<div class="board-foot"><span><b>' + s.tiles + '</b> completed · <b>' + (49 - s.tiles) + '</b> remaining</span><span>Skips used <b>' + tm.skips + ' / 3</b></span></div>' +
