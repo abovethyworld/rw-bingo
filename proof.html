@@ -49,6 +49,8 @@
 var TEAMS=[{name:"Buying GF",color:"#987cf0"},{name:"Unpossible",color:"#4cbb80"},{name:"2B for Unpossible GFs",color:"#f28cb1"}];
 var TILES=[["3m Slayer XP",7],["5m Sailing XP",7],["6m Crafting XP",7],["4m Fishing XP",7],["4m Runecrafting XP",7],["10m Firemaking XP",7],["5m Hunter XP",7],["Full Barrows Set",5],["5 Abyssal Whips",3],["Tome of Fire / Phoenix / Dragon Axe",3],["Any Zalcano Unique",5],["Golden Tench",3],["3 Tempoross Uniques",3],["Dragon Cannon Barrel",3],["3 Beef Pets",3],["5 Mad Angel Uniques",3],["3 Zenyte Shards",3],["5 Hunter Rumour Uniques",3],["4 Sailing Salvaging Uniques",3],["3 Bottled Storms",4],["4 Jeweller's Chisels",3],["3 TD Uniques",4],["Full Moons Set",3],["3 Dragon Pickaxes",4],["3 First-Time Raiders",5],["1,000 Pest Control Pts",3],["750 Abyssal Pearls",3],["50,000 Mastering Mixology Pts",3],["Any Nightmare Unique",4],["Any Doom Unique",4],["4 Hueycoatl Uniques",3],["3 Gryphon Uniques",4],["Twinflame Staff",3],["5 Venator Shards",4],["3 Kraken Uniques",3],["Enhanced Weapon Seed or 3 Armour Seeds",4],["3 Zulrah Uniques",4],["Any Revenant Weapon",5],["2 Yama Uniques",4],["Any Maggot King Unique",4],["Any Piece of Virtus",4],["3 God Wars Dungeon Uniques",4],["2 ToB Purples",5],["3 Araxxor Uniques",4],["20 TFA KC",5],["4 ToA Purples",5],["3 CoX Purples",5],["Any Colosseum Unique",4],["Any Nex Unique or 400 Nihil Shards",5]];
 var GOALS={7:4,8:5,12:3,14:3,15:5,16:3,17:5,18:4,19:3,20:4,21:3,22:3,23:3,25:1000,26:750,27:50000,30:4,31:3,32:1,33:5,34:3,35:3,36:3,38:2,41:3,42:2,43:3,45:4,46:3,48:400};
+var XPT={0:3000000,1:5000000,2:6000000,3:4000000,4:4000000,5:10000000,6:5000000,44:20};
+function fmtN(n){return Math.round(n).toLocaleString("en-US");}
 var NAME2IDX={"Buying GF":0,"Unpossible":1,"2B for Unpossible GFs":2};
 var DATA=null, curTeam=-1, curQ="", curMissing=false, curDone=0;
 function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g,"").trim();}
@@ -127,9 +129,15 @@ function render(){
       teamDrops+=es.length; es.forEach(function(e){if(e.img)teamPics++;});
       if(curMissing){es=es.filter(function(e){return !e.img;});if(!es.length)return;teamMissing+=es.length;}
       var done=marks[ti].indexOf(tile)>=0, goal=GOALS[tile];
-      var status=done?'<span class="done">✓ Complete</span>':(goal?("Progress: "+(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.counted;}).reduce(function(a,e){return a+e.n;},0))+" of "+goal):"");
+      var tst=(d.TILESTATS||[])[tile], tTot=(tst&&tst.tot)?(tst.tot[ti]||0):0, tUnit=tst?tst.u:"";
+      var status;
+      if(done)status='<span class="done">✓ Complete</span>'+(tTot?" · "+fmtN(tTot)+" "+tUnit:"");
+      else if(goal)status="Progress: "+(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.counted;}).reduce(function(a,e){return a+e.n;},0))+" of "+goal;
+      else if(XPT[tile])status="Progress: "+fmtN(tTot)+" of "+fmtN(XPT[tile])+" "+(tUnit||"XP");
+      else if(tTot)status="So far: "+fmtN(tTot)+" "+tUnit;
+      else status="";
       body+='<div class="tile"><h3>Tile '+tile+' — '+esc(TILES[tile][0])+' ('+TILES[tile][1]+' pts)</h3><div class="status">'+status+'</div>';
-      if(!es.length){body+='<div class="status">'+(done?'Marked complete on the board — no individual drop screenshots on file.':'No proof on file yet.')+'</div>';}
+      if(!es.length){body+='<div class="status">'+(done?'Marked complete on the board — no individual drop screenshots on file.':(XPT[tile]?'Tracked on Wise Old Man — no screenshots for this tile.':'No proof on file yet.'))+'</div>';}
       body+='<div class="grid">'+es.map(function(e){
         var tag=e.tag==="sheet"?'<span class="tag sheet">sheet log</span>':(e.tag==="shot"?'<span class="tag shot">screenshot</span>':'<span class="tag prog">progress</span>');
         return '<div class="card">'+(e.img?'<img loading="lazy" src="'+e.img+'" onclick="openShot(event,this.src)" alt="">':'<div class="noshot">No screenshot<br>on file</div>')+
