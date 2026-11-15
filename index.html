@@ -264,6 +264,11 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .chase-bar i{display:block;height:100%}
 .chase-lbl{flex:0 0 170px;color:var(--mut);font-weight:700;font-size:12.5px;text-align:right}
 .chase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.kpi-chip{display:inline-flex;align-items:center;gap:7px;background:#131f3a;border:1px solid #22345e;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--mut);margin:0 8px 8px 0}
+.kpi-chip b{color:#fff;font-weight:900}
+.mvp-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px;align-items:start}
+.mvp-grid .podium{margin-top:10px}
+@media(max-width:900px){.mvp-grid{grid-template-columns:1fr}}
 .tc-card{background:#0d1730;border:1px solid #22335a;border-radius:12px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%}
 .tc-card:hover{border-color:var(--acc2)}
 .tc-name{font-weight:800;font-size:14px;line-height:1.3;min-height:36px}
@@ -419,13 +424,28 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 
   <!-- MVP -->
   <section class="view" id="view-mvp">
-    <div class="podium" id="podium"></div>
-    <div class="tcard" style="margin-top:20px">
-      <div class="tblwrap">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
-      <tbody id="mvpBody"></tbody></table>
+    <div class="mvp-grid">
+      <div class="tcard">
+        <h3>⚔️ PvM MVP</h3>
+        <p style="color:var(--mut);font-weight:700;margin:0 0 6px">Ranked by EHB: boss kills, weighted by how efficient they are.</p>
+        <div class="podium" id="pvmPodium"></div>
+        <div class="tblwrap">
+        <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
+        <tbody id="pvmBody"></tbody></table>
+        </div>
       </div>
-      <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total EHB <b>0</b> · Total XP Gained <b>0</b> · Average XP per Player <b>0</b></div>
+      <div class="tcard">
+        <h3>⛏️ Skill MVP</h3>
+        <p style="color:var(--mut);font-weight:700;margin:0 0 6px">Ranked by EHP: skilling XP, weighted by how efficient it is.</p>
+        <div class="podium" id="skillPodium"></div>
+        <div class="tblwrap">
+        <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHP ↓</th><th class="r">EHB</th><th class="r">XP Gained</th></tr></thead>
+        <tbody id="skillBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <div class="tfoot" id="mvpFoot" style="border-top:none;padding-top:4px">Total Players <b>0</b> · Total EHB <b>0</b> · Total EHP <b>0</b> · Total XP Gained <b>0</b></div>
     </div>
   </section>
 
@@ -810,24 +830,34 @@ function renderTeam(){
 /* ============ MVP ============ */
 var PLAYERS = []; /* filled from WOM: {name, team, xp, ehb} */
 function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
-function renderMVP(){
-  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
+function podiumHTML(ranked, key, unit){
   var top = [ranked[1], ranked[0], ranked[2]];
-  var medals = ["🥈","🥇","🥉"], labels = ["2nd","1st","3rd"];
-  document.getElementById("podium").innerHTML = top.map(function(p, i){
-    if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 EHB</div><div class="tm">' + labels[i] + ' place</div></div>';
-    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + p.ehb.toFixed(1) + ' EHB</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
+  var medals = ["\uD83E\uDD48","\uD83E\uDD47","\uD83E\uDD49"], labels = ["2nd","1st","3rd"];
+  return top.map(function(p, i){
+    if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">\u2014</div><div class="pts2">0 ' + unit + '</div><div class="tm">' + labels[i] + ' place</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + p[key].toFixed(1) + ' ' + unit + '</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
   }).join("");
-  if (!ranked.length){
-    document.getElementById("mvpBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
+}
+function renderMVP(){
+  var byEhb = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
+  var byEhp = PLAYERS.slice().sort(function(a, b){ return b.ehp - a.ehp || b.ehb - a.ehb; });
+  document.getElementById("pvmPodium").innerHTML = podiumHTML(byEhb, "ehb", "EHB");
+  document.getElementById("skillPodium").innerHTML = podiumHTML(byEhp, "ehp", "EHP");
+  if (!PLAYERS.length){
+    document.getElementById("pvmBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man\u2026</td></tr>';
+    document.getElementById("skillBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man\u2026</td></tr>';
     return;
   }
-  document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
+  document.getElementById("pvmBody").innerHTML = byEhb.slice(0, 10).map(function(p, i){
     return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
-  var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
-  var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
-  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total EHB <b>' + totalEhb.toFixed(1) + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average XP per Player <b>' + fmt(total / ranked.length) + '</b>';
+  document.getElementById("skillBody").innerHTML = byEhp.slice(0, 10).map(function(p, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+  }).join("");
+  var totalXp = PLAYERS.reduce(function(a, p){ return a + p.xp; }, 0);
+  var totalEhb = PLAYERS.reduce(function(a, p){ return a + p.ehb; }, 0);
+  var totalEhp = PLAYERS.reduce(function(a, p){ return a + p.ehp; }, 0);
+  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + PLAYERS.length + '</b> \u00B7 Total EHB <b>' + totalEhb.toFixed(1) + '</b> \u00B7 Total EHP <b>' + totalEhp.toFixed(1) + '</b> \u00B7 Total XP Gained <b>' + fmt(totalXp) + '</b>';
 }
 function renderEHB(){
   var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
@@ -1457,9 +1487,9 @@ function renderChase(){
   var withData = entries.filter(function(e){ return e.total > 0; }).length;
   var kcTotal = entries.reduce(function(a, e){ return a + (e.st && e.st.u === "KC" ? e.total : 0); }, 0);
   document.getElementById("chaseKpis").innerHTML =
-    '<span class="big-chip" style="margin-right:8px">Tiles with work logged <b>' + withData + ' / 49</b></span>' +
-    '<span class="big-chip" style="margin-right:8px">Boss KC tracked <b>' + fmt(kcTotal) + '</b></span>' +
-    (entries[0] && entries[0].total > 0 ? '<span class="big-chip">Most chased <b>' + esc(entries[0].tile.t) + '</b></span>' : '');
+    '<span class="kpi-chip">Tiles with work logged <b>' + withData + ' / 49</b></span>' +
+    '<span class="kpi-chip">Boss KC tracked <b>' + fmt(kcTotal) + '</b></span>' +
+    (entries[0] && entries[0].total > 0 ? '<span class="kpi-chip">Most chased <b>' + esc(entries[0].tile.t) + '</b></span>' : '');
   document.getElementById("chaseGrid").innerHTML = entries.map(function(e){
     var st = e.st;
     var segs = st ? st.tot.map(function(v, ti){ return e.total ? '<i style="width:' + (v / e.total * 100).toFixed(1) + '%;background:' + TEAMS[ti].color + '"></i>' : ''; }).join("") : "";
