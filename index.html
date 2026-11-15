@@ -1114,13 +1114,19 @@ function renderMomentum(){
     s += '<line x1="' + L0 + '" y1="' + y + '" x2="' + (L0 + pw) + '" y2="' + y + '" stroke="#22335a" stroke-width="1"' + (i ? ' stroke-dasharray="3 4"' : '') + '/>' +
          '<text x="' + (L0 - 8) + '" y="' + (+y + 4) + '" fill="#8fa3c8" font-size="11" font-weight="700" text-anchor="end">' + (mode === "xp" ? compact(v) : fmt(v)) + '</text>';
   }
+  var evTitles = {};
+  if (mode === "points") steps.forEach(function(st){
+    var tile = TILES[st.e.tile], base = tile ? tile.p : 0, bonus = st.delta - base;
+    evTitles[st.team + "|" + st.e.t + "|" + st.after] = fmtEventTime(st.e.t, true) + " · " + TEAMS[st.team].name + "\n" +
+      (tile ? tile.t : "Tile") + " +" + base + (bonus > 0 ? " · line bonus +" + bonus : "") + "  →  " + st.after + " pts";
+  });
   series.forEach(function(sr, ti){
     if (!sr.pts.length) return;
     var d = sr.pts.map(function(p, k){ return (k ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join(" ");
     var lastPt = sr.pts[sr.pts.length - 1];
     s += '<path d="' + d + 'L' + X(lastPt[0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'L' + X(sr.pts[0][0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'Z" fill="' + TEAMS[ti].color + '" opacity="0.10" stroke="none"/>';
     s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
-    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; s += '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; });
+    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; if (ev) s += '<circle cx="' + cx + '" cy="' + cy + '" r="10" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
     var lp = sr.pts[sr.pts.length - 1];
     s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5"/>';
   });
