@@ -1749,6 +1749,20 @@ function openChaseTile(idx){
       var pct = total ? Math.round(v / total * 100) : 0;
       return '<div class="m-row"><span class="dot" style="background:' + TEAMS[ti].color + '"></span><span style="font-weight:800;color:' + TEAMS[ti].color + '">' + esc(TEAMS[ti].name) + (TEAMS[ti].done.indexOf(idx) >= 0 ? ' ✓' : '') + '</span><span class="st">' + fmt(v) + ' ' + st.u + ' · ' + pct + '%</span></div>';
     }).join("");
+    var whoRows = TEAMS.map(function(tm, ti){
+      var seenC = {}, lines = [];
+      claimsAt().forEach(function(cl){
+        if (cl.tile === idx && cl.team === tm.name){ var k = cl.player + "|" + cl.item; if (!seenC[k]){ seenC[k] = 1; lines.push(esc(cl.player) + " \u2014 " + esc(cl.item)); } }
+      });
+      return { tm: tm, lines: lines };
+    });
+    if (whoRows.some(function(w){ return w.lines.length; })){
+      h += '<div style="font-weight:800;margin:12px 0 2px">Who got what</div>' + whoRows.map(function(w){
+        var doneM = w.tm.done.indexOf(idx) >= 0;
+        var txt = w.lines.length ? w.lines.join("<br>") : (doneM ? "Complete \u2014 no drop logged" : "Nothing yet");
+        return '<div class="m-row"><span class="dot" style="background:' + w.tm.color + '"></span><span style="font-weight:800;color:' + w.tm.color + '">' + esc(w.tm.name) + '</span><span class="st">' + txt + '</span></div>';
+      }).join("");
+    }
     if (st.top && st.top.length){
       h += '<div style="font-weight:800;margin:12px 0 2px">Top grinders</div>' + st.top.map(function(g){
         var av = avFor(g[0]);
