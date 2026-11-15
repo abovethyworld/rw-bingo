@@ -315,6 +315,16 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .feed-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--hair);font-weight:700;font-size:14px}
 .feed-time{color:var(--mut);font-size:12.5px;width:128px;flex:none}
 .feed-team{display:flex;align-items:center;gap:6px;font-weight:800;flex:none;max-width:170px}
+.pick-none{color:var(--mut);font-weight:800;font-size:13px;margin:3px 0 4px}
+body[data-view]:not([data-view="overview"]) .banner img{height:120px;object-fit:cover;object-position:center 32%}
+body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-view="overview"]) .progress,body[data-view]:not([data-view="overview"]) .underbar{display:none}
+@media(max-width:640px){body[data-view]:not([data-view="overview"]) .banner img{height:70px}}
+.ms-wrap{position:relative;display:inline-block}
+.ms-drop{position:absolute;left:0;top:calc(100% + 6px);width:250px;max-height:252px;overflow:auto;background:#0d1830;border:1px solid #22345e;border-radius:12px;z-index:1500;box-shadow:0 14px 34px rgba(0,0,0,.5);text-align:left}
+.ms-opt{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer;font-weight:700}
+.ms-opt:hover{background:#16264a}
+.ms-opt img{width:24px;height:24px;border-radius:50%}
+.ms-opt .rsn{color:var(--mut);font-size:12px}
 .feed-tile{flex:1;min-width:0;overflow-wrap:anywhere}
 .feed-pts{color:var(--acc);font-weight:900;flex:none}
 @media(max-width:640px){.feed-row{flex-wrap:wrap;gap:4px 10px}.feed-time{width:100%}}
@@ -446,6 +456,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     </div>
     <div class="tcard" style="margin-top:20px">
       <div class="tfoot" id="mvpFoot" style="border-top:none;padding-top:4px">Total Players <b>0</b> · Total EHB <b>0</b> · Total EHP <b>0</b> · Total XP Gained <b>0</b></div>
+      <div style="text-align:right;padding:0 4px 6px"><a class="wl" href="#" onclick="setView('ehb');return false;" style="font-weight:800">Full ranking →</a></div>
     </div>
   </section>
 
@@ -481,11 +492,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
       <div id="mapWrap">
         <div id="map"></div>
         <div class="map-controls">
-          <button id="mapPlay">▶ Play the week</button>
-          <button id="mapReset">Reset</button>
           <button id="mapPeople" class="on">👥 People</button>
-          <input id="mapSearch" class="map-search" type="text" placeholder="🔍 Find a player…" list="mapSearchList" autocomplete="off">
-          <datalist id="mapSearchList"></datalist>
+          <span class="ms-wrap"><input id="mapSearch" class="map-search" type="text" placeholder="🔍 Find a player…" autocomplete="off"><div id="mapDrop" class="ms-drop" hidden></div></span>
           <span id="mapCaption"></span>
         </div>
         <div class="map-legend" id="mapLegend"></div>
@@ -654,7 +662,7 @@ var TEAMS = [
    members:[C("Ross","itsachocobo"),C("Elle","nayrune"),M("Maeve","Kiwi1281Iron"),M("MightyHonk"),M("Limp","Sheslimp"),M("Dr. Pearls","Pearls | Dr Tim"),M("Eric","EvilFarore"),M("BoilShad0w5","Boilshadows"),M("Kenna","sunshine4evr"),M("Suga","Ikuradon"),M("Jo","JobeeFe / Jo be safer"),M("Dan","Thaidacar"),M("Taylay","Taylays"),M("Oden","Dredlax"),M("iKronken"),M("Zefy","Zefy Sunless"),M("rōnin","i Ronin"),M("Buf","uBeeez"),M("Nama","Namasar")] },
  { name:"Unpossible", color:"#4cbb80", ini:"U", img:"assets/team-unpossible.webp", skips:0, done:[],
    members:[C("Door Man Nic","Azzyl"),C("Kelsen","Idne"),M("Dake","Dake_st_farm"),M("Chowder","IronClamChow"),M("Lath","Latheon"),M("Nick","Ferric Niko"),M("Donnie","Dontropic"),M("Rob","Its Me Cia"),M("riir"),M("Ami","Amaris Eden"),M("Marcy","Have Marcy"),M("Chris","StrKes"),M("Tydreamt","ni Dream"),M("Raven","Ultimate RVN"),M("Quough"),M("Allie","Hex Bun"),M("MrKulaid"),M("Andy","cutedog jpeg")] },
- { name:"2B for Unpossible GFs", color:"#e8ecf2", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
+ { name:"2B for Unpossible GFs", color:"#f28cb1", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
    members:[C("Aaron","This Hellboy"),C("Cinderbulk"),M("DJRookies","Abg Hunts"),M("Apple Blood"),M("Huge swords"),M("Casval","Casval8"),M("scylla","scyllacybin"),M("Martel","Holy Martel"),M("Bottled Up","Cev"),M("Louie","IronMamba34"),M("Rad","Iron Tomoko"),M("HappyShake","Danni"),M("SPOOSER"),M("HappyTweak","Chris"),M("Potato","Ptaters"),M("ShaolinDildo","Washiiii"),M("Dave","Crab Admiral"),M("Rhombusaurus")] }
 ];
 var CLAIMS = []; /* {item, player, team, source, count} - filled from DROPS below */
@@ -1017,45 +1025,13 @@ function mapFinalCaption(){
   TIMELINE.forEach(function(e){ if (!n[e.tile]){ n[e.tile] = 1; c++; } });
   return "Final board — " + c + " tiles claimed across Gielinor.";
 }
-function mapStop(){
-  if (mapTimer){ clearInterval(mapTimer); mapTimer = null; }
-  document.getElementById("mapPlay").textContent = "▶ Play the week";
-}
-function mapPlayToggle(){
-  var btn = document.getElementById("mapPlay");
-  if (mapTimer){ clearInterval(mapTimer); mapTimer = null; btn.textContent = "▶ Resume"; return; }
-  var seq = sortedTimeline();
-  if (!seq.length){ document.getElementById("mapCaption").textContent = "No tiles claimed yet."; return; }
-  if (mapStep <= 0 || mapStep >= seq.length){ mapClear(); mapStep = 0; }
-  btn.textContent = "⏸ Pause";
-  mapTimer = setInterval(function(){
-    if (mapStep >= seq.length){
-      mapStop(); mapStep = 0;
-      document.getElementById("mapCaption").textContent = mapFinalCaption();
-      return;
-    }
-    var e = seq[mapStep++];
-    mapLight(e.tile, e.team);
-    var tm = TEAMS[e.team], tile = TILES[e.tile];
-    document.getElementById("mapCaption").textContent = fmtEventTime(e.t, true) + " — " + (tm ? tm.name : "?") + " claimed " + (tile ? tile.t : "a tile");
-    if (mapStep >= seq.length){
-      mapStop(); mapStep = 0;
-      setTimeout(function(){ if (!mapTimer) document.getElementById("mapCaption").textContent = mapFinalCaption(); }, 800);
-    }
-  }, 800);
-}
-function mapReset(){
-  mapStop(); mapStep = 0;
-  mapShowLive();
-  document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
-}
 var mapMarkers = [];
 var peopleLayer = null;
 var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2b.png"];
 function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
 function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return ccImg(i); return ''; }
-function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
-function itemIcon(cl){ var fn = cl.w ? decodeURIComponent(cl.w) : String(cl.item).replace(/ /g, "_"); return '<img class="item-ico" src="https://oldschool.runescape.wiki/w/Special:FilePath/' + encodeURIComponent(fn) + '.png" alt="" loading="lazy" data-fn="' + esc(fn) + '" onerror="itemIconErr(this)">'; }
+function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(TEAMS[i].name) + '</span>'; return esc(name); }
+function itemIcon(cl){ var src = cl.ic || (TILES[cl.tile] ? TILES[cl.tile].img : ""); if (!src) return '<span class="item-ico" style="display:inline-block"></span>'; return '<img class="item-ico" src="' + esc(src) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'; }
 function itemIconErr(img){
   /* Wiki icon files are usually sentence case ("Guthan's spear.png"), so a
      failed exact-name load gets one retry in that form before giving up. */
@@ -1197,8 +1173,6 @@ function buildPeopleLayer(){
     stackMarkers[tk] = sm;
   });
   peopleLayer.addTo(progMap);
-  var dl = document.getElementById("mapSearchList");
-  if (dl) dl.innerHTML = PEOPLE.map(function(p){ return '<option value="' + esc(p.n) + '"></option>'; }).join("");
   /* Speech bubbles: newest drops first, only 5 on screen at a time,
      the rest cycle in every few seconds. Tapping a token jumps to theirs. */
   var lastDrop = {};
@@ -1265,8 +1239,6 @@ function initMap(){
   });
   document.getElementById("mapLegend").innerHTML = '<span><i class="map-dot" style="background:#5a6c8c"></i>Open</span>' +
     TEAMS.map(function(tm){ return '<span><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + '</span>'; }).join("");
-  document.getElementById("mapPlay").addEventListener("click", mapPlayToggle);
-  document.getElementById("mapReset").addEventListener("click", mapReset);
   buildPeopleLayer();
   progMap.on("zoomend", function(){ peopleLayout(); });
   document.getElementById("mapPeople").addEventListener("click", function(){
@@ -1275,14 +1247,31 @@ function initMap(){
     else { peopleLayer.addTo(progMap); this.classList.add("on"); }
   });
   var msEl = document.getElementById("mapSearch");
-  msEl.addEventListener("change", function(){
-    var q = msEl.value.trim().toLowerCase(); if (!q) return;
-    for (var i = 0; i < PEOPLE.length; i++){
+  var msDrop = document.getElementById("mapDrop");
+  function msHide(){ if (msDrop) msDrop.hidden = true; }
+  function msShow(){
+    if (!msDrop) return;
+    var q = msEl.value.trim().toLowerCase(), hits = [];
+    for (var i = 0; i < PEOPLE.length && hits.length < 8; i++){
       var p = PEOPLE[i];
-      if (p.n.toLowerCase() === q || (p.r && p.r.toLowerCase() === q) || (p.un && p.un.toLowerCase() === q) || p.n.toLowerCase().indexOf(q) === 0 || (p.r && p.r.toLowerCase().indexOf(q) === 0)){ focusPerson(i); return; }
+      if (!q || p.n.toLowerCase().indexOf(q) >= 0 || (p.r && p.r.toLowerCase().indexOf(q) >= 0) || (p.un && p.un.toLowerCase().indexOf(q) >= 0)) hits.push(i);
     }
+    if (!hits.length){ msHide(); return; }
+    msDrop.innerHTML = hits.map(function(i){ var p = PEOPLE[i]; return '<div class="ms-opt" data-pi="' + i + '">' + (p.av ? '<img src="' + p.av + '" alt="">' : '') + '<span>' + esc(p.n) + '</span><span class="rsn">' + esc(p.r || "") + '</span></div>'; }).join("");
+    msDrop.hidden = false;
+    msDrop.querySelectorAll(".ms-opt").forEach(function(o){
+      o.addEventListener("mousedown", function(e){ e.preventDefault(); var pi = +o.getAttribute("data-pi"); msEl.value = PEOPLE[pi].n; msHide(); focusPerson(pi); });
+    });
+  }
+  msEl.addEventListener("input", msShow);
+  msEl.addEventListener("focus", msShow);
+  msEl.addEventListener("blur", function(){ setTimeout(msHide, 120); });
+  msEl.addEventListener("keydown", function(e){
+    if (e.key === "Enter"){ var f = msDrop ? msDrop.querySelector(".ms-opt") : null; if (f){ e.preventDefault(); f.dispatchEvent(new Event("mousedown")); } }
+    if (e.key === "Escape") msHide();
   });
-  mapReset();
+  mapShowLive();
+  document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
   setTimeout(function(){ progMap.invalidateSize(); }, 50);
 }
 
@@ -1448,6 +1437,20 @@ function renderProgress(){
 }
 
 /* ============ CAPTAIN'S TABLE ============ */
+var CANON = null;
+function canonName(any){
+  if (!any) return "";
+  if (!CANON){
+    CANON = {};
+    var add = function(alias, disp){ if (alias) CANON[String(alias).toLowerCase()] = disp; };
+    TEAMS.forEach(function(tm){ tm.members.forEach(function(m){
+      add(m.d, m.d);
+      if (m.r) String(m.r).split(/[|\/]/).forEach(function(part){ add(part.trim(), m.d); });
+    }); });
+    PEOPLE.forEach(function(p){ add(p.n, p.n); add(p.r, p.n); if (p.un) add(p.un, p.n); });
+  }
+  return CANON[String(any).toLowerCase()] || "";
+}
 function capTeamPlayers(ti){
   var tm = TEAMS[ti];
   return PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); });
@@ -1456,20 +1459,31 @@ function picksForTile(ti, tile, idx){
   var tm = TEAMS[ti];
   var claimCount = {};
   CLAIMS.forEach(function(cl){
-    if (cl.tile === idx && cl.team === tm.name) claimCount[cl.player.toLowerCase()] = (claimCount[cl.player.toLowerCase()] || 0) + cl.count;
+    if (cl.tile === idx && String(cl.team).toLowerCase() === tm.name.toLowerCase()){
+      var cn = canonName(cl.player) || cl.player, k = String(cn).toLowerCase();
+      claimCount[k] = (claimCount[k] || 0) + cl.count;
+    }
   });
-  return capTeamPlayers(ti).map(function(p){
-    var drops = claimCount[p.name.toLowerCase()] || 0;
-    var gain = tile.metric ? deltaFor(p.raw, tile.metric) : 0;
-    /* Ranking ruled by Gavin (Nov 15): EHB is the top priority over XP. */
-    var score = drops * 1000000 + p.ehb * 10000 + p.ehp * 100 + Math.min(gain, 9999) * 0.01;
+  var st = TILESTATS[idx], gainOf = {}, tot = st ? (st.tot[ti] || 0) : 0;
+  if (st) st.top.forEach(function(row){
+    if (row[1] === ti){ var cn2 = canonName(row[0]) || row[0]; gainOf[String(cn2).toLowerCase()] = row[2]; }
+  });
+  var list = capTeamPlayers(ti).map(function(p){
+    var cn = canonName(p.name) || canonName(p.raw && p.raw.player ? p.raw.player.username : "") || p.name;
+    var key = String(cn).toLowerCase();
+    var drops = claimCount[key] || 0, gain = gainOf[key] || 0;
+    var share = tot > 0 ? gain / tot : 0;
+    /* Ranking (Gavin + Claude agreement, Nov 15): work on this tile first
+       (drops logged, then KC/XP gained on it), overall EHB as tiebreak. */
+    var score = drops * 1000000 + share * 100000 + Math.min(gain, 99999) * 0.001 + p.ehb * 100 + p.ehp;
     var why;
     if (drops) why = drops + (drops === 1 ? " drop" : " drops") + " logged on this tile";
-    else if (p.ehb > 0) why = p.ehb.toFixed(1) + " EHB this bingo" + (gain ? (tile.kc ? " · +" + Math.floor(gain) + " KC on this tile" : " · +" + fmt(gain) + " XP on this tile") : "");
-    else if (gain) why = "+" + (tile.kc ? Math.floor(gain) + " KC" : fmt(gain) + " XP") + " this bingo";
+    else if (gain) why = "+" + (st && st.u === "XP" ? fmt(gain) + " XP" : Math.floor(gain) + " KC") + " on this tile";
+    else if (p.ehb > 0) why = p.ehb.toFixed(1) + " EHB this bingo";
     else why = p.ehp.toFixed(1) + " EHP this bingo";
-    return { p: p, score: score, why: why };
-  }).filter(function(c){ return c.score > 0; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
+    return { p: p, cn: cn, score: score, why: why, ev: drops > 0 || gain > 0 };
+  }).filter(function(c){ return c.score > 0; }).sort(function(a, b){ return b.score - a.score; });
+  return { list: list.slice(0, 6), hasEv: list.some(function(c){ return c.ev; }) };
 }
 /* ============ MOST CHASED ============ */
 function avFor(name){
@@ -1551,21 +1565,27 @@ function renderCaptain(){
       if (progRatio(curTeam, tile, idx) >= 0.5){ seen[idx] = 1; tilesOut.push({ idx: idx, why: "Close: " + teamProg(curTeam, tile, idx) }); }
     });
     tilesOut = tilesOut.slice(0, 5);
+    var usedCt = {};
     picksBox.innerHTML = tilesOut.length ? tilesOut.map(function(t){
       var tile = TILES[t.idx];
-      var who = picksForTile(curTeam, tile, t.idx);
-      return '<div class="pick-tile"><span class="pick-name">' + esc(tile.t) + '</span><span class="pick-why">' + esc(t.why) + '</span>' +
+      var res = picksForTile(curTeam, tile, t.idx);
+      var who = res.list.filter(function(c){ return (usedCt[String(c.cn).toLowerCase()] || 0) < 2; }).slice(0, 3);
+      if (!who.length) who = res.list.slice(0, 3);
+      who.forEach(function(c){ var k = String(c.cn).toLowerCase(); usedCt[k] = (usedCt[k] || 0) + 1; });
+      var head = res.hasEv ? "" : '<div class="pick-none">Nobody on this tile yet · free grinders:</div>';
+      return '<div class="pick-tile"><span class="pick-name">' + esc(tile.t) + '</span><span class="pick-why">' + esc(t.why) + '</span>' + head +
         '<div class="pick-who">' + (who.length ? who.map(function(c){ return '<b style="color:#fff">' + esc(c.p.name) + '</b> · ' + esc(c.why); }).join("<br>") : "Nobody on the team has a head start logged yet.") + '</div></div>';
     }).join("") : '<div class="empty">No urgent tiles right now.</div>';
   }
   var helped = {};
   CLAIMS.forEach(function(cl){
-    var k = cl.player.toLowerCase();
+    var k = String(canonName(cl.player) || cl.player).toLowerCase();
     helped[k] = helped[k] || {};
     helped[k][cl.tile] = 1;
   });
   var gr = PLAYERS.map(function(p){
-    var tiles = helped[p.name.toLowerCase()] ? Object.keys(helped[p.name.toLowerCase()]).length : 0;
+    var pk = String(canonName(p.name) || canonName(p.raw && p.raw.player ? p.raw.player.username : "") || p.name).toLowerCase();
+    var tiles = helped[pk] ? Object.keys(helped[pk]).length : 0;
     return { p: p, tiles: tiles, score: tiles * 1000 + p.ehb * 100 + p.ehp };
   }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
   document.getElementById("capGrinders").innerHTML = gr.length ? '<table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Tiles helped</th><th class="r">EHB</th><th class="r">EHP</th></tr></thead><tbody>' + gr.map(function(g, i){
@@ -1689,6 +1709,7 @@ function setView(v){
   views.forEach(function(x){
     document.getElementById("view-" + x).classList.toggle("on", x === v);
   });
+  document.body.setAttribute("data-view", v);
   document.querySelectorAll("#viewTabs button").forEach(function(b){
     b.classList.toggle("on", b.getAttribute("data-view") === v);
   });
@@ -1753,6 +1774,16 @@ function tlApply(){
   document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   document.getElementById("tlElapsed").textContent = tlDur(tlPos) + " of " + tlDur(tlMax()) + (Date.now() < END ? " so far" : "");
   document.getElementById("tlFill").style.width = (tlMax() ? tlPos / tlMax() * 100 : 0) + "%";
+  if (typeof mapClear === "function" && typeof mapLight === "function"){
+    mapClear();
+    var evs = sortedTimeline().filter(function(e){ return e.t <= cutoff; });
+    evs.forEach(function(e){ mapLight(e.tile, e.team); });
+    var cap = document.getElementById("mapCaption");
+    if (cap){
+      if (evs.length){ var le = evs[evs.length - 1]; cap.textContent = fmtEventTime(le.t, true) + " — " + TEAMS[le.team].name + " claimed " + TILES[le.tile].t; }
+      else cap.textContent = "No tiles claimed yet at this point.";
+    }
+  }
 }
 function tlEnter(){
   if (!tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlActive = true; }
@@ -1768,6 +1799,7 @@ function tlExit(){
   if (LIVE) TEAMS.forEach(function(tm, ti){ tm.done = LIVE[ti]; });
   tlActive = false; LIVE = null; tlSig = null;
   renderBoards(); renderTeam();
+  if (typeof mapShowLive === "function"){ mapShowLive(); var cap2 = document.getElementById("mapCaption"); if (cap2) cap2.textContent = mapFinalCaption(); }
   document.getElementById("tlStamp").textContent = "Final board (live)";
   document.getElementById("tlElapsed").textContent = tlDur(tlMax()) + (Date.now() < END ? " so far" : " total");
   document.getElementById("tlFill").style.width = "100%";
@@ -1813,7 +1845,9 @@ function tick(){
   var now = Date.now();
   var pct = Math.max(0, Math.min(100, (now - START) / (END - START) * 100));
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
-  document.getElementById("pctComplete").textContent = (Math.floor(pct * 10) / 10) + "% complete";
+  var nyNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  var dayN = Math.floor((Date.UTC(nyNow.getFullYear(), nyNow.getMonth(), nyNow.getDate()) - Date.UTC(2026, 10, 14)) / 86400000) + 1;
+  document.getElementById("pctComplete").textContent = now < START ? "Starts Nov 14" : "Day " + Math.max(1, Math.min(9, dayN)) + " of 9";
 }
 TEAMS.forEach(function(tm, i){
   tm.skips = SHEET.skips[i] || 0;
