@@ -84,6 +84,9 @@ button{font-family:inherit;cursor:pointer}
 .tl-controls button:disabled{opacity:.45;cursor:default}
 .tl-slider{height:8px;background:#16223d;border-radius:99px;margin-top:14px}
 .tl-note{color:var(--mut);font-size:13.5px;margin-top:10px;line-height:1.45}
+.tl-slider{position:relative;cursor:pointer}
+.tl-fill{height:100%;background:var(--acc);border-radius:99px;width:0%}
+.tl-controls .spd{cursor:pointer}
 
 /* boards */
 /* Backstop only, on html: setting overflow-x on body too made body a scroll container and broke the sticky nav. */
@@ -248,18 +251,18 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <button data-view="ehb">📊 EHB / EHP</button>
     <button data-view="mvp">🏆 MVP</button>
   </div>
-  <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timelapse</button></div>
+  <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timeline</button></div>
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
-      <button class="pillbtn" disabled>▶ Play</button>
-      <button class="pillbtn" disabled>Back to start</button>
-      <span class="spd">0.5×</span><span class="spd on">1×</span><span class="spd">2×</span><span class="spd">4×</span>
+      <button class="pillbtn" id="tlPlay">▶ Play</button>
+      <button class="pillbtn" id="tlStart">Back to start</button>
+      <span class="spd" data-spd="0.5">0.5×</span><span class="spd on" data-spd="1">1×</span><span class="spd" data-spd="2">2×</span><span class="spd" data-spd="4">4×</span>
       <span style="color:var(--mut);font-weight:800" id="tlStamp">Nov 14, 1:00 PM</span>
-      <span style="color:var(--mut);font-weight:800">0m of 192h 0m</span>
-      <button class="pillbtn" disabled>Back to final board</button>
+      <span style="color:var(--mut);font-weight:800" id="tlElapsed">0m of 192h 0m</span>
+      <button class="pillbtn" id="tlFinal">Back to final board</button>
     </div>
-    <div class="tl-slider"></div>
-    <div class="tl-note">No tiles completed yet. The timelapse is rebuilt from completion timestamps, so it builds itself as tiles land during the week.</div>
+    <div class="tl-slider" id="tlSlider"><div class="tl-fill" id="tlFill"></div></div>
+    <div class="tl-note" id="tlNote">No tiles completed yet. The timeline builds itself as tiles land during the week.</div>
   </div>
 
   <!-- OVERVIEW -->
@@ -476,6 +479,7 @@ var CLAIMS = []; /* {item, player, team, source, count} - filled from DROPS belo
 var DROPS = {"claims": [], "prog": {}}; /* baked by the sheet sync from the clan drop-log sheet */
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
 CLAIMS = DROPS.claims;
+var TIMELINE = []; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
 TEAMS.forEach(function(tm, ti){
   Object.keys(DROPS.prog).forEach(function(k){
     var idx = +k, cnt = DROPS.prog[k][ti];
@@ -687,7 +691,8 @@ function loadWOM(){
           }
         });
       });
-      renderBoards(); renderTeam(); renderEHB(); renderMVP();
+      if (tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlApply(); renderEHB(); renderMVP(); }
+      else { renderBoards(); renderTeam(); renderEHB(); renderMVP(); }
     })
     .catch(function(){
       document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC, EHP and EHB progress is not shown. Refresh to try again.";
@@ -743,9 +748,73 @@ document.addEventListener("click", function(e){
 function openRules(){ document.getElementById("rulesBackdrop").classList.add("open"); }
 document.getElementById("rulesBtn").addEventListener("click", openRules);
 document.getElementById("navRules").addEventListener("click", function(e){ e.preventDefault(); openRules(); });
+/* ============ TIMELINE ============ */
+var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
+function tlApply(){
+  var cutoff = START + tlPos;
+  TEAMS.forEach(function(tm, ti){
+    tm.done = TIMELINE.filter(function(e){ return e.team === ti && e.t <= cutoff; }).map(function(e){ return e.tile; });
+  });
+  renderBoards(); renderTeam();
+  var d = new Date(cutoff);
+  document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  var mins = Math.round(tlPos / 60000);
+  document.getElementById("tlElapsed").textContent = Math.floor(mins / 60) + "h " + (mins % 60) + "m of 192h 0m";
+  document.getElementById("tlFill").style.width = (tlPos / (END - START) * 100) + "%";
+}
+function tlEnter(){
+  if (!tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlActive = true; }
+  tlApply();
+}
+function tlPause(){
+  tlPlaying = false;
+  if (tlTimer){ clearInterval(tlTimer); tlTimer = null; }
+  document.getElementById("tlPlay").textContent = "▶ Play";
+}
+function tlExit(){
+  tlPause();
+  if (LIVE) TEAMS.forEach(function(tm, ti){ tm.done = LIVE[ti]; });
+  tlActive = false; LIVE = null;
+  renderBoards(); renderTeam();
+  document.getElementById("tlStamp").textContent = "Final board (live)";
+  document.getElementById("tlElapsed").textContent = "192h 0m of 192h 0m";
+  document.getElementById("tlFill").style.width = "100%";
+}
 document.getElementById("tlBtn").addEventListener("click", function(){
-  document.getElementById("tlPanel").classList.toggle("open");
+  var p = document.getElementById("tlPanel");
+  p.classList.toggle("open");
+  if (p.classList.contains("open") && TIMELINE.length) tlEnter();
 });
+document.getElementById("tlPlay").addEventListener("click", function(){
+  if (tlPlaying){ tlPause(); return; }
+  tlEnter();
+  if (tlPos >= END - START) tlPos = 0;
+  tlPlaying = true;
+  document.getElementById("tlPlay").textContent = "⏸ Pause";
+  tlTimer = setInterval(function(){
+    tlPos += (END - START) / 600 * tlSpeed;
+    if (tlPos >= END - START){ tlPos = END - START; tlApply(); tlPause(); return; }
+    tlApply();
+  }, 100);
+});
+document.getElementById("tlStart").addEventListener("click", function(){ tlPause(); tlPos = 0; tlEnter(); });
+document.getElementById("tlFinal").addEventListener("click", tlExit);
+document.querySelectorAll(".tl-controls .spd").forEach(function(sp){
+  sp.addEventListener("click", function(){
+    document.querySelectorAll(".tl-controls .spd").forEach(function(x){ x.classList.remove("on"); });
+    sp.classList.add("on"); tlSpeed = +sp.getAttribute("data-spd");
+  });
+});
+document.getElementById("tlSlider").addEventListener("click", function(e){
+  var r = e.currentTarget.getBoundingClientRect();
+  tlPos = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * (END - START);
+  tlEnter();
+});
+(function(){
+  if (TIMELINE.length){
+    document.getElementById("tlNote").textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " completed so far. Press Play or tap the bar to watch the boards fill in. Times are when the tracker first saw each tile land; the sheets and Wise Old Man are checked every 30 minutes, so a time can run a little after the real moment.";
+  }
+})();
 function tick(){
   var now = Date.now();
   var pct = Math.max(0, Math.min(100, (now - START) / (END - START) * 100));
