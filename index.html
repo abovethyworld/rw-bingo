@@ -237,7 +237,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .map-dim{filter:brightness(.64) saturate(.78) contrast(1.03)}
 .map-search{background:#0d1830;border:1.5px solid #2c3d63;border-radius:9px;color:#e8eefc;padding:6px 10px;font:700 13px Nunito,'Segoe UI',sans-serif;min-width:175px}
 .map-search:focus{outline:none;border-color:#f2b134}
-#map.gliding .leaflet-marker-icon{transition:transform 1.5s ease}
+#map.gliding .leaflet-marker-icon{transition:transform 2.8s ease}
+.pfp-bubble{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);background:#fff;color:#14213d;font-size:11px;font-weight:800;white-space:nowrap;padding:3px 9px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.5);pointer-events:none;z-index:6;animation:bubbleBob 2.2s ease-in-out infinite}
+.pfp-bubble::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border:5px solid transparent;border-top-color:#fff;border-bottom:none}
+@keyframes bubbleBob{0%,100%{margin-bottom:0}50%{margin-bottom:3px}}
 .pfp-badge.found{animation:pfpPulse .8s ease 4}
 @keyframes pfpPulse{0%,100%{box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85)}50%{box-shadow:0 0 0 4px #f2b134,0 0 22px #f2b134}}
 .pfp-pop{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.45;color:#e8ecf2}
@@ -953,7 +956,7 @@ function buildPeopleLayer(){
     var icon = L.divIcon({ className: "pfp-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
         (p.av ? '<img class="pfp-face" src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) +
-        '<img class="pfp-cc" src="' + CC_ICONS[p.tm] + '" alt="">' + '</div>' });
+        (p.b ? '<div class="pfp-bubble">' + esc(p.b) + '</div>' : '') + '<img class="pfp-cc" src="' + CC_ICONS[p.tm] + '" alt="">' + '</div>' });
     var prev = saved[key];
     var mk = L.marker(prev ? [12800 - prev[1], prev[0]] : [12800 - gy, gx], { icon: icon }).addTo(peopleLayer);
     peopleMarkers[pi] = mk;
@@ -969,8 +972,8 @@ function buildPeopleLayer(){
   if (glide.length){
     var mel = document.getElementById("map");
     mel.classList.add("gliding");
-    setTimeout(function(){ glide.forEach(function(g){ g[0].setLatLng(g[1]); }); }, 450);
-    setTimeout(function(){ mel.classList.remove("gliding"); }, 2400);
+    setTimeout(function(){ glide.forEach(function(g){ g[0].setLatLng(g[1]); }); }, 600);
+    setTimeout(function(){ mel.classList.remove("gliding"); }, 3700);
   }
   try { localStorage.setItem("rwSpots", JSON.stringify(nowSpots)); } catch (e) {}
 }
