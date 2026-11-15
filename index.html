@@ -33,8 +33,8 @@ button{font-family:inherit;cursor:pointer}
 
 /* banner */
 .banner{margin:16px 0 4px;border-radius:14px;overflow:hidden;border:1px solid var(--line);line-height:0}
-.banner img{width:100%;height:118px;object-fit:cover;object-position:center 38%}
-@media(max-width:640px){.banner img{height:74px}table{font-size:12.5px}th,td{padding:8px 8px}}
+.banner img{width:100%;height:auto;display:block}
+@media(max-width:640px){table{font-size:12.5px}th,td{padding:8px 8px}}
 
 /* event header */
 .title-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:14px}
@@ -444,13 +444,13 @@ var TILES = [
 /* Real game icons for every tile, matched to the clan's official board art and verified live. */
 var W = "https://oldschool.runescape.wiki/images/";
 var ICONS = [
- W+"Slayer_icon.png", W+"Sailing_icon.png", W+"Crafting_icon.png", W+"Fishing_icon.png", W+"Runecraft_icon.png", W+"Firemaking_icon.png", W+"Hunter_icon.png",
+ W+"Slayer_cape.png", W+"Sailing_cape.png", W+"Crafting_cape.png", W+"Fishing_cape.png", W+"Runecraft_cape.png", W+"Firemaking_cape.png", W+"Hunter_cape.png",
  W+"Dharok's_helm.png", W+"Abyssal_whip.png", W+"Tome_of_Fire_(empty).png", W+"Crystal_tool_seed.png", W+"Golden_tench.png", W+"Fish_barrel.png", W+"Dragon_cannon_barrel.png",
- W+"Beef.png", W+"Mad_Angel.png", W+"Zenyte_shard.png", W+"Guild_hunter_boots.png", W+"Shipwreck_salvaging_icon.png", W+"Bottled_storm.png", W+"Jeweller's_chisel.png",
- W+"Burning_claw.png", W+"Blood_Moon_chestplate.png", W+"Dragon_pickaxe.png", W+"Dexterous_prayer_scroll.png", W+"Void_knight_top.png", W+"Abyssal_pearls_5.png", W+"Reagent_pouch.png",
- W+"Nightmare_staff.png", W+"Avernic_treads.png", W+"Dragon_hunter_wand.png", W+"Gryphon_feather.png", W+"Twinflame_staff.png", W+"Venator_shard.png", W+"Kraken_tentacle.png",
- W+"Enhanced_crystal_weapon_seed.png", W+"Tanzanite_fang.png", W+"Viggora's_chainmace.png", W+"Oathplate_helm.png", W+"Maggot_King.png", W+"Virtus_robe_top.png", W+"Armadyl_godsword.png",
- W+"Ghrazi_rapier.png", W+"Araxyte_fang.png", "assets/tfa-logo.png", W+"Tumeken's_shadow_(uncharged).png", W+"Twisted_bow.png", W+"Sunfire_fanatic_helm.png", W+"Torva_full_helm.png"
+ "assets/icon-14.png", "assets/icon-15.png", W+"Zenyte_shard.png", W+"Guild_hunter_boots.png", "assets/icon-18.png", W+"Bottled_storm.png", W+"Jeweller's_chisel.png",
+ "assets/icon-21.png", "assets/icon-22.png", W+"Dragon_pickaxe.png", "assets/icon-24.png", "assets/icon-25.png", W+"Abyssal_pearls_5.png", "assets/icon-27.png",
+ "assets/icon-28.png", W+"Avernic_treads.png", "assets/icon-30.png", "assets/icon-31.png", "assets/icon-32.png", W+"Venator_shard.png", "assets/icon-34.png",
+ W+"Enhanced_crystal_weapon_seed.png", W+"Tanzanite_fang.png", "assets/icon-37.png", "assets/icon-38.png", "assets/icon-39.png", "assets/icon-40.png", "assets/icon-41.png",
+ W+"Scythe_of_Vitur.png", W+"Araxyte_fang.png", "assets/tfa-logo.png", W+"Osmumten's_fang.png", W+"Dexterous_prayer_scroll.png", W+"Sunfire_fanatic_helm.png", W+"Torva_full_helm.png"
 ];
 TILES.forEach(function(t, i){ if (ICONS[i]) t.img = ICONS[i]; });
 function M(d, r){ return {d:d, r:r || ""}; }
