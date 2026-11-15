@@ -347,6 +347,7 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
 td.when{white-space:nowrap}
 #view-overview .lower{align-items:start}
 #tlBtn{margin-left:auto;flex:none}
+.team-link{text-decoration:none}.team-link:hover{text-decoration:underline}
 .lb-main{flex:1;min-width:0}
 .lb-main .dt2{color:var(--mut);font-weight:700;font-size:12.5px;margin-top:1px}
 .team-right{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -822,6 +823,12 @@ function renderClaims(){
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
 
+function goTeam(ti){
+  curTeam = ti;
+  try { localStorage.setItem("rwTeam", String(curTeam)); } catch (err) {}
+  renderTeam(); renderCaptain();
+  setView("team");
+}
 function renderSince(){
   var el = document.getElementById("sinceStrip");
   if (!el) return;
@@ -832,7 +839,7 @@ function renderSince(){
   el.style.display = "";
   var per = TEAMS.map(function(tm, ti){
     var n = done.filter(function(e){ return e.team === ti; }).length;
-    return n ? teamSpan(tm.name) + " " + n : "";
+    return n ? '<a class="team-link" href="#" onclick="goTeam(' + ti + ');return false;">' + teamSpan(tm.name) + '</a> ' + n : "";
   }).filter(Boolean).join(" · ");
   el.innerHTML = "🕘 Last 24 hours: <b>" + done.length + "</b> " + (done.length === 1 ? "tile" : "tiles") + " landed" + (per ? " (" + per + ")" : "") + " · <b>" + drops.length + "</b> " + (drops.length === 1 ? "drop" : "drops") + " logged";
 }
@@ -1691,8 +1698,8 @@ function recapLineList(tm){
   var lines = [], r, c;
   for (r = 0; r < 7; r++){ var row = []; for (c = 0; c < 7; c++) row.push(r * 7 + c); lines.push({ name: "Row " + (r + 1), tiles: row, bonus: 3 }); }
   for (c = 0; c < 7; c++){ var col = []; for (r = 0; r < 7; r++) col.push(r * 7 + c); lines.push({ name: "Column " + (c + 1), tiles: col, bonus: 3 }); }
-  lines.push({ name: "Diagonal", tiles: [0, 8, 16, 24, 32, 40, 48], bonus: 10 });
-  lines.push({ name: "Diagonal", tiles: [6, 12, 18, 24, 30, 36, 42], bonus: 10 });
+  lines.push({ name: "Diagonal ↘", tiles: [0, 8, 16, 24, 32, 40, 48], bonus: 10 });
+  lines.push({ name: "Diagonal ↙", tiles: [6, 12, 18, 24, 30, 36, 42], bonus: 10 });
   return lines.map(function(L){
     L.left = L.tiles.filter(function(t){ return !doneSet[t]; });
     return L;
@@ -1722,7 +1729,13 @@ function recapData(){
     return r >= 0.5 ? { idx: idx, r: r, lbl: teamProg(curTeam, tile, idx) } : null;
   }).filter(Boolean).sort(function(a, b){ return b.r - a.r; }).slice(0, 5);
   var allLines = recapLineList(tm);
-  var watch = allLines.slice(0, 3);
+  var watch = allLines.filter(function(L){ return L.left.length <= 3; })
+    .sort(function(a, b){ return a.left.length - b.left.length || b.bonus - a.bonus; }).slice(0, 3);
+  var watchNote = "";
+  if (!watch.length && allLines.length){
+    var best = allLines.slice().sort(function(a, b){ return a.left.length - b.left.length || b.bonus - a.bonus; })[0];
+    watchNote = "Closest: " + best.name + " — " + best.left.length + " left (+" + best.bonus + ")";
+  }
   var lineVal = {};
   allLines.forEach(function(L){ L.left.forEach(function(t){ lineVal[t] = Math.max(lineVal[t] || 0, L.bonus); }); });
   var nothing = TILES.map(function(tile, idx){
@@ -1730,7 +1743,7 @@ function recapData(){
     return progRatio(curTeam, tile, idx) <= 0 ? { idx: idx, score: tile.p + (lineVal[idx] || 0) } : null;
   }).filter(Boolean).sort(function(a, b){ return b.score - a.score; }).slice(0, 4);
   var flaggedDone = tm.done.filter(function(idx){ return FLAGS[curTeam + ":" + idx]; });
-  return { tm: tm, s: s, place: place, done: done, close: close, watch: watch, nothing: nothing, flaggedDone: flaggedDone };
+  return { tm: tm, s: s, place: place, done: done, close: close, watch: watch, watchNote: watchNote, nothing: nothing, flaggedDone: flaggedDone };
 }
 function recapText(){
   var d = recapData(), tm = d.tm;
@@ -1744,6 +1757,7 @@ function recapText(){
   if (d.watch.length){ out.push("", "🎯 Line watch"); d.watch.forEach(function(L){
     out.push(L.name + ": " + L.left.length + (L.left.length === 1 ? " tile" : " tiles") + " left (+" + L.bonus + "). Need: " + L.left.map(function(t){ return TILES[t].t; }).join(", "));
   }); }
+  else if (d.watchNote){ out.push("", "🎯 Line watch", d.watchNote); }
   if (d.nothing.length){ out.push("", "❌ Nothing yet"); d.nothing.forEach(function(n){ out.push(TILES[n.idx].t + " (" + TILES[n.idx].p + ")"); }); }
   return out.join("\n");
 }
@@ -1763,6 +1777,7 @@ function renderRecap(){
   if (d.watch.length) h += '<div class="recap-sec"><h4>🎯 Line watch</h4>' + d.watch.map(function(L){
     return '<div>' + esc(L.name) + ': ' + L.left.length + (L.left.length === 1 ? ' tile' : ' tiles') + ' left (+' + L.bonus + '). Need: ' + esc(L.left.map(function(t){ return TILES[t].t; }).join(", ")) + '</div>';
   }).join("") + '</div>';
+  else if (d.watchNote) h += '<div class="recap-sec"><h4>🎯 Line watch</h4><div>' + esc(d.watchNote) + '</div></div>';
   if (d.nothing.length) h += '<div class="recap-sec"><h4>❌ Nothing yet</h4>' + d.nothing.map(function(n){ return '<div>' + esc(TILES[n.idx].t) + ' (' + TILES[n.idx].p + ')</div>'; }).join("") + '</div>';
   if (d.flaggedDone.length) h += '<div class="recap-sec"><h4>⚠️ Held back</h4>' + d.flaggedDone.map(function(idx){
     return '<div>' + esc(TILES[idx].t) + ': ' + esc(FLAGS[curTeam + ":" + idx]) + ' Left out of the Discord paste.</div>';
