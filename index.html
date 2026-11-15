@@ -304,17 +304,6 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 </style>
 </head>
 <body>
-<div class="nav"><div class="nav-in">
-  <img src="assets/rw-icon.png" alt="Raven's Watch" />
-  <div class="brand">Raven's <span>Watch</span></div>
-  <nav>
-    <a href="?view=overview" data-nav="overview">Bingo</a>
-    <a href="?view=team" data-nav="team">Teams</a>
-    <a href="#" id="navRules">Rules</a>
-  </nav>
-  <div class="right">OSRS Iron Clan</div>
-</div></div>
-
 <div class="wrap">
   <div class="banner"><img src="assets/rw-banner.jpg" alt="Raven's Watch banner" /></div>
 
@@ -1643,7 +1632,7 @@ document.addEventListener("click", function(e){
 });
 function openRules(){ document.getElementById("rulesBackdrop").classList.add("open"); }
 document.getElementById("rulesBtn").addEventListener("click", openRules);
-document.getElementById("navRules").addEventListener("click", function(e){ e.preventDefault(); openRules(); });
+
 /* ============ TIMELINE ============ */
 var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
 function tlMax(){ return Math.max(0, Math.min(END, Date.now()) - START); }
