@@ -29,14 +29,18 @@
   .tag.shot{background:#4a3a10;color:#ffd97a}
   .tag.prog{background:#233a5e;color:#a9c6ff}
   .counts{font-size:13px;color:#cdd8f2;margin-bottom:4px}
-  #shotBox{position:fixed;inset:0;background:rgba(4,8,16,.93);z-index:4000;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+  .copybtn{background:#16223d;color:#cdd8f2;border:1px solid #2c3d5f;border-radius:14px;padding:3px 10px;font-size:11.5px;cursor:pointer;margin-top:5px}
+  .copybtn:active{background:#2c4a7c;color:#fff}
+  #shotBox{position:fixed;inset:0;background:rgba(4,8,16,.93);z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;gap:12px}
   #shotBox[hidden]{display:none}
-  #shotBox img{max-width:94vw;max-height:92vh;border-radius:10px}
+  #shotBox img{max-width:94vw;max-height:80vh;border-radius:10px}
+  #shotBtns{display:flex;gap:10px}
+  #shotBtns button{background:#2c4a7c;color:#fff;border:1px solid #4a74b8;border-radius:20px;padding:9px 18px;font-size:14.5px;cursor:pointer}
 </style>
 </head>
 <body>
 <h1>📸 Drop Proof — Raven's Watch Fall Bingo</h1>
-<div class="sub">Every logged drop with its screenshot, by team and tile. Updates with the tracker every 15 minutes.</div>
+<div class="sub">Every logged drop with its screenshot, by team and tile. Updates with the tracker every 15 minutes. Search by player, item, or tile — tap a picture to enlarge it, or hit Copy picture to grab it.</div>
 <div class="bar" id="bar"></div>
 <div id="app">Loading…</div>
 <script>
@@ -49,8 +53,20 @@ function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g,"").tr
 function wordsMatch(a,b){var wa=norm(a).split(" ").filter(Boolean),wb=norm(b).split(" ").filter(Boolean);if(!wa.length||!wb.length)return false;return wa.every(function(w){return wb.indexOf(w)>=0;})||wb.every(function(w){return wa.indexOf(w)>=0;});}
 function itemMatch(a,b){var ia=norm(String(a||"").replace(/\(.*?\)/g,"")),ib=norm(String(b||"").replace(/\(.*?\)/g,""));return ia===ib||ia.endsWith(ib)||ib.endsWith(ia)||wordsMatch(ia,ib);}
 function fmtT(t){return t?new Date(t).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"time not recorded";}
-var shotBoxEl=null;
-function openShot(e,src){if(e)e.stopPropagation();if(!shotBoxEl){shotBoxEl=document.createElement("div");shotBoxEl.id="shotBox";shotBoxEl.hidden=true;shotBoxEl.innerHTML="<img alt='Drop screenshot'>";shotBoxEl.addEventListener("click",function(){shotBoxEl.hidden=true;});document.body.appendChild(shotBoxEl);}shotBoxEl.querySelector("img").src=src;shotBoxEl.hidden=false;}
+var shotBoxEl=null, shotSrc="";
+function openShot(e,src){if(e)e.stopPropagation();shotSrc=src;if(!shotBoxEl){shotBoxEl=document.createElement("div");shotBoxEl.id="shotBox";shotBoxEl.hidden=true;shotBoxEl.innerHTML="<img alt='Drop screenshot'><div id='shotBtns'><button id='shotCopy'>⧉ Copy picture</button><button id='shotOpen'>Open full size</button></div>";shotBoxEl.addEventListener("click",function(){shotBoxEl.hidden=true;});shotBoxEl.querySelector("#shotCopy").addEventListener("click",function(ev){ev.stopPropagation();copyImg(this,shotSrc);});shotBoxEl.querySelector("#shotOpen").addEventListener("click",function(ev){ev.stopPropagation();window.open(shotSrc,"_blank");});document.body.appendChild(shotBoxEl);}shotBoxEl.querySelector("img").src=src;shotBoxEl.hidden=false;}
+function copyImg(btn,src){
+  function done(ok){var old=btn.textContent;btn.textContent=ok?"Copied ✓":"Long-press the picture instead";setTimeout(function(){btn.textContent=old;},1700);}
+  if(!navigator.clipboard||!window.ClipboardItem){done(false);return;}
+  fetch(src).then(function(r){return r.blob();}).then(function(blob){
+    function write(b){navigator.clipboard.write([new ClipboardItem({"image/png":b})]).then(function(){done(true);},function(){done(false);});}
+    if(blob.type==="image/png"){write(blob);return;}
+    var img=new Image();
+    img.onload=function(){var c=document.createElement("canvas");c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext("2d").drawImage(img,0,0);c.toBlob(function(b){write(b||blob);},"image/png");URL.revokeObjectURL(img.src);};
+    img.onerror=function(){write(blob);};
+    img.src=URL.createObjectURL(blob);
+  }).catch(function(){done(false);});
+}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
 function buildEntries(d){
   var entries={}, used={};
@@ -84,7 +100,7 @@ function render(){
     var body="";
     tileList.forEach(function(tile){
       var es=(entries[ti+":"+tile]||[]).slice().sort(function(a,b){return (a.t||0)-(b.t||0);});
-      if(curQ){es=es.filter(function(e){return norm(e.player+" "+e.item).indexOf(curQ)>=0;});if(!es.length)return;}
+      if(curQ){var tileHit=norm(TILES[tile][0]).indexOf(curQ)>=0;if(!tileHit)es=es.filter(function(e){return norm(e.player+" "+e.item).indexOf(curQ)>=0;});if(!es.length)return;}
       teamDrops+=es.length; es.forEach(function(e){if(e.img)teamPics++;});
       var done=marks[ti].indexOf(tile)>=0, goal=GOALS[tile];
       var status=done?'<span class="done">✓ Complete</span>':(goal?("Progress: "+(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.src!=="sheet";}).reduce(function(a,e){return a+e.n;},0))+" of "+goal):"");
@@ -93,7 +109,7 @@ function render(){
       body+='<div class="grid">'+es.map(function(e){
         var tag=e.src==="sheet"?'<span class="tag sheet">sheet log</span>':(e.src==="shot"?'<span class="tag shot">screenshot</span>':'<span class="tag prog">progress</span>');
         return '<div class="card">'+(e.img?'<img loading="lazy" src="'+e.img+'" onclick="openShot(event,this.src)" alt="">':'<div class="noshot">No screenshot<br>on file</div>')+
-          '<div class="meta"><div class="who">'+esc(e.player)+'</div>'+esc(e.item)+(e.n>1?" ×"+e.n:"")+tag+'<div class="when">'+fmtT(e.t)+'</div></div></div>';
+          '<div class="meta"><div class="who">'+esc(e.player)+'</div>'+esc(e.item)+(e.n>1?" ×"+e.n:"")+tag+'<div class="when">'+fmtT(e.t)+'</div>'+(e.img?'<button class="copybtn" onclick="copyImg(this,\''+e.img+'\')">⧉ Copy picture</button>':"")+'</div></div>';
       }).join("")+'</div></div>';
     });
     if(body)html+='<h2 class="team" style="color:'+tm.color+'">'+esc(tm.name)+'</h2><div class="counts">'+teamPics+' of '+teamDrops+' drops have a screenshot</div>'+body;
@@ -103,7 +119,7 @@ function render(){
 function buildBar(){
   var bar=document.getElementById("bar");
   var btns=['<button data-t="-1" class="'+(curTeam===-1?"on":"")+'">All teams</button>'].concat(TEAMS.map(function(tm,ti){return '<button data-t="'+ti+'" class="'+(curTeam===ti?"on":"")+'">'+esc(tm.name)+'</button>';}));
-  bar.innerHTML=btns.join("")+'<input id="q" type="search" placeholder="Search player or item…" value="'+esc(curQ)+'">';
+  bar.innerHTML=btns.join("")+'<input id="q" type="search" placeholder="🔍 Search player, item, or tile…" value="'+esc(curQ)+'">';
   bar.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){curTeam=+b.getAttribute("data-t");buildBar();render();});});
   var q=bar.querySelector("#q");
   q.addEventListener("input",function(){curQ=norm(q.value);render();});
