@@ -273,6 +273,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .ehb-full{max-width:940px}
 .ehb-full th:nth-child(1),.ehb-full td:nth-child(1){width:44px}
 .ehb-full th.r,.ehb-full td.r{width:128px}
+.recap-days{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.recap-days button{background:#0d1730;border:1px solid #22335a;color:var(--ink);border-radius:999px;padding:5px 11px;font-weight:800;font-size:12.5px;cursor:pointer}
+.recap-days button.on{background:#2a3f6e;border-color:#4a6db3;color:#fff}
+.recap-days button:disabled{opacity:.3;cursor:default}
 .recap-sec{margin-top:10px}
 .recap-sec h4{margin:0 0 4px;font-size:13.5px}
 .recap-sec div{font-weight:600;line-height:1.55}
@@ -478,6 +482,7 @@ td.when{white-space:nowrap}
         <div class="side-card" id="teamLb"></div>
         <div class="tcard">
           <h3>📣 Team Recap</h3>
+          <div class="recap-days" id="recapDays"></div>
           <div id="recapBody"></div>
           <button class="pillbtn" id="recapCopy" style="margin-top:12px">📋 Copy recap for Discord</button>
           <span id="recapNote" style="color:var(--mut);font-weight:700;margin-left:8px"></span>
@@ -1844,15 +1849,70 @@ function recapLineList(tm){
   }).filter(function(L){ return L.left.length > 0; })
     .sort(function(a, b){ return b.bonus - a.bonus || a.left.length - b.left.length; });
 }
+var recapDaySel = 0; /* 0 = follow today */
+var RECAP_DAY1 = new Date("2026-11-14T00:00:00-05:00").getTime();
+function recapTodayNum(){
+  var n = Math.floor((Date.now() - RECAP_DAY1) / 86400000) + 1;
+  return Math.max(1, Math.min(9, n));
+}
+function recapDayStart(n){ return RECAP_DAY1 + (n - 1) * 86400000; }
+function recapSelDay(){ return recapDaySel || recapTodayNum(); }
+function setRecapDay(n){ recapDaySel = n === recapTodayNum() ? 0 : n; renderRecap(); }
+function renderRecapDays(){
+  var box = document.getElementById("recapDays"); if (!box) return;
+  var today = recapTodayNum(), sel = recapSelDay(), labels = (typeof HEAT !== "undefined" && HEAT && HEAT.days) || [];
+  box.innerHTML = "";
+  for (var n = 1; n <= 9; n++){
+    (function(n){
+      var b = document.createElement("button");
+      b.textContent = "Day " + n;
+      if (labels[n - 1]) b.title = labels[n - 1];
+      if (n > today) b.disabled = true;
+      if (n === sel) b.className = "on";
+      b.addEventListener("click", function(){ setRecapDay(n); });
+      box.appendChild(b);
+    })(n);
+  }
+}
+function recapDayData(n){
+  var tm = TEAMS[curTeam], start = recapDayStart(n), end = start + 86400000;
+  var steps = pointSteps();
+  var ptsAt = [0, 0, 0], doneBy = [[], [], []];
+  steps.forEach(function(x){
+    if (x.e.t < end){
+      ptsAt[x.team] = x.after;
+      if (doneBy[x.team].indexOf(x.e.tile) < 0) doneBy[x.team].push(x.e.tile);
+    }
+  });
+  var rank = ptsAt.filter(function(v){ return v > ptsAt[curTeam]; }).length;
+  var tied = ptsAt.some(function(v, i){ return i !== curTeam && v === ptsAt[curTeam] && v > 0; });
+  var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
+  var done = TIMELINE.filter(function(e){ return e.team === curTeam && e.t >= start && e.t < end; }).map(function(e){
+    var st = null;
+    steps.forEach(function(x){ if (x.e === e) st = x; });
+    var names = [];
+    CLAIMS.forEach(function(cl){ if (cl.tile === e.tile && cl.team === tm.name && names.indexOf(cl.player) < 0) names.push(cl.player); });
+    return { tile: e.tile, delta: st ? st.delta : TILES[e.tile].p, names: names };
+  });
+  var allLines = recapLineList({ done: doneBy[curTeam] });
+  var watch = allLines.filter(function(L){ return L.left.length <= 3; })
+    .sort(function(a, b){ return a.left.length - b.left.length || b.bonus - a.bonus; }).slice(0, 3);
+  var watchNote = "";
+  if (!watch.length && allLines.length){
+    var best = allLines.slice().sort(function(a, b){ return a.left.length - b.left.length || b.bonus - a.bonus; })[0];
+    watchNote = "Closest: " + best.name + " \u2014 " + best.left.length + " left (+" + best.bonus + ")";
+  }
+  var xp = 0;
+  ((typeof HEAT !== "undefined" && HEAT && HEAT.players) || []).forEach(function(p){ if (p.tm === curTeam) xp += (p.g[n - 1] || 0); });
+  return { tm: tm, pts: ptsAt[curTeam], place: place, done: done, watch: watch, watchNote: watchNote, xp: xp };
+}
 function recapData(){
   var tm = TEAMS[curTeam], s = teamStats(tm);
   var order = standings();
   var rank = order.filter(function(o){ return o.s.pts > s.pts; }).length;
   var tied = order.some(function(o){ return o.i !== curTeam && o.s.pts === s.pts; });
   var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
-  var cut = 0;
-  try { cut = +(localStorage.getItem("rwRecapAt-" + curTeam) || 0); } catch (e) {}
-  if (!cut || cut < START) cut = Date.now() - 24 * 3600 * 1000;
+  var cut = recapDayStart(recapTodayNum());
   var steps = pointSteps();
   var done = TIMELINE.filter(function(e){ return e.team === curTeam && e.t > cut; }).map(function(e){
     var st = null;
@@ -1884,6 +1944,17 @@ function recapData(){
   return { tm: tm, s: s, place: place, done: done, close: close, watch: watch, watchNote: watchNote, nothing: nothing, flaggedDone: flaggedDone };
 }
 function recapText(){
+  var sel = recapSelDay();
+  if (sel !== recapTodayNum()){
+    var pd = recapDayData(sel), tm2 = pd.tm;
+    var lbl = (typeof HEAT !== "undefined" && HEAT && HEAT.days && HEAT.days[sel - 1]) || "";
+    var out = ["**" + tm2.name + "** · Day " + sel + (lbl ? " (" + lbl + ")" : "") + " · " + pd.pts + " pts · " + pd.place];
+    if (pd.done.length){ out.push("", "✅ Done"); pd.done.forEach(function(x){ out.push(TILES[x.tile].t + " +" + x.delta + (x.names.length ? " (" + x.names.join(", ") + ")" : "")); }); }
+    if (pd.xp > 0) out.push("", "📈 Team XP: " + fmt(pd.xp));
+    if (pd.watch.length){ out.push("", "🎯 Line watch"); pd.watch.forEach(function(L){ out.push(L.name + ": " + L.left.length + (L.left.length === 1 ? " tile" : " tiles") + " left (+" + L.bonus + "). Need: " + L.left.map(function(t){ return TILES[t].t; }).join(", ")); }); }
+    else if (pd.watchNote){ out.push("", "🎯 Line watch", pd.watchNote); }
+    return out.join("\n");
+  }
   var d = recapData(), tm = d.tm;
   var day = new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" });
   var out = ["**" + tm.name + "** · " + day + " · " + d.s.pts + " pts · " + d.place + " · " + (3 - tm.skips) + " skips left"];
@@ -1902,14 +1973,31 @@ function recapText(){
 function renderRecap(){
   var box = document.getElementById("recapBody");
   if (!box) return;
+  renderRecapDays();
+  var sel = recapSelDay();
+  if (sel !== recapTodayNum()){
+    var pd = recapDayData(sel);
+    var lbl = (typeof HEAT !== "undefined" && HEAT && HEAT.days && HEAT.days[sel - 1]) || "";
+    var ph = '<div style="font-weight:800;font-size:15px"><span style="color:' + pd.tm.color + '">' + esc(pd.tm.name) + '</span> · ' + pd.pts + ' pts · ' + pd.place + ' · end of Day ' + sel + (lbl ? ' (' + lbl + ')' : '') + '</div>';
+    ph += '<div class="recap-sec"><h4>✅ Done</h4>' + (pd.done.length ? pd.done.map(function(x){
+      return '<div>' + esc(TILES[x.tile].t) + ' +' + x.delta + (x.names.length ? ' (' + esc(x.names.join(", ")) + ')' : '') + '</div>';
+    }).join("") : '<div>No tiles landed.</div>') + '</div>';
+    if (pd.xp > 0) ph += '<div class="recap-sec"><h4>📈 Team XP</h4><div>' + fmt(pd.xp) + ' XP gained</div></div>';
+    if (pd.watch.length) ph += '<div class="recap-sec"><h4>🎯 Line watch</h4>' + pd.watch.map(function(L){
+      return '<div>' + esc(L.name) + ': ' + L.left.length + (L.left.length === 1 ? ' tile' : ' tiles') + ' left (+' + L.bonus + '). Need: ' + esc(L.left.map(function(t){ return TILES[t].t; }).join(", ")) + '</div>';
+    }).join("") + '</div>';
+    else if (pd.watchNote) ph += '<div class="recap-sec"><h4>🎯 Line watch</h4><div>' + esc(pd.watchNote) + '</div></div>';
+    box.innerHTML = ph;
+    return;
+  }
   var d = recapData();
   var h = '<div style="font-weight:800;font-size:15px"><span style="color:' + d.tm.color + '">' + esc(d.tm.name) + '</span> · ' + d.s.pts + ' pts · ' + d.place + ' · ' + (3 - d.tm.skips) + ' skips left</div>';
   if (d.done.length){
-    h += '<div class="recap-sec"><h4>✅ Done since the last recap</h4>' + d.done.map(function(x){
+    h += '<div class="recap-sec"><h4>✅ Done today</h4>' + d.done.map(function(x){
       return '<div>' + esc(TILES[x.tile].t) + ' +' + x.delta + (x.names.length ? ' (' + esc(x.names.join(", ")) + ')' : '') + (x.flagged ? ' ⚠️' : '') + '</div>';
     }).join("") + '</div>';
   } else {
-    h += '<div class="recap-sec"><h4>✅ Done since the last recap</h4><div>Nothing new yet.</div></div>';
+    h += '<div class="recap-sec"><h4>✅ Done today</h4><div>Nothing new yet.</div></div>';
   }
   if (d.close.length) h += '<div class="recap-sec"><h4>⏳ Close</h4>' + d.close.map(function(c){ return '<div>' + esc(TILES[c.idx].t) + ' ' + esc(c.lbl) + '</div>'; }).join("") + '</div>';
   if (d.watch.length) h += '<div class="recap-sec"><h4>🎯 Line watch</h4>' + d.watch.map(function(L){
@@ -1926,7 +2014,7 @@ document.getElementById("ehbSearch").addEventListener("input", renderEhbFull);
 document.getElementById("recapCopy").addEventListener("click", function(){
   var txt = recapText();
   var note = document.getElementById("recapNote");
-  function ok(){ try { localStorage.setItem("rwRecapAt-" + curTeam, String(Date.now())); } catch (e) {} note.textContent = "Copied. The next recap starts from now."; renderRecap(); }
+  function ok(){ note.textContent = "Copied."; renderRecap(); }
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ note.textContent = "Copy failed on this browser."; });
   else {
     var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
