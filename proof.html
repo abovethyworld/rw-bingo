@@ -29,7 +29,7 @@
   .tag.shot{background:#4a3a10;color:#ffd97a}
   .tag.prog{background:#233a5e;color:#a9c6ff}
   .counts{font-size:13px;color:#cdd8f2;margin-bottom:4px}
-  .copybtn{background:#16223d;color:#cdd8f2;border:1px solid #2c3d5f;border-radius:14px;padding:3px 10px;font-size:11.5px;cursor:pointer;margin-top:5px}
+  .copybtn{display:block;width:100%;background:#16223d;color:#cdd8f2;border:1px solid #2c3d5f;border-radius:10px;padding:8px 10px;font-size:12.5px;cursor:pointer;margin-top:7px}
   .copybtn:active{background:#2c4a7c;color:#fff}
   #shotBox{position:fixed;inset:0;background:rgba(4,8,16,.93);z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;gap:12px}
   #shotBox[hidden]{display:none}
@@ -48,10 +48,11 @@ var TEAMS=[{name:"Buying GF",color:"#987cf0"},{name:"Unpossible",color:"#4cbb80"
 var TILES=[["3m Slayer XP",7],["5m Sailing XP",7],["6m Crafting XP",7],["4m Fishing XP",7],["4m Runecrafting XP",7],["10m Firemaking XP",7],["5m Hunter XP",7],["Full Barrows Set",5],["5 Abyssal Whips",3],["Tome of Fire / Phoenix / Dragon Axe",3],["Any Zalcano Unique",5],["Golden Tench",3],["3 Tempoross Uniques",3],["Dragon Cannon Barrel",3],["3 Beef Pets",3],["5 Mad Angel Uniques",3],["3 Zenyte Shards",3],["5 Hunter Rumour Uniques",3],["4 Sailing Salvaging Uniques",3],["3 Bottled Storms",4],["4 Jeweller's Chisels",3],["3 TD Uniques",4],["Full Moons Set",3],["3 Dragon Pickaxes",4],["3 First-Time Raiders",5],["1,000 Pest Control Pts",3],["750 Abyssal Pearls",3],["50,000 Mastering Mixology Pts",3],["Any Nightmare Unique",4],["Any Doom Unique",4],["4 Hueycoatl Uniques",3],["3 Gryphon Uniques",4],["Twinflame Staff",3],["5 Venator Shards",4],["3 Kraken Uniques",3],["Enhanced Weapon Seed or 3 Armour Seeds",4],["3 Zulrah Uniques",4],["Any Revenant Weapon",5],["2 Yama Uniques",4],["Any Maggot King Unique",4],["Any Piece of Virtus",4],["3 God Wars Dungeon Uniques",4],["2 ToB Purples",5],["3 Araxxor Uniques",4],["20 TFA KC",5],["4 ToA Purples",5],["3 CoX Purples",5],["Any Colosseum Unique",4],["Any Nex Unique or 400 Nihil Shards",5]];
 var GOALS={7:4,8:5,12:3,14:3,15:5,16:3,17:5,18:4,19:3,20:4,21:3,22:3,23:3,25:1000,26:750,27:50000,30:4,31:3,32:1,33:5,34:3,35:3,36:3,38:2,41:3,42:2,43:3,45:4,46:3,48:400};
 var NAME2IDX={"Buying GF":0,"Unpossible":1,"2B for Unpossible GFs":2};
-var DATA=null, curTeam=-1, curQ="";
+var DATA=null, curTeam=-1, curQ="", curMissing=false;
 function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g,"").trim();}
-function wordsMatch(a,b){var wa=norm(a).split(" ").filter(Boolean),wb=norm(b).split(" ").filter(Boolean);if(!wa.length||!wb.length)return false;return wa.every(function(w){return wb.indexOf(w)>=0;})||wb.every(function(w){return wa.indexOf(w)>=0;});}
-function itemMatch(a,b){var ia=norm(String(a||"").replace(/\(.*?\)/g,"")),ib=norm(String(b||"").replace(/\(.*?\)/g,""));return ia===ib||ia.endsWith(ib)||ib.endsWith(ia)||wordsMatch(ia,ib);}
+function wordsMatch(a,b){var wa=norm(String(a||"").replace(/_/g," ")).split(" ").filter(Boolean),wb=norm(String(b||"").replace(/_/g," ")).split(" ").filter(Boolean);if(!wa.length||!wb.length)return false;return wa.every(function(w){return wb.indexOf(w)>=0;})||wb.every(function(w){return wa.indexOf(w)>=0;});}
+function itemKey(s){return norm(String(s||"").replace(/\(.*?\)/g,"")).replace(/armour/g,"armor").replace(/dihns/g,"dinhs");}
+function itemMatch(a,b){var ia=itemKey(a),ib=itemKey(b);if(ia==="dhcb")ia="dragon hunter crossbow";if(ib==="dhcb")ib="dragon hunter crossbow";if(!ia||!ib)return false;return ia===ib||ia.endsWith(ib)||ib.endsWith(ia)||wordsMatch(ia,ib);}
 function fmtT(t){return t?new Date(t).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"time not recorded";}
 var shotBoxEl=null, shotSrc="";
 function openShot(e,src){if(e)e.stopPropagation();shotSrc=src;if(!shotBoxEl){shotBoxEl=document.createElement("div");shotBoxEl.id="shotBox";shotBoxEl.hidden=true;shotBoxEl.innerHTML="<img alt='Drop screenshot'><div id='shotBtns'><button id='shotCopy'>⧉ Copy picture</button><button id='shotOpen'>Open full size</button></div>";shotBoxEl.addEventListener("click",function(){shotBoxEl.hidden=true;});shotBoxEl.querySelector("#shotCopy").addEventListener("click",function(ev){ev.stopPropagation();copyImg(this,shotSrc);});shotBoxEl.querySelector("#shotOpen").addEventListener("click",function(ev){ev.stopPropagation();window.open(shotSrc,"_blank");});document.body.appendChild(shotBoxEl);}shotBoxEl.querySelector("img").src=src;shotBoxEl.hidden=false;}
@@ -73,16 +74,36 @@ function buildEntries(d){
   function add(tm,tile,e){var k=tm+":"+tile;(entries[k]=entries[k]||[]).push(e);}
   (d.DROPS.claims||[]).forEach(function(c){
     var tm=typeof c.team==="number"?c.team:NAME2IDX[c.team];
-    var img=c.img||null;
+    var n=c.count||1, matched=[];
     (d.SHOTS||[]).forEach(function(s,i){
-      if(used[i]||img)return;
-      if(s.team===tm&&s.tile===c.tile&&wordsMatch(s.p,c.player)&&itemMatch(s.item,c.item)){used[i]=1;img=s.img||null;}
+      if(used[i])return;
+      if(s.team===tm&&s.tile===c.tile&&wordsMatch(s.p,c.player)&&itemMatch(s.item,c.item)){used[i]=1;matched.push(s);}
     });
-    add(tm,c.tile,{player:c.player,item:c.item,t:c.t,img:img,src:"sheet",n:c.count||1});
+    matched.slice(0,n).forEach(function(s){
+      add(tm,c.tile,{player:c.player,item:c.item,t:s.t||c.t,img:s.img||c.img||null,tag:s.img?"shot":"sheet",counted:false,n:1});
+    });
+    var rest=n-Math.min(matched.length,n);
+    if(rest>0){
+      var img=c.img||null;
+      if(img&&matched.some(function(s){return s.img===img;}))img=null;
+      add(tm,c.tile,{player:c.player,item:c.item,t:c.t,img:img,tag:"sheet",counted:false,n:rest});
+    }
+    matched.slice(n).forEach(function(s){
+      add(tm,c.tile,{player:s.p,item:s.item,t:s.t,img:s.img||null,tag:"shot",counted:true,n:s.n||1});
+    });
   });
   (d.SHOTS||[]).forEach(function(s,i){
     if(used[i]||s.team==null||s.tile==null)return;
-    add(s.team,s.tile,{player:s.p,item:s.item,t:s.t,img:s.img||null,src:s.kind==="drop"?"shot":"prog",n:s.n||1});
+    add(s.team,s.tile,{player:s.p,item:s.item,t:s.t,img:s.img||null,tag:s.kind==="drop"?"shot":"prog",counted:true,n:s.n||1});
+  });
+  Object.keys(entries).forEach(function(k){
+    var seen={};
+    entries[k]=entries[k].filter(function(e){
+      if(!e.img)return true;
+      var dk=norm(e.player)+"|"+itemKey(e.item)+"|"+e.img;
+      if(seen[dk])return false;
+      seen[dk]=1; return true;
+    });
   });
   return entries;
 }
@@ -96,31 +117,33 @@ function render(){
     Object.keys(entries).forEach(function(k){var p=k.split(":");if(+p[0]===ti)tiles[p[1]]=1;});
     marks[ti].forEach(function(t){tiles[t]=1;});
     var tileList=Object.keys(tiles).map(Number).sort(function(a,b){return a-b;});
-    var teamDrops=0, teamPics=0;
+    var teamDrops=0, teamPics=0, teamMissing=0;
     var body="";
     tileList.forEach(function(tile){
       var es=(entries[ti+":"+tile]||[]).slice().sort(function(a,b){return (a.t||0)-(b.t||0);});
       if(curQ){var tileHit=norm(TILES[tile][0]).indexOf(curQ)>=0;if(!tileHit)es=es.filter(function(e){return norm(e.player+" "+e.item).indexOf(curQ)>=0;});if(!es.length)return;}
       teamDrops+=es.length; es.forEach(function(e){if(e.img)teamPics++;});
+      if(curMissing){es=es.filter(function(e){return !e.img;});if(!es.length)return;teamMissing+=es.length;}
       var done=marks[ti].indexOf(tile)>=0, goal=GOALS[tile];
-      var status=done?'<span class="done">✓ Complete</span>':(goal?("Progress: "+(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.src!=="sheet";}).reduce(function(a,e){return a+e.n;},0))+" of "+goal):"");
+      var status=done?'<span class="done">✓ Complete</span>':(goal?("Progress: "+(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.counted;}).reduce(function(a,e){return a+e.n;},0))+" of "+goal):"");
       body+='<div class="tile"><h3>Tile '+tile+' — '+esc(TILES[tile][0])+' ('+TILES[tile][1]+' pts)</h3><div class="status">'+status+'</div>';
       if(!es.length){body+='<div class="status">Marked complete on the board — no individual drop screenshots on file.</div>';}
       body+='<div class="grid">'+es.map(function(e){
-        var tag=e.src==="sheet"?'<span class="tag sheet">sheet log</span>':(e.src==="shot"?'<span class="tag shot">screenshot</span>':'<span class="tag prog">progress</span>');
+        var tag=e.tag==="sheet"?'<span class="tag sheet">sheet log</span>':(e.tag==="shot"?'<span class="tag shot">screenshot</span>':'<span class="tag prog">progress</span>');
         return '<div class="card">'+(e.img?'<img loading="lazy" src="'+e.img+'" onclick="openShot(event,this.src)" alt="">':'<div class="noshot">No screenshot<br>on file</div>')+
           '<div class="meta"><div class="who">'+esc(e.player)+'</div>'+esc(e.item)+(e.n>1?" ×"+e.n:"")+tag+'<div class="when">'+fmtT(e.t)+'</div>'+(e.img?'<button class="copybtn" onclick="copyImg(this,\''+e.img+'\')">⧉ Copy picture</button>':"")+'</div></div>';
       }).join("")+'</div></div>';
     });
-    if(body)html+='<h2 class="team" style="color:'+tm.color+'">'+esc(tm.name)+'</h2><div class="counts">'+teamPics+' of '+teamDrops+' drops have a screenshot</div>'+body;
+    if(body)html+='<h2 class="team" style="color:'+tm.color+'">'+esc(tm.name)+'</h2><div class="counts">'+(curMissing?(teamMissing+' drop'+(teamMissing===1?"":"s")+' missing a screenshot'):(teamPics+' of '+teamDrops+' drops have a screenshot'))+'</div>'+body;
   });
   document.getElementById("app").innerHTML=html||'<div class="sub">Nothing matches.</div>';
 }
 function buildBar(){
   var bar=document.getElementById("bar");
   var btns=['<button data-t="-1" class="'+(curTeam===-1?"on":"")+'">All teams</button>'].concat(TEAMS.map(function(tm,ti){return '<button data-t="'+ti+'" class="'+(curTeam===ti?"on":"")+'">'+esc(tm.name)+'</button>';}));
-  bar.innerHTML=btns.join("")+'<input id="q" type="search" placeholder="🔍 Search player, item, or tile…" value="'+esc(curQ)+'">';
-  bar.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){curTeam=+b.getAttribute("data-t");buildBar();render();});});
+  bar.innerHTML=btns.join("")+'<button id="missBtn" class="'+(curMissing?"on":"")+'">❌ Missing proof only</button>'+'<input id="q" type="search" placeholder="🔍 Search player, item, or tile…" value="'+esc(curQ)+'">';
+  bar.querySelectorAll("button[data-t]").forEach(function(b){b.addEventListener("click",function(){curTeam=+b.getAttribute("data-t");buildBar();render();});});
+  bar.querySelector("#missBtn").addEventListener("click",function(){curMissing=!curMissing;buildBar();render();});
   var q=bar.querySelector("#q");
   q.addEventListener("input",function(){curQ=norm(q.value);render();});
 }
