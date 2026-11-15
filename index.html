@@ -750,6 +750,8 @@ document.getElementById("rulesBtn").addEventListener("click", openRules);
 document.getElementById("navRules").addEventListener("click", function(e){ e.preventDefault(); openRules(); });
 /* ============ TIMELINE ============ */
 var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
+function tlMax(){ return Math.max(0, Math.min(END, Date.now()) - START); }
+function tlDur(ms){ var mins = Math.round(ms / 60000); return Math.floor(mins / 60) + "h " + (mins % 60) + "m"; }
 var tlSig = null;
 function tlApply(){
   var cutoff = START + tlPos;
@@ -760,9 +762,8 @@ function tlApply(){
   if (sig !== tlSig){ tlSig = sig; renderBoards(); renderTeam(); }
   var d = new Date(cutoff);
   document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  var mins = Math.round(tlPos / 60000);
-  document.getElementById("tlElapsed").textContent = Math.floor(mins / 60) + "h " + (mins % 60) + "m of 192h 0m";
-  document.getElementById("tlFill").style.width = (tlPos / (END - START) * 100) + "%";
+  document.getElementById("tlElapsed").textContent = tlDur(tlPos) + " of " + tlDur(tlMax()) + (Date.now() < END ? " so far" : "");
+  document.getElementById("tlFill").style.width = (tlMax() ? tlPos / tlMax() * 100 : 0) + "%";
 }
 function tlEnter(){
   if (!tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlActive = true; }
@@ -779,7 +780,7 @@ function tlExit(){
   tlActive = false; LIVE = null; tlSig = null;
   renderBoards(); renderTeam();
   document.getElementById("tlStamp").textContent = "Final board (live)";
-  document.getElementById("tlElapsed").textContent = "192h 0m of 192h 0m";
+  document.getElementById("tlElapsed").textContent = tlDur(tlMax()) + (Date.now() < END ? " so far" : " total");
   document.getElementById("tlFill").style.width = "100%";
 }
 document.getElementById("tlBtn").addEventListener("click", function(){
@@ -790,12 +791,12 @@ document.getElementById("tlBtn").addEventListener("click", function(){
 document.getElementById("tlPlay").addEventListener("click", function(){
   if (tlPlaying){ tlPause(); return; }
   tlEnter();
-  if (tlPos >= END - START) tlPos = 0;
+  if (tlPos >= tlMax()) tlPos = 0;
   tlPlaying = true;
   document.getElementById("tlPlay").textContent = "⏸ Pause";
   tlTimer = setInterval(function(){
     tlPos += (END - START) / 600 * tlSpeed;
-    if (tlPos >= END - START){ tlPos = END - START; tlApply(); tlPause(); return; }
+    if (tlPos >= tlMax()){ tlPos = tlMax(); tlApply(); tlPause(); return; }
     tlApply();
   }, 100);
 });
@@ -809,7 +810,7 @@ document.querySelectorAll(".tl-controls .spd").forEach(function(sp){
 });
 document.getElementById("tlSlider").addEventListener("click", function(e){
   var r = e.currentTarget.getBoundingClientRect();
-  tlPos = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * (END - START);
+  tlPos = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * tlMax();
   tlEnter();
 });
 (function(){
