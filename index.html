@@ -930,39 +930,14 @@ function initMap(){
     infinite: false,
     projection: L.extend({}, L.Projection.LonLat, { bounds: L.bounds([0, 0], [12800, 12800]) })
   });
-  progMap = L.map("map", { crs: WikiCRS, minZoom: -1, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
-  var wikiTiles = L.tileLayer('https://maps.runescape.wiki/osrs/tiles/{mapID}_{cacheVersion}/{z}/{p}_{x}_{-y}.png', {
-    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -1, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -1, bounds: [[8512, 1024], [10432, 4352]], errorTileUrl: 'assets/ocean-tile.png', crossOrigin: true,
+  progMap = L.map("map", { crs: WikiCRS, minZoom: -2, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
+  // One stitched picture of the wiki's own map render (their live tile
+  // service has missing tiles and black void patches, so the map is baked
+  // into a single image aligned to game coordinates).
+  L.imageOverlay('assets/gielinor-wiki.jpg', [[8448, 1024], [10496, 4480]], {
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
-  // The wiki render leaves its unpainted void pure black, which reads as
-  // holes in the sea. Repaint near-solid black 16px blocks as ocean.
-  wikiTiles.on('tileload', function(e){
-    var img = e.tile;
-    if (!img.src || img.src.indexOf('maps.runescape.wiki') === -1 || img.dataset.voidFixed) return;
-    img.dataset.voidFixed = '1';
-    try {
-      var cv = document.createElement('canvas'); cv.width = 256; cv.height = 256;
-      var cx = cv.getContext('2d'); cx.drawImage(img, 0, 0, 256, 256);
-      var id = cx.getImageData(0, 0, 256, 256), d = id.data, BS = 16, changed = false;
-      for (var by = 0; by < 256; by += BS) for (var bx = 0; bx < 256; bx += BS) {
-        var black = 0, total = BS * BS;
-        for (var y = 0; y < BS; y++) for (var x = 0; x < BS; x++) {
-          var o = ((by + y) * 256 + (bx + x)) * 4;
-          if (d[o] < 8 && d[o + 1] < 8 && d[o + 2] < 8) black++;
-        }
-        if (black >= total * 0.9) {
-          for (var y2 = 0; y2 < BS; y2++) for (var x2 = 0; x2 < BS; x2++) {
-            var o2 = ((by + y2) * 256 + (bx + x2)) * 4;
-            d[o2] = 87; d[o2 + 1] = 108; d[o2 + 2] = 157; d[o2 + 3] = 255;
-          }
-          changed = true;
-        }
-      }
-      if (changed) { cx.putImageData(id, 0, 0); img.src = cv.toDataURL('image/png'); }
-    } catch (err) {}
-  });
-  progMap.setView([9472, 2688], -1);
+  progMap.fitBounds([[8512, 1024], [10432, 4352]]);
   TILES.forEach(function(t, i){
     var p = livePos[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
