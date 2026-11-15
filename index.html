@@ -894,6 +894,7 @@ function mapReset(){
   mapShowLive();
   document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
 }
+var mapMarkers = [];
 function initMap(){
   var wrap = document.getElementById("mapWrap");
   if (!window.L){
