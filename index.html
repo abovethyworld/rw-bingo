@@ -1474,22 +1474,18 @@ function renderChase(){
 }
 function openChaseTile(idx){
   var tile = TILES[idx], st = TILESTATS[idx];
+  document.getElementById("mIcon").innerHTML = iconHTML(tile);
   document.getElementById("mTitle").textContent = tile.t;
-  document.getElementById("mPts").textContent = tile.pts + " pts";
+  document.getElementById("mPts").textContent = tile.p + " pts";
   var desc = TILE_DESC[idx] || TILE_BLURB[idx] || "";
-  var mDesc = document.getElementById("mDesc");
-  mDesc.textContent = desc;
-  mDesc.style.display = desc ? "" : "none";
-  var wb = document.getElementById("wikiBtn");
-  if (WIKI[idx]){ wb.style.display = ""; wb.onclick = function(){ window.open("https://oldschool.runescape.wiki/w/" + WIKI[idx], "_blank"); }; }
-  else wb.style.display = "none";
-  var h = "";
+  var h = (desc ? '<p class="tile-desc">' + esc(desc) + '</p>' : '') +
+    (WIKI[idx] ? '<a class="wiki-btn" href="https://oldschool.runescape.wiki/w/' + WIKI[idx] + '" target="_blank" rel="noopener">📖 Open the wiki page</a>' : '');
   if (st){
     var total = st.tot.reduce(function(a, b){ return a + b; }, 0);
-    h += '<div style="font-weight:800;margin-bottom:6px">Team effort · ' + fmt(total) + ' ' + st.u + ' total</div>';
+    h += '<div style="font-weight:800;margin:10px 0 4px">Team effort · ' + fmt(total) + ' ' + st.u + ' total</div>';
     h += st.tot.map(function(v, ti){
       var pct = total ? Math.round(v / total * 100) : 0;
-      return '<div class="m-team"><span class="dot" style="background:' + TEAMS[ti].color + '"></span><span class="nm">' + esc(TEAMS[ti].name) + (TEAMS[ti].done.indexOf(idx) >= 0 ? ' ✓' : '') + '</span><span class="st2">' + fmt(v) + ' ' + st.u + ' · ' + pct + '%</span></div>';
+      return '<div class="m-row"><span class="dot" style="background:' + TEAMS[ti].color + '"></span><span style="font-weight:800;color:' + TEAMS[ti].color + '">' + esc(TEAMS[ti].name) + (TEAMS[ti].done.indexOf(idx) >= 0 ? ' ✓' : '') + '</span><span class="st">' + fmt(v) + ' ' + st.u + ' · ' + pct + '%</span></div>';
     }).join("");
     if (st.top && st.top.length){
       h += '<div style="font-weight:800;margin:12px 0 2px">Top grinders</div>' + st.top.map(function(g){
@@ -1499,10 +1495,10 @@ function openChaseTile(idx){
     }
     h += '<div style="color:var(--mut);font-weight:700;font-size:12px;margin-top:10px">Source: ' + (st.u === "drops" ? "clan drop logs (no Wise Old Man metric for this tile)" : "Wise Old Man, gains since the bingo started") + '</div>';
   } else {
-    h = '<div class="empty">No work logged on this tile yet.</div>';
+    h += '<div class="empty">No work logged on this tile yet.</div>';
   }
-  document.getElementById("mTeams").innerHTML = h;
-  document.getElementById("backdrop").classList.add("open");
+  document.getElementById("mRows").innerHTML = h;
+  document.getElementById("tileBackdrop").classList.add("open");
 }
 
 function renderCaptain(){
