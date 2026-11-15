@@ -83,20 +83,23 @@ button{font-family:inherit;cursor:pointer}
   .side-card{padding:14px}
 }
 .timelapse-row{display:flex;justify-content:center;margin-top:16px}
-.tl-panel{display:none;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.tl-panel.open{display:block}
+.tl-panel{display:block;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.map-tl{margin-top:12px;padding:12px 14px}
+.tl-play{width:38px;height:38px;border-radius:50%;background:var(--acc);border:none;color:#14100a;font-size:15px;font-weight:900;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.tl-clock{font-weight:900;color:#fff;font-size:15px}
+.tl-chip{color:var(--mut);font-weight:800;font-size:12.5px;background:#0d1730;border:1px solid var(--line);padding:4px 10px;border-radius:999px}
+.tl-spds{margin-left:auto;display:flex;gap:6px;align-items:center}
 .tl-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tl-controls .spd{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:5px 13px;font-weight:800}
 .tl-controls .spd.on{color:#fff;border-color:var(--acc)}
 .tl-controls button:disabled{opacity:.45;cursor:default}
-.tl-slider{height:16px;background:#16223d;border-radius:99px;margin-top:14px;touch-action:none}
-.tl-knob{position:absolute;top:50%;left:0%;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--acc);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.5)}
-#tlDots i{position:absolute;top:50%;width:5px;height:5px;border-radius:50%;background:#0d1830;opacity:.5;transform:translate(-50%,-50%);pointer-events:none}
-#tlStamp{font-weight:900;color:#fff;font-size:15px}
-#tlElapsed{color:var(--mut);font-weight:800}
+.tl-slider{height:10px;background:#16223d;border-radius:99px;margin-top:12px;touch-action:none}
+.tl-knob{position:absolute;top:50%;left:0%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--acc);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+#tlDots i,#tlDots2 i{position:absolute;top:50%;width:5px;height:5px;border-radius:50%;background:#0d1830;opacity:.5;transform:translate(-50%,-50%);pointer-events:none}
+
 .tl-note{color:var(--mut);font-size:13.5px;margin-top:10px;line-height:1.45}
 .tl-slider{position:relative;cursor:pointer}
-.tl-fill{height:100%;background:var(--acc);border-radius:99px;width:0%}
+.tl-fill{height:100%;background:linear-gradient(90deg,#c8890a,var(--gold));border-radius:99px;width:0%}
 .tl-controls .spd{cursor:pointer}
 
 /* boards */
@@ -430,15 +433,14 @@ td.when{white-space:nowrap}
     <button data-view="captain">🧭 Captain's Table</button>
     <button data-view="chase">🔥 Most Chased</button>
     <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
-    <button id="tlBtn">↺ <span class="tl-txt">Timeline</span></button>
   </div>
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
-      <button class="pillbtn" id="tlPlay">▶ Play</button>
+      <button class="tl-play" id="tlPlay" title="Play / pause">▶</button>
       <button class="pillbtn" id="tlStart">⏮ Start</button>
-      <span id="tlStamp">Live</span>
-      <span id="tlElapsed"></span>
-      <span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span>
+      <span class="tl-clock" id="tlStamp">Live</span>
+      <span class="tl-chip" id="tlElapsed"></span>
+      <span class="tl-spds"><span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span></span>
       <button class="pillbtn" id="tlFinal">Back to live</button>
     </div>
     <div class="tl-slider" id="tlSlider"><div class="tl-fill" id="tlFill"></div><div id="tlDots"></div><div class="tl-knob" id="tlKnob"></div></div>
@@ -568,6 +570,17 @@ td.when{white-space:nowrap}
           <span id="mapCaption"></span>
         </div>
         <div class="map-legend" id="mapLegend"></div>
+        <div class="tl-panel map-tl" id="tlPanel2">
+          <div class="tl-controls">
+            <button class="tl-play" id="tlPlay2" title="Play / pause">▶</button>
+            <button class="pillbtn" id="tlStart2">⏮ Start</button>
+            <span class="tl-clock" id="tlStamp2">Live</span>
+            <span class="tl-chip" id="tlElapsed2"></span>
+            <span class="tl-spds"><span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span></span>
+            <button class="pillbtn" id="tlFinal2">Back to live</button>
+          </div>
+          <div class="tl-slider" id="tlSlider2"><div class="tl-fill" id="tlFill2"></div><div id="tlDots2"></div><div class="tl-knob" id="tlKnob2"></div></div>
+        </div>
       </div>
     </div>
     <div class="prog-cols">
@@ -1991,13 +2004,18 @@ function tlApply(){
   var sig = TEAMS.map(function(tm){ return tm.done.join(","); }).join("|");
   if (sig !== tlSig){ tlSig = sig; renderBoards(); renderTeam(); }
   var d = new Date(cutoff);
-  document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  var stampTxt = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   var landed = TIMELINE.filter(function(e){ return e.t <= cutoff; }).length;
-  document.getElementById("tlElapsed").textContent = landed + " of " + TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " landed by then";
+  var elapsedTxt = landed + " of " + TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " landed by then";
   var pctDone = tlMax() ? tlPos / tlMax() * 100 : 0;
-  document.getElementById("tlFill").style.width = pctDone + "%";
-  document.getElementById("tlKnob").style.left = pctDone + "%";
-  document.getElementById("tlDots").innerHTML = TIMELINE.map(function(e){ return '<i style="left:' + ((e.t - START) / tlMax() * 100).toFixed(1) + '%"></i>'; }).join("");
+  var dotsHTML = TIMELINE.map(function(e){ return '<i style="left:' + ((e.t - START) / tlMax() * 100).toFixed(1) + '%"></i>'; }).join("");
+  TL_BARS.forEach(function(b){
+    var st = document.getElementById(b.stamp); if (st) st.textContent = stampTxt;
+    var el = document.getElementById(b.elapsed); if (el) el.textContent = elapsedTxt;
+    var f = document.getElementById(b.fill); if (f) f.style.width = pctDone + "%";
+    var kn = document.getElementById(b.knob); if (kn) kn.style.left = pctDone + "%";
+    var dt = document.getElementById(b.dots); if (dt) dt.innerHTML = dotsHTML;
+  });
   if (typeof mapClear === "function" && typeof mapLight === "function"){
     mapClear();
     var evs = sortedTimeline().filter(function(e){ return e.t <= cutoff; });
@@ -2014,9 +2032,9 @@ function tlEnter(){
   tlApply();
 }
 function tlPause(){
-  tlPlaying = false;
+  tlPlaying = false; tlHold = 0;
   if (tlTimer){ clearInterval(tlTimer); tlTimer = null; }
-  document.getElementById("tlPlay").textContent = "▶ Play";
+  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "▶"; });
 }
 function tlExit(){
   tlPause();
@@ -2024,53 +2042,65 @@ function tlExit(){
   tlActive = false; LIVE = null; tlSig = null;
   renderBoards(); renderTeam();
   if (typeof mapShowLive === "function"){ mapShowLive(); var cap2 = document.getElementById("mapCaption"); if (cap2) cap2.textContent = mapFinalCaption(); }
-  document.getElementById("tlStamp").textContent = "Live";
-  document.getElementById("tlElapsed").textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " in · up to date";
-  document.getElementById("tlFill").style.width = "100%";
-  document.getElementById("tlKnob").style.left = "100%";
+  TL_BARS.forEach(function(b){
+    var st = document.getElementById(b.stamp); if (st) st.textContent = "Live";
+    var el = document.getElementById(b.elapsed); if (el) el.textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " in · up to date";
+    var f = document.getElementById(b.fill); if (f) f.style.width = "100%";
+    var kn = document.getElementById(b.knob); if (kn) kn.style.left = "100%";
+  });
 }
-document.getElementById("tlBtn").addEventListener("click", function(){
-  var p = document.getElementById("tlPanel");
-  p.classList.toggle("open");
-  if (p.classList.contains("open") && TIMELINE.length){ tlPos = tlMax(); tlEnter(); }
-});
-document.getElementById("tlPlay").addEventListener("click", function(){
+var TL_BARS = [
+  { play: "tlPlay", start: "tlStart", fin: "tlFinal", stamp: "tlStamp", elapsed: "tlElapsed", fill: "tlFill", knob: "tlKnob", dots: "tlDots", slider: "tlSlider" },
+  { play: "tlPlay2", start: "tlStart2", fin: "tlFinal2", stamp: "tlStamp2", elapsed: "tlElapsed2", fill: "tlFill2", knob: "tlKnob2", dots: "tlDots2", slider: "tlSlider2" }
+];
+var tlHold = 0;
+function tlPlayStart(){
   if (tlPlaying){ tlPause(); return; }
   tlEnter();
   if (tlPos >= tlMax()) tlPos = 0;
-  tlPlaying = true;
-  document.getElementById("tlPlay").textContent = "⏸ Pause";
+  tlPlaying = true; tlHold = 0;
+  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "⏸"; });
   tlTimer = setInterval(function(){
+    if (tlHold > 0){ tlHold--; if (tlHold === 0){ tlPos = 0; tlApply(); } return; }
     tlPos += (END - START) / 600 * tlSpeed;
-    if (tlPos >= tlMax()){ tlPos = tlMax(); tlApply(); tlPause(); return; }
+    if (tlPos >= tlMax()){ tlPos = tlMax(); tlApply(); tlHold = 22; return; }
     tlApply();
   }, 100);
-});
-document.getElementById("tlStart").addEventListener("click", function(){ tlPause(); tlPos = 0; tlEnter(); });
-document.getElementById("tlFinal").addEventListener("click", tlExit);
+}
 document.querySelectorAll(".tl-controls .spd").forEach(function(sp){
   sp.addEventListener("click", function(){
     document.querySelectorAll(".tl-controls .spd").forEach(function(x){ x.classList.remove("on"); });
-    sp.classList.add("on"); tlSpeed = +sp.getAttribute("data-spd");
+    document.querySelectorAll('.tl-controls .spd[data-spd="' + sp.getAttribute("data-spd") + '"]').forEach(function(x){ x.classList.add("on"); });
+    tlSpeed = +sp.getAttribute("data-spd");
   });
 });
 var tlDrag = false;
-function tlSeek(e){
-  var r = document.getElementById("tlSlider").getBoundingClientRect();
+function tlSeek(e, sl){
+  var r = sl.getBoundingClientRect();
   tlPos = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * tlMax();
   tlEnter();
 }
-document.getElementById("tlSlider").addEventListener("pointerdown", function(e){
-  tlDrag = true; tlPause();
-  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
-  tlSeek(e);
+TL_BARS.forEach(function(b){
+  var p = document.getElementById(b.play); if (p) p.addEventListener("click", tlPlayStart);
+  var st = document.getElementById(b.start); if (st) st.addEventListener("click", function(){ tlPause(); tlPos = 0; tlEnter(); });
+  var fn = document.getElementById(b.fin); if (fn) fn.addEventListener("click", tlExit);
+  var sl = document.getElementById(b.slider);
+  if (sl){
+    sl.addEventListener("pointerdown", function(e){ tlDrag = true; tlPause(); try { sl.setPointerCapture(e.pointerId); } catch (err) {} tlSeek(e, sl); });
+    sl.addEventListener("pointermove", function(e){ if (tlDrag) tlSeek(e, sl); });
+    sl.addEventListener("pointerup", function(){ tlDrag = false; });
+    sl.addEventListener("pointercancel", function(){ tlDrag = false; });
+  }
 });
-document.getElementById("tlSlider").addEventListener("pointermove", function(e){ if (tlDrag) tlSeek(e); });
-document.getElementById("tlSlider").addEventListener("pointerup", function(){ tlDrag = false; });
-document.getElementById("tlSlider").addEventListener("pointercancel", function(){ tlDrag = false; });
 (function(){
+  TL_BARS.forEach(function(b){
+    var f = document.getElementById(b.fill); if (f) f.style.width = "100%";
+    var kn = document.getElementById(b.knob); if (kn) kn.style.left = "100%";
+    var el = document.getElementById(b.elapsed); if (el) el.textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " in · up to date";
+    var dt = document.getElementById(b.dots); if (dt && tlMax()) dt.innerHTML = TIMELINE.map(function(e){ return '<i style="left:' + ((e.t - START) / tlMax() * 100).toFixed(1) + '%"></i>'; }).join("");
+  });
   if (TIMELINE.length){
-    document.getElementById("tlNote").textContent = "Drag the bar or press Play to watch the boards fill in. Times are when the tracker first saw each tile land; it checks the sheets every 30 minutes.";
+    document.getElementById("tlNote").textContent = "Press play and it loops through the week. Times are when each tile landed.";
   }
 })();
 function tick(){
