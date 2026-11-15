@@ -932,7 +932,7 @@ function initMap(){
   });
   progMap = L.map("map", { crs: WikiCRS, minZoom: -3, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
   L.tileLayer('https://maps.runescape.wiki/osrs/tiles/{mapID}_{cacheVersion}/{z}/{p}_{x}_{-y}.png', {
-    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -3, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -3,
+    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -3, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -3, bounds: [[8512, 1024], [10432, 4352]],
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
   progMap.fitBounds([[8512, 1024], [10432, 4352]]);
