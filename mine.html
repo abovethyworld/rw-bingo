@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Tracker · Raven's Watch Bingo</title>
+<style>
+  body{background:#14100d;color:#e8e0d4;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:14px;max-width:760px;margin:0 auto}
+  h1{font-size:20px;margin:4px 0 2px}
+  .sub{color:#a89a86;font-size:13px;margin-bottom:14px}
+  .card{background:#1e1915;border:1px solid #33291f;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+  .card h2{font-size:15px;margin:0 0 10px;color:#d8c9ae}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td,th{padding:6px 4px;text-align:left}
+  .pts{font-weight:700;font-size:16px}
+  .gain{color:#7dd87d;font-weight:700}
+  .logrow{border-top:1px solid #2b2119;padding:8px 0;font-size:14px}
+  .logrow:first-of-type{border-top:none}
+  .tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+  .tag.no{background:#5a2d1d;color:#ffb08a}
+  .tag.yes{background:#274a27;color:#a5e3a5}
+  .when{color:#a89a86;font-size:12px}
+  .bar{background:#2b2119;border-radius:6px;height:12px;overflow:hidden;margin:4px 0 2px}
+  .bar>div{height:100%}
+  .prow{margin-bottom:10px;font-size:14px}
+  .tn{font-weight:700}
+</style>
+</head>
+<body>
+<h1>🎯 My Tracker</h1>
+<div class="sub">The main tracker plus every screenshot sent in. Drops count here the moment there's a screenshot, even before anyone updates a sheet. The main tracker stays the official scoreboard.</div>
+<div id="app">Loading…</div>
+<script>
+var TEAMS=[{name:"Buying GF",color:"#987cf0"},{name:"Unpossible",color:"#4cbb80"},{name:"2B for Unpossible GFs",color:"#f28cb1"}];
+var TILES=[["3m Slayer XP",7],["5m Sailing XP",7],["6m Crafting XP",7],["4m Fishing XP",7],["4m Runecrafting XP",7],["10m Firemaking XP",7],["5m Hunter XP",7],["Full Barrows Set",5],["5 Abyssal Whips",3],["Tome of Fire / Phoenix / Dragon Axe",3],["Any Zalcano Unique",5],["Golden Tench",3],["3 Tempoross Uniques",3],["Dragon Cannon Barrel",3],["3 Beef Pets",3],["5 Mad Angel Uniques",3],["3 Zenyte Shards",3],["5 Hunter Rumour Uniques",3],["4 Sailing Salvaging Uniques",3],["3 Bottled Storms",4],["4 Jeweller's Chisels",3],["3 TD Uniques",4],["Full Moons Set",3],["3 Dragon Pickaxes",4],["3 First-Time Raiders",5],["1,000 Pest Control Pts",3],["750 Abyssal Pearls",3],["50,000 Mastering Mixology Pts",3],["Any Nightmare Unique",4],["Any Doom Unique",4],["4 Hueycoatl Uniques",3],["3 Gryphon Uniques",4],["Twinflame Staff",3],["5 Venator Shards",4],["3 Kraken Uniques",3],["Enhanced Weapon Seed or 3 Armour Seeds",4],["3 Zulrah Uniques",4],["Any Revenant Weapon",5],["2 Yama Uniques",4],["Any Maggot King Unique",4],["Any Piece of Virtus",4],["3 God Wars Dungeon Uniques",4],["2 ToB Purples",5],["3 Araxxor Uniques",4],["20 TFA KC",5],["4 ToA Purples",5],["3 CoX Purples",5],["Any Colosseum Unique",4],["Any Nex Unique or 400 Nihil Shards",5]];
+var DROP_GOALS={7:4,8:5,12:3,14:3,15:5,16:3,17:5,18:4,19:3,20:4,21:3,22:3,23:3,25:1000,26:750,27:50000,30:4,31:3,32:1,33:5,34:3,35:3,36:3,38:2,41:3,42:2,43:3,45:4,46:3,48:400};
+function pointsFor(marks){
+  var s=new Set(marks),p=0;
+  marks.forEach(function(i){p+=TILES[i][1];});
+  for(var r=0;r<7;r++){var ok=true;for(var c=0;c<7;c++)if(!s.has(r*7+c))ok=false;if(ok)p+=3;}
+  for(var c2=0;c2<7;c2++){var ok2=true;for(var r2=0;r2<7;r2++)if(!s.has(r2*7+c2))ok2=false;if(ok2)p+=3;}
+  var d1=[0,8,16,24,32,40,48],d2=[6,12,18,24,30,36,42];
+  if(d1.every(function(i){return s.has(i);}))p+=10;
+  if(d2.every(function(i){return s.has(i);}))p+=10;
+  return p;
+}
+function fmtT(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",minute:"2-digit"});}
+fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+  var shots=(d.SHOTS||[]).slice().sort(function(a,b){return b.t-a.t;});
+  var prog={};
+  Object.keys(d.DROPS.prog||{}).forEach(function(t){prog[t]={};Object.keys(d.DROPS.prog[t]).forEach(function(tm){prog[t][tm]=d.DROPS.prog[t][tm];});});
+  shots.forEach(function(s){
+    if(s.inSheets||s.team==null)return;
+    if(!prog[s.tile])prog[s.tile]={};
+    prog[s.tile][s.team]=(prog[s.tile][s.team]||0)+s.n;
+  });
+  var sheetMarks=d.SHEET.marks, rows="", gained={};
+  TEAMS.forEach(function(tm,ti){
+    var adj=sheetMarks[ti].slice();
+    Object.keys(prog).forEach(function(t){
+      var goal=DROP_GOALS[t];
+      if(goal&&(prog[t][ti]||0)>=goal&&adj.indexOf(+t)<0){adj.push(+t);(gained[ti]=gained[ti]||[]).push(TILES[t][0]);}
+    });
+    var sp=pointsFor(sheetMarks[ti]), ap=pointsFor(adj);
+    rows+="<tr><td><span class='tn' style='color:"+tm.color+"'>"+tm.name+"</span></td>"+
+      "<td class='pts'>"+sp+"</td><td class='pts'>"+ap+(ap>sp?" <span class='gain'>(+"+(ap-sp)+" from screenshots)</span>":"")+"</td></tr>"+
+      (gained[ti]?"<tr><td colspan='3' style='color:#a5e3a5;font-size:13px'>Screenshot-complete: "+gained[ti].join(", ")+"</td></tr>":"");
+  });
+  var log=shots.map(function(s){
+    var team=s.team==null?"":(" · <span style='color:"+TEAMS[s.team].color+"'>"+TEAMS[s.team].name+"</span>");
+    var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+"</b>");
+    return "<div class='logrow'>"+s.p+team+" — "+what+"<span class='tag "+(s.inSheets?"yes":"no")+"'>"+(s.inSheets?"in the sheets":"not in the sheets yet")+"</span>"+
+      "<br><span class='when'>"+TILES[s.tile][0]+" · "+fmtT(s.t)+" ET</span></div>";
+  }).join("");
+  var seen={}, prows="";
+  shots.forEach(function(s){
+    if(s.team==null||s.inSheets)return;
+    var key=s.tile+"-"+s.team; if(seen[key])return; seen[key]=1;
+    var goal=DROP_GOALS[s.tile]; if(!goal)return;
+    var cur=(prog[s.tile]&&prog[s.tile][s.team])||0, pct=Math.min(100,Math.round(cur/goal*100));
+    prows+="<div class='prow'><span style='color:"+TEAMS[s.team].color+"' class='tn'>"+TEAMS[s.team].name+"</span> · "+TILES[s.tile][0]+": <b>"+cur.toLocaleString()+" / "+goal.toLocaleString()+"</b>"+
+      "<div class='bar'><div style='width:"+pct+"%;background:"+TEAMS[s.team].color+"'></div></div></div>";
+  });
+  document.getElementById("app").innerHTML=
+    "<div class='card'><h2>Points — sheets vs with screenshots</h2><table><tr><th>Team</th><th>Sheets</th><th>With screenshots</th></tr>"+rows+"</table></div>"+
+    (prows?"<div class='card'><h2>Progress the sheets don't show</h2>"+prows+"</div>":"")+
+    "<div class='card'><h2>Screenshot log</h2>"+log+"</div>"+
+    "<div class='sub'>Updated "+fmtT(d.UPDATED)+" ET · send screenshots in chat and they land here within minutes.</div>";
+}).catch(function(e){document.getElementById("app").textContent="Could not load data.json — "+e;});
+</script>
+</body>
+</html>
