@@ -89,8 +89,16 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
     prows+="<div class='prow'><span style='color:"+TEAMS[s.team].color+"' class='tn'>"+TEAMS[s.team].name+"</span> · "+TILES[s.tile][0]+": <b>"+cur.toLocaleString()+" / "+goal.toLocaleString()+"</b>"+
       "<div class='bar'><div style='width:"+pct+"%;background:"+TEAMS[s.team].color+"'></div></div></div>";
   });
-  var gaps=(d.GAPS||[]).map(function(g){
-    return "<div class='logrow'><b>"+g.what+"</b> <span class='tag no'>missing: "+g.missing+"</span><br><span class='when'>"+g.note+"</span></div>";
+  var gapGroups={};
+  (d.GAPS||[]).forEach(function(g){var k=g.team==null?"unknown":g.team;(gapGroups[k]=gapGroups[k]||[]).push(g);});
+  var gaps=[0,1,2,"unknown"].map(function(k){
+    if(!gapGroups[k])return "";
+    var head=k==="unknown"?"Team unknown":TEAMS[k].name;
+    var col=k==="unknown"?"#a89a86":TEAMS[k].color;
+    var rowsHtml=gapGroups[k].map(function(g){
+      return "<div class='logrow'><b>"+g.what+"</b> <span class='tag no'>missing: "+g.missing+"</span><br><span class='when'>"+g.note+"</span></div>";
+    }).join("");
+    return "<div style='margin-bottom:8px'><span class='tn' style='color:"+col+"'>"+head+"</span>"+rowsHtml+"</div>";
   }).join("");
   document.getElementById("app").innerHTML=
     "<div class='card'><h2>Points — sheets vs with screenshots</h2><table><tr><th>Team</th><th>Sheets</th><th>With screenshots</th></tr>"+rows+"</table></div>"+
