@@ -89,8 +89,12 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
     prows+="<div class='prow'><span style='color:"+TEAMS[s.team].color+"' class='tn'>"+TEAMS[s.team].name+"</span> · "+TILES[s.tile][0]+": <b>"+cur.toLocaleString()+" / "+goal.toLocaleString()+"</b>"+
       "<div class='bar'><div style='width:"+pct+"%;background:"+TEAMS[s.team].color+"'></div></div></div>";
   });
+  var gaps=(d.GAPS||[]).map(function(g){
+    return "<div class='logrow'><b>"+g.what+"</b> <span class='tag no'>missing: "+g.missing+"</span><br><span class='when'>"+g.note+"</span></div>";
+  }).join("");
   document.getElementById("app").innerHTML=
     "<div class='card'><h2>Points — sheets vs with screenshots</h2><table><tr><th>Team</th><th>Sheets</th><th>With screenshots</th></tr>"+rows+"</table></div>"+
+    (gaps?"<div class='card'><h2>⚠️ Missing info</h2>"+gaps+"</div>":"")+
     (prows?"<div class='card'><h2>Progress the sheets don't show</h2>"+prows+"</div>":"")+
     "<div class='card'><h2>Screenshot log</h2>"+log+"</div>"+
     "<div class='sub'>Updated "+fmtT(d.UPDATED)+" ET · send screenshots in chat and they land here within minutes.</div>";
