@@ -230,11 +230,6 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .map-controls button:hover{color:#fff;border-color:var(--acc)}
 .mom-toggle button.on{color:#fff;border-color:var(--acc);background:var(--card2)}
 .map-controls button.on{color:#fff;border-color:var(--acc);background:var(--acc)}
-#mapEditBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
-#mapEditBar[hidden]{display:none}
-#mapEditBar span{color:var(--mut);font-weight:700;font-size:13.5px}
-#mapEditBar button{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:5px 12px;font-weight:900;font-size:13px}
-#mapEditBar button:hover{color:#fff;border-color:var(--acc)}
 #mapCaption{color:var(--mut);font-weight:700;font-size:14px}
 .map-legend,.mom-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;color:var(--mut);font-weight:800;font-size:13.5px}
 .map-legend span,.mom-legend span{display:inline-flex;align-items:center;gap:6px}
@@ -383,13 +378,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
         <div class="map-controls">
           <button id="mapPlay">▶ Play the week</button>
           <button id="mapReset">Reset</button>
-          <button id="mapEdit">✏️ Edit pins</button>
           <span id="mapCaption"></span>
-        </div>
-        <div id="mapEditBar" hidden>
-          <span>Drag any pin into place — moves save on this device as you go.</span>
-          <button id="mapCopyPos">📋 Copy positions</button>
-          <button id="mapResetPos">Reset to shipped</button>
         </div>
         <div class="map-legend" id="mapLegend"></div>
       </div>
@@ -905,26 +894,12 @@ function mapReset(){
   mapShowLive();
   document.getElementById("mapCaption").textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
 }
-var livePos = MAP_POS.map(function(p){ return p.slice(); });
-var mapMarkers = [];
-var mapEditing = false;
-function loadLivePos(){
-  try {
-    var a = JSON.parse(localStorage.getItem("rw-pos2"));
-    if (!Array.isArray(a) || a.length !== 49) return;
-    for (var i = 0; i < 49; i++){
-      if (!Array.isArray(a[i]) || a[i].length !== 2 || typeof a[i][0] !== "number" || typeof a[i][1] !== "number" || !isFinite(a[i][0]) || !isFinite(a[i][1])) return;
-    }
-    livePos = a.map(function(p){ return [p[0], p[1]]; });
-  } catch (e) {}
-}
 function initMap(){
   var wrap = document.getElementById("mapWrap");
   if (!window.L){
     wrap.innerHTML = '<div class="map-fallback">Map library could not load — the charts below still work.</div>';
     return;
   }
-  loadLivePos();
   var WikiCRS = L.extend({}, L.CRS.Simple, {
     transformation: L.transformation(1, 0, 1, 0),
     infinite: false,
@@ -940,50 +915,17 @@ function initMap(){
   }).addTo(progMap);
   progMap.fitBounds([[8750, 1150], [10450, 4000]]);
   TILES.forEach(function(t, i){
-    var p = livePos[i]; if (!p) return;
+    var p = MAP_POS[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="node-badge" id="node-' + i + '">' + (t.img ? '<img src="' + esc(t.img) + '" alt="">' : '') + '</div>' });
-    var mk = L.marker([12800 - p[1], p[0]], { icon: icon, title: t.t, draggable: true }).addTo(progMap);
-    if (mk.dragging) mk.dragging.disable();
+    var mk = L.marker([12800 - p[1], p[0]], { icon: icon, title: t.t }).addTo(progMap);
     mapMarkers[i] = mk;
-    mk.on("click", function(){ if (mapEditing) return; openTile(i); });
-    mk.on("dragend", function(){
-      var ll = mk.getLatLng();
-      livePos[i] = [Math.round(ll.lng), Math.round(12800 - ll.lat)];
-      try { localStorage.setItem("rw-pos2", JSON.stringify(livePos)); } catch (e) {}
-      document.getElementById("mapCaption").textContent = t.t + " moved — saved on this device.";
-    });
+    mk.on("click", function(){ openTile(i); });
   });
   document.getElementById("mapLegend").innerHTML = '<span><i class="map-dot" style="background:#5a6c8c"></i>Open</span>' +
     TEAMS.map(function(tm){ return '<span><i class="map-dot" style="background:' + tm.color + '"></i>' + esc(tm.name) + '</span>'; }).join("");
   document.getElementById("mapPlay").addEventListener("click", mapPlayToggle);
   document.getElementById("mapReset").addEventListener("click", mapReset);
-  document.getElementById("mapEdit").addEventListener("click", function(){
-    if (!progMap) return;
-    mapEditing = !mapEditing;
-    this.textContent = mapEditing ? "✏️ Done editing" : "✏️ Edit pins";
-    this.classList.toggle("on", mapEditing);
-    mapMarkers.forEach(function(m){ if (m && m.dragging) mapEditing ? m.dragging.enable() : m.dragging.disable(); });
-    document.getElementById("mapEditBar").hidden = !mapEditing;
-  });
-  document.getElementById("mapCopyPos").addEventListener("click", function(){
-    var txt = "var MAP_POS = " + JSON.stringify(livePos) + ";";
-    var done = function(){ document.getElementById("mapCaption").textContent = "Copied — paste it in chat and it becomes everyone's map."; };
-    var fallback = function(){
-      var ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); } catch (e) {}
-      document.body.removeChild(ta); done();
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
-    else fallback();
-  });
-  document.getElementById("mapResetPos").addEventListener("click", function(){
-    try { localStorage.removeItem("rw-pos2"); } catch (e) {}
-    livePos = MAP_POS.map(function(p){ return p.slice(); });
-    mapMarkers.forEach(function(m, i){ if (m && livePos[i]) m.setLatLng([12800 - livePos[i][1], livePos[i][0]]); });
-    document.getElementById("mapCaption").textContent = "Pins reset to the shipped positions.";
-  });
   mapReset();
   setTimeout(function(){ progMap.invalidateSize(); }, 50);
 }
