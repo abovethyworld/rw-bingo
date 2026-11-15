@@ -456,11 +456,11 @@ TILES.forEach(function(t, i){ if (ICONS[i]) t.img = ICONS[i]; });
 function M(d, r){ return {d:d, r:r || ""}; }
 function C(d, r){ return {d:d, r:r || "", cap:true}; }
 var TEAMS = [
- { name:"Buying GF", color:"#7a7ab0", ini:"BG", img:"assets/team-buying-gf.webp", skips:0, done:[],
+ { name:"Buying GF", color:"#987cf0", ini:"BG", img:"assets/team-buying-gf.webp", skips:0, done:[],
    members:[C("Ross","itsachocobo"),C("Elle","nayrune"),M("Maeve","Kiwi1281Iron"),M("MightyHonk"),M("Limp","Sheslimp"),M("Dr. Pearls","Pearls | Dr Tim"),M("Eric","EvilFarore"),M("BoilShad0w5","Boilshadows"),M("Kenna","sunshine4evr"),M("Suga","Ikuradon"),M("Jo","JobeeFe / Jo be safer"),M("Dan","Thaidacar"),M("Taylay","Taylays"),M("Oden","Dredlax"),M("iKronken"),M("Zefy","Zefy Sunless"),M("rōnin","i Ronin"),M("Buf","uBeeez"),M("Nama","Namasar")] },
- { name:"Unpossible", color:"#039960", ini:"U", img:"assets/team-unpossible.webp", skips:0, done:[],
+ { name:"Unpossible", color:"#4cbb80", ini:"U", img:"assets/team-unpossible.webp", skips:0, done:[],
    members:[C("Door Man Nic","Azzyl"),C("Kelsen","Idne"),M("Dake","Dake_st_farm"),M("Chowder","IronClamChow"),M("Lath","Latheon"),M("Nick","Ferric Niko"),M("Donnie","Dontropic"),M("Rob","Its Me Cia"),M("riir"),M("Ami","Amaris Eden"),M("Marcy","Have Marcy"),M("Chris","StrKes"),M("Tydreamt","ni Dream"),M("Raven","Ultimate RVN"),M("Quough"),M("Allie","Hex Bun"),M("MrKulaid"),M("Andy","cutedog jpeg")] },
- { name:"2B for Unpossible GFs", color:"#8a8a8a", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
+ { name:"2B for Unpossible GFs", color:"#e8ecf2", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
    members:[C("Aaron","This Hellboy"),C("Cinderbulk"),M("DJRookies","Abg Hunts"),M("Apple Blood"),M("Huge swords"),M("Casval","Casval8"),M("scylla","scyllacybin"),M("Martel","Holy Martel"),M("Bottled Up","Cev"),M("Louie","IronMamba34"),M("Rad","Iron Tomoko"),M("HappyShake","Danni"),M("SPOOSER"),M("HappyTweak","Chris"),M("Potato","Ptaters"),M("ShaolinDildo","Washiiii"),M("Dave","Crab Admiral"),M("Rhombusaurus")] }
 ];
 var CLAIMS = []; /* {item, player, team, source, time} — fills in as drops are logged */
@@ -523,7 +523,7 @@ function renderBoards(){
       '<div class="board-head">' +
         '<span class="place ' + placeCls(rank, s, order) + '">' + placeLabel(rank, s, order) + '</span>' +
         chipHTML(tm, "team-chip") +
-        '<span class="team-name">' + esc(tm.name) + '</span>' +
+        '<span class="team-name" style="color:' + tm.color + '">' + esc(tm.name) + '</span>' +
         '<div class="head-stats">' +
           '<div class="hstat"><div class="v gold">' + s.lines + '</div><div class="k">🏆 Bingos</div></div>' +
           '<div class="hstat"><div class="v grn">' + s.tiles + '</div><div class="k">✓ Tiles</div></div>' +
@@ -551,7 +551,7 @@ function renderClaims(){
 var curTeam = 1; /* Unpossible first: the home team */
 function renderTeamTabs(){
   document.getElementById("teamTabs").innerHTML = TEAMS.map(function(tm, i){
-    return '<button data-team="' + i + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
+    return '<button data-team="' + i + '" style="color:' + tm.color + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
   }).join("");
 }
 function renderTeam(){
@@ -559,7 +559,7 @@ function renderTeam(){
   var tm = TEAMS[curTeam], s = teamStats(tm);
   document.getElementById("teamSide").innerHTML =
     chipHTML(tm, "big-chip") +
-    '<h3>' + esc(tm.name) + '</h3>' +
+    '<h3 style="color:' + tm.color + '">' + esc(tm.name) + '</h3>' +
     '<div style="color:var(--mut);font-weight:700;margin-bottom:8px">' + tm.members.length + ' members · Skips used ' + tm.skips + ' / 3</div>' +
     tm.members.map(function(m){
       return '<div class="member"><span>' + esc(m.d) + '</span>' + (m.cap ? '<span class="cap">Captain</span>' : '') +
@@ -579,10 +579,10 @@ function renderTeam(){
     var t2 = TEAMS[o.i];
     return '<div class="lb-row"><span class="place ' + placeCls(r, o.s, order) + '">' + placeLabel(r, o.s, order) + '</span>' +
       chipHTML(t2, "team-chip", ";width:25px;height:25px;font-size:11px") +
-      '<span class="nm">' + esc(t2.name) + '</span>' +
+      '<span class="nm" style="color:' + t2.color + '">' + esc(t2.name) + '</span>' +
       '<span class="dt">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles<br>' + o.s.pct + '% · ' + o.s.pts + ' pts</span></div>';
   }).join("");
-  document.getElementById("skipsBox").innerHTML = esc(tm.name) + ' has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
+  document.getElementById("skipsBox").innerHTML = '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span> has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
 }
 
 /* ============ MVP ============ */
@@ -680,7 +680,7 @@ function openTile(idx){
   document.getElementById("mPts").textContent = tile.p + " pts";
   document.getElementById("mRows").innerHTML = TEAMS.map(function(tm, ti){
     var done = tm.done.indexOf(idx) >= 0;
-    return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800">' + esc(tm.name) + '</span>' +
+    return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800;color:' + tm.color + '">' + esc(tm.name) + '</span>' +
       '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : teamProg(ti, tile, idx)) + '</span></div>';
   }).join("");
   document.getElementById("tileBackdrop").classList.add("open");
