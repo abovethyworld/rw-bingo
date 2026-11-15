@@ -930,12 +930,12 @@ function initMap(){
     infinite: false,
     projection: L.extend({}, L.Projection.LonLat, { bounds: L.bounds([0, 0], [12800, 12800]) })
   });
-  progMap = L.map("map", { crs: WikiCRS, minZoom: -3, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
+  progMap = L.map("map", { crs: WikiCRS, minZoom: -1, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
   L.tileLayer('https://maps.runescape.wiki/osrs/tiles/{mapID}_{cacheVersion}/{z}/{p}_{x}_{-y}.png', {
-    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -3, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -3, bounds: [[8512, 1024], [10432, 4352]],
+    mapID: 0, cacheVersion: '2019-10-31_1', p: 0, minZoom: -1, maxZoom: 5, maxNativeZoom: 3, minNativeZoom: -1, bounds: [[8512, 1024], [10432, 4352]], errorTileUrl: 'assets/ocean-tile.png',
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
-  progMap.fitBounds([[8512, 1024], [10432, 4352]]);
+  progMap.setView([9472, 2688], -1);
   TILES.forEach(function(t, i){
     var p = livePos[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
