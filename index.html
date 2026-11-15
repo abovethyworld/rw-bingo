@@ -72,7 +72,11 @@ button{font-family:inherit;cursor:pointer}
 .place{font-size:12.5px;font-weight:900;padding:3.5px 10px;border-radius:999px;background:#263550;color:#c7d4ef}
 .place.p1{background:var(--gold);color:#231a00}
 .place.p3{background:var(--bronze);color:#261300}
-.team-chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;flex:none}
+.team-chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;flex:none;position:relative;overflow:hidden}
+.team-chip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.big-chip{position:relative;overflow:hidden}
+.big-chip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.team-tabs button img{width:20px;height:20px;border-radius:6px;vertical-align:-5px;margin-right:7px;object-fit:cover}
 .team-name{font-weight:900;font-size:18.5px;line-height:1.1}
 .head-stats{margin-left:auto;display:flex;gap:15px}
 .hstat{text-align:right}
@@ -308,8 +312,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <p><b>Scoring.</b> Every tile is worth the points printed on it. The board holds 208 tile points in total.</p>
     <p><b>Line bonuses.</b> A full row is worth <b>3 bonus points</b>, a full column <b>3 bonus points</b>, and a full diagonal <b>10 bonus points</b>.</p>
     <p><b>Skips.</b> Each team has <b>3 skips</b> for the week.</p>
-    <p><b>Bonus Tile: TFA Purple.</b> Counts toward the board like any other tile.</p>
-    <p><b>Pet Skip.</b> A pet drop can be spent as a tile skip.</p>
+    <p><b>Bonus Tile: TFA Purple.</b> Obtain any purple or pet from The Fractured Archive for 1 tile skip.</p>
+    <p><b>Pet Skip.</b> Any pet is worth 1 tile skip. Excludes Chaos Elemental, Chompy Chick, Skotos, and Beef.</p>
     <p><b>Megarare Skip.</b> Any megarare is worth 1 tile skip: Twisted Bow, Tumeken's Shadow, Scythe of Vitur, or an Obligator.</p>
     <p><b>When.</b> Nov 14, 1:00 PM to Nov 22, 1:00 PM ET.</p>
   </div>
@@ -373,14 +377,26 @@ var TILES = [
  {t:"Any Colosseum Unique",p:4,img:null,mono:"CO",prog:"0 / 1"},
  {t:"Any Nex Unique or 400 Nihil Shards",p:5,img:null,mono:"NX",prog:"0 / 1"}
 ];
+/* Real game icons for every tile, matched to the clan's official board art and verified live. */
+var W = "https://oldschool.runescape.wiki/images/";
+var ICONS = [
+ W+"Slayer_icon.png", W+"Sailing_icon.png", W+"Crafting_icon.png", W+"Fishing_icon.png", W+"Runecraft_icon.png", W+"Firemaking_icon.png", W+"Hunter_icon.png",
+ W+"Dharok's_helm.png", W+"Abyssal_whip.png", W+"Tome_of_Fire_(empty).png", W+"Crystal_tool_seed.png", W+"Golden_tench.png", W+"Fish_barrel.png", W+"Dragon_cannon_barrel.png",
+ W+"Beef.png", W+"Mad_Angel.png", W+"Zenyte_shard.png", W+"Guild_hunter_boots.png", W+"Shipwreck_salvaging_icon.png", W+"Bottled_storm.png", W+"Jeweller's_chisel.png",
+ W+"Burning_claw.png", W+"Blood_Moon_chestplate.png", W+"Dragon_pickaxe.png", W+"Dexterous_prayer_scroll.png", W+"Void_knight_top.png", W+"Abyssal_pearls_5.png", W+"Reagent_pouch.png",
+ W+"Nightmare_staff.png", W+"Avernic_treads.png", W+"Dragon_hunter_wand.png", W+"Gryphon_feather.png", W+"Twinflame_staff.png", W+"Venator_shard.png", W+"Kraken_tentacle.png",
+ W+"Enhanced_crystal_weapon_seed.png", W+"Tanzanite_fang.png", W+"Viggora's_chainmace.png", W+"Oathplate_helm.png", W+"Maggot_King.png", W+"Virtus_robe_top.png", W+"Armadyl_godsword.png",
+ W+"Ghrazi_rapier.png", W+"Araxyte_fang.png", W+"Fractured_archive_table.png", W+"Tumeken's_shadow_(uncharged).png", W+"Twisted_bow.png", W+"Sunfire_fanatic_helm.png", W+"Torva_full_helm.png"
+];
+TILES.forEach(function(t, i){ if (ICONS[i]) t.img = ICONS[i]; });
 function M(d, r){ return {d:d, r:r || ""}; }
 function C(d, r){ return {d:d, r:r || "", cap:true}; }
 var TEAMS = [
- { name:"Buying GF", color:"#7a7ab0", ini:"BG", skips:0, done:[],
+ { name:"Buying GF", color:"#7a7ab0", ini:"BG", img:"assets/team-buying-gf.webp", skips:0, done:[],
    members:[C("Ross","itsachocobo"),C("Elle","nayrune"),M("Maeve","Kiwi1281Iron"),M("MightyHonk"),M("Limp","Sheslimp"),M("Dr. Pearls","Pearls | Dr Tim"),M("Eric","EvilFarore"),M("BoilShad0w5","Boilshadows"),M("Kenna","sunshine4evr"),M("Suga","Ikuradon"),M("Jo","JobeeFe / Jo be safer"),M("Dan","Thaidacar"),M("Taylay","Taylays"),M("Oden","Dredlax"),M("iKronken"),M("Zefy","Zefy Sunless"),M("rōnin","i Ronin"),M("Buf","uBeeez"),M("Nama","Namasar")] },
- { name:"Unpossible", color:"#039960", ini:"U", skips:0, done:[],
+ { name:"Unpossible", color:"#039960", ini:"U", img:"assets/team-unpossible.webp", skips:0, done:[],
    members:[C("Door Man Nic","Azzyl"),C("Kelsen","Idne"),M("Dake","Dake_st_farm"),M("Chowder","IronClamChow"),M("Lath","Latheon"),M("Nick","Ferric Niko"),M("Donnie","Dontropic"),M("Rob","Its Me Cia"),M("riir"),M("Ami","Amaris Eden"),M("Marcy","Have Marcy"),M("Chris","StrKes"),M("Tydreamt","ni Dream"),M("Raven","Ultimate RVN"),M("Quough"),M("Allie","Hex Bun"),M("MrKulaid"),M("Andy","cutedog jpeg")] },
- { name:"2B for Unpossible GFs", color:"#8a8a8a", ini:"2B", skips:0, done:[],
+ { name:"2B for Unpossible GFs", color:"#8a8a8a", ini:"2B", img:"assets/team-2b.webp", skips:0, done:[],
    members:[C("Aaron","This Hellboy"),C("Cinderbulk"),M("DJRookies","Abg Hunts"),M("Apple Blood"),M("Huge swords"),M("Casval","Casval8"),M("scylla","scyllacybin"),M("Martel","Holy Martel"),M("Bottled Up","Cev"),M("Louie","IronMamba34"),M("Rad","Iron Tomoko"),M("HappyShake","Danni"),M("SPOOSER"),M("HappyTweak","Chris"),M("Potato","Ptaters"),M("ShaolinDildo","Washiiii"),M("Dave","Crab Admiral"),M("Rhombusaurus")] }
 ];
 var CLAIMS = []; /* {item, player, team, source, time} — fills in as drops are logged */
@@ -410,6 +426,10 @@ function placeLabel(rank, s, all){
   return (tied ? "T-" : "") + names[rank];
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(ch){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]; }); }
+function chipHTML(tm, cls, extra){
+  return '<span class="' + cls + '" style="background:' + tm.color + (extra || "") + '">' + tm.ini +
+    '<img src="' + tm.img + '" alt="" loading="lazy" onerror="this.remove()" /></span>';
+}
 function iconHTML(tile, cls){
   if (tile.img) return '<img class="' + (cls||"") + '" src="' + tile.img + '" alt="" loading="lazy" onerror="this.outerHTML=\'<span class=&quot;mono&quot;>' + tile.mono + '</span>\'" />';
   return '<span class="mono">' + tile.mono + '</span>';
@@ -431,7 +451,7 @@ function renderBoards(){
     return '<div class="board-card">' +
       '<div class="board-head">' +
         '<span class="place ' + (rank === 0 ? "p1" : rank === 2 ? "p3" : "") + '">' + placeLabel(rank, s, order) + '</span>' +
-        '<span class="team-chip" style="background:' + tm.color + '">' + tm.ini + '</span>' +
+        chipHTML(tm, "team-chip") +
         '<span class="team-name">' + esc(tm.name) + '</span>' +
         '<div class="head-stats">' +
           '<div class="hstat"><div class="v gold">' + s.lines + '</div><div class="k">🏆 Bingos</div></div>' +
@@ -460,14 +480,14 @@ function renderClaims(){
 var curTeam = 1; /* Unpossible first: the home team */
 function renderTeamTabs(){
   document.getElementById("teamTabs").innerHTML = TEAMS.map(function(tm, i){
-    return '<button data-team="' + i + '" class="' + (i === curTeam ? "on" : "") + '">' + esc(tm.name) + '</button>';
+    return '<button data-team="' + i + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
   }).join("");
 }
 function renderTeam(){
   renderTeamTabs();
   var tm = TEAMS[curTeam], s = teamStats(tm);
   document.getElementById("teamSide").innerHTML =
-    '<span class="big-chip" style="background:' + tm.color + '">' + tm.ini + '</span>' +
+    chipHTML(tm, "big-chip") +
     '<h3>' + esc(tm.name) + '</h3>' +
     '<div style="color:var(--mut);font-weight:700;margin-bottom:8px">' + tm.members.length + ' members · Skips used ' + tm.skips + ' / 3</div>' +
     tm.members.map(function(m){
@@ -488,7 +508,7 @@ function renderTeam(){
   document.getElementById("teamLb").innerHTML = '<h3 style="margin-bottom:6px">Leaderboard</h3>' + order.map(function(o, r){
     var t2 = TEAMS[o.i];
     return '<div class="lb-row"><span class="place ' + (r === 0 ? "p1" : r === 2 ? "p3" : "") + '">' + placeLabel(r, o.s, order) + '</span>' +
-      '<span class="team-chip" style="background:' + t2.color + ';width:25px;height:25px;font-size:11px">' + t2.ini + '</span>' +
+      chipHTML(t2, "team-chip", ";width:25px;height:25px;font-size:11px") +
       '<span class="nm">' + esc(t2.name) + '</span>' +
       '<span class="dt">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles<br>' + o.s.pct + '% · ' + o.s.pts + ' pts</span></div>';
   }).join("");
