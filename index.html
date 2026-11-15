@@ -368,9 +368,9 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
       </div>
       <div class="tcard">
         <h3>EHP / EHB Leaderboard</h3>
-        <table><thead><tr><th>#</th><th>Player</th><th class="r">EHP ↓</th><th class="r">EHB</th></tr></thead>
+        <table><thead><tr><th>#</th><th>Player</th><th class="r">EHB ↓</th><th class="r">EHP</th></tr></thead>
         <tbody id="ehbBody"></tbody></table>
-        <div class="tfoot">Overall EHP <b id="overallEhp">—</b> · Overall EHB <b id="overallEhb">—</b> · Tiles completed <b id="totalTiles">0</b></div>
+        <div class="tfoot">Overall EHB <b id="overallEhb">—</b> · Overall EHP <b id="overallEhp">—</b> · Tiles completed <b id="totalTiles">0</b></div>
       </div>
     </div>
   </section>
@@ -406,10 +406,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- EHB -->
   <section class="view" id="view-ehb">
     <div class="note-card">
-      <h3>Overall EHP <span id="ehpBig" style="color:var(--acc2)">—</span> · Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span></h3>
+      <h3>Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span> · Overall EHP <span id="ehpBig" style="color:var(--acc2)">—</span></h3>
       <p style="margin-bottom:12px">Efficient Hours Played and Efficient Hours Bossed by player, from the event's Wise Old Man competition. EHP counts skilling and bossing; EHB counts bossing only.</p>
       <div class="tblwrap">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHP ↓</th><th class="r">EHB</th><th class="r">XP Gained</th></tr></thead>
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
       <tbody id="ehbFullBody"></tbody></table>
       </div>
     </div>
@@ -420,10 +420,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <div class="podium" id="podium"></div>
     <div class="tcard" style="margin-top:20px">
       <div class="tblwrap">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">XP Gained ↓</th><th class="r">EHP</th><th class="r">EHB</th></tr></thead>
+      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
       <tbody id="mvpBody"></tbody></table>
       </div>
-      <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total XP Gained <b>0</b> · Average per Player <b>0</b></div>
+      <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total EHB <b>0</b> · Total XP Gained <b>0</b> · Average XP per Player <b>0</b></div>
     </div>
   </section>
 
@@ -753,13 +753,13 @@ function renderTeamTabs(){
 }
 function teamEhpHtml(tm){
   var tp = PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); })
-    .sort(function(a, b){ return b.ehp - a.ehp; });
-  if (!tp.length) return '<div class="team-ehp"><h4>EHP / EHB</h4><div style="color:var(--mut);font-weight:700">Loading from Wise Old Man…</div></div>';
+    .sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
+  if (!tp.length) return '<div class="team-ehp"><h4>EHB / EHP</h4><div style="color:var(--mut);font-weight:700">Loading from Wise Old Man…</div></div>';
   var tEhp = tp.reduce(function(a, p){ return a + p.ehp; }, 0);
   var tEhb = tp.reduce(function(a, p){ return a + p.ehb; }, 0);
-  return '<div class="team-ehp"><h4>EHP / EHB</h4>' + tp.map(function(p){
-    return '<div class="member"><span>' + esc(p.name) + '</span><span class="rsn">' + p.ehp.toFixed(1) + ' EHP · ' + p.ehb.toFixed(1) + ' EHB</span></div>';
-  }).join("") + '<div class="member"><span><b>Team total</b></span><span class="rsn"><b>' + tEhp.toFixed(1) + ' EHP · ' + tEhb.toFixed(1) + ' EHB</b></span></div></div>';
+  return '<div class="team-ehp"><h4>EHB / EHP</h4>' + tp.map(function(p){
+    return '<div class="member"><span>' + esc(p.name) + '</span><span class="rsn">' + p.ehb.toFixed(1) + ' EHB · ' + p.ehp.toFixed(1) + ' EHP</span></div>';
+  }).join("") + '<div class="member"><span><b>Team total</b></span><span class="rsn"><b>' + tEhb.toFixed(1) + ' EHB · ' + tEhp.toFixed(1) + ' EHP</b></span></div></div>';
 }
 function renderTeam(){
   renderTeamTabs();
@@ -802,25 +802,26 @@ function renderTeam(){
 var PLAYERS = []; /* filled from WOM: {name, team, xp, ehb} */
 function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
 function renderMVP(){
-  var ranked = PLAYERS.slice().sort(function(a, b){ return b.xp - a.xp; });
+  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
   var top = [ranked[1], ranked[0], ranked[2]];
   var medals = ["🥈","🥇","🥉"], labels = ["2nd","1st","3rd"];
   document.getElementById("podium").innerHTML = top.map(function(p, i){
-    if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 XP</div><div class="tm">' + labels[i] + ' place</div></div>';
-    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
+    if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 EHB</div><div class="tm">' + labels[i] + ' place</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + p.ehb.toFixed(1) + ' EHB</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
   }).join("");
   if (!ranked.length){
     document.getElementById("mvpBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
     return;
   }
   document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
   var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
-  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average per Player <b>' + fmt(total / ranked.length) + '</b>';
+  var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
+  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total EHB <b>' + totalEhb.toFixed(1) + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average XP per Player <b>' + fmt(total / ranked.length) + '</b>';
 }
 function renderEHB(){
-  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehp - a.ehp; });
+  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
   var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
   var totalEhp = ranked.reduce(function(a, p){ return a + p.ehp; }, 0);
   document.getElementById("overallEhb").textContent = ranked.length ? totalEhb.toFixed(1) : "—";
@@ -833,10 +834,10 @@ function renderEHB(){
     return;
   }
   document.getElementById("ehbBody").innerHTML = ranked.slice(0, 10).map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td></tr>';
   }).join("");
   document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
 }
 
