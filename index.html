@@ -1509,6 +1509,7 @@ function renderProgress(){
     try { renderHeat(); } catch (err3) { if (window.console) console.error(err3); }
     try { renderFeed(); } catch (err4) { if (window.console) console.error(err4); }
   } else if (progMap){
+    try { renderMomentum(); } catch (err5) { if (window.console) console.error(err5); }
     setTimeout(function(){ progMap.invalidateSize(); }, 50);
   }
 }
