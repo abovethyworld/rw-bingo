@@ -927,8 +927,8 @@ var mapMarkers = [];
 var peopleLayer = null;
 var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2b.png"];
 function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
-function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return ccImg(i); return ''; }
-function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
+function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return ccImg(i); return ''; }
+function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
 function itemLink(cl){ var u = cl.w ? 'https://oldschool.runescape.wiki/w/' + cl.w : 'https://oldschool.runescape.wiki/w/Special:Search?search=' + encodeURIComponent(cl.item); return '<a class="wl" href="' + u + '" target="_blank" rel="noopener">' + esc(cl.item) + '</a>'; }
 function sourceLink(cl){ var t = cl.sw || (typeof cl.tile === 'number' && window.WIKI ? WIKI[cl.tile] : null); return t ? '<a class="wl" href="https://oldschool.runescape.wiki/w/' + t + '" target="_blank" rel="noopener">' + esc(cl.source) + '</a>' : esc(cl.source); }
 var peopleMarkers = [];
