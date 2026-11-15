@@ -260,6 +260,9 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .map-fallback{color:var(--mut);font-weight:700;padding:14px 0}
 .mom-toggle{display:flex;gap:8px;margin:6px 0 4px}
 .mom-note{color:var(--mut);font-weight:700;margin:8px 0 0;font-size:14px}
+.mom-info{color:#e8efff;font-weight:800;margin:10px 0 0;font-size:14.5px;min-height:21px}
+.mom-hit{stroke:transparent;stroke-width:1.5}
+.mom-hit:hover{stroke:rgba(255,255,255,.75)}
 .mom-svg{width:100%;height:auto;display:block;margin-top:8px}
 .hm-table{border-collapse:separate;border-spacing:2px;width:100%}
 .hm-table th{color:var(--mut);font-size:12px;font-weight:800;padding:4px 6px;white-space:nowrap}
@@ -417,6 +420,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
       </div>
       <div class="mom-legend" id="momLegend"></div>
       <div id="momChart"></div>
+      <div class="mom-info" id="momInfo"></div>
       <div class="mom-note" id="momNote"></div>
     </div>
     <div class="tcard" style="margin-top:20px">
@@ -1096,7 +1100,7 @@ function renderMomentum(){
   var note = document.getElementById("momNote");
   var empty = mode === "xp" && !((HIST && HIST.t) || []).length;
   note.textContent = empty ? "XP recording runs from Nov 15 — the curve appears after the first snapshots land." : "";
-  if (empty){ document.getElementById("momChart").innerHTML = ""; return; }
+  if (empty){ document.getElementById("momChart").innerHTML = ""; var mi0 = document.getElementById("momInfo"); if (mi0) mi0.textContent = ""; return; }
 
   var VW = 920, VH = 300, L0 = 54, R0 = 14, T0 = 12, B0 = 30;
   var pw = VW - L0 - R0, ph = VH - T0 - B0;
@@ -1126,12 +1130,20 @@ function renderMomentum(){
     var lastPt = sr.pts[sr.pts.length - 1];
     s += '<path d="' + d + 'L' + X(lastPt[0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'L' + X(sr.pts[0][0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'Z" fill="' + TEAMS[ti].color + '" opacity="0.10" stroke="none"/>';
     s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
-    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; if (ev) s += '<circle cx="' + cx + '" cy="' + cy + '" r="10" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
+    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; if (ev) s += '<circle class="mom-hit" data-info="' + esc(ev) + '" cx="' + cx + '" cy="' + cy + '" r="10" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
     var lp = sr.pts[sr.pts.length - 1];
-    s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5"/>';
+    s += '<circle class="mom-hit" data-info="' + esc(TEAMS[ti].name + " — " + (mode === "xp" ? compact(lp[1]) + " XP" : lp[1] + " pts") + " right now") + '" cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="9" fill="transparent" style="cursor:pointer"><title>' + esc(TEAMS[ti].name) + '</title></circle>';
+    s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5" pointer-events="none"/>';
   });
   s += '</svg>';
   document.getElementById("momChart").innerHTML = s;
+  var momInfo = document.getElementById("momInfo");
+  if (momInfo){
+    momInfo.textContent = mode === "points" ? "Click a dot to see which tile it was." : "";
+    document.querySelectorAll(".mom-hit").forEach(function(c){
+      c.addEventListener("click", function(){ momInfo.textContent = (c.getAttribute("data-info") || "").replace(/\n/g, " — "); });
+    });
+  }
 }
 
 /* ---- heat map ---- */
