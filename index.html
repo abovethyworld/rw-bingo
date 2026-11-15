@@ -265,6 +265,9 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .item-ico{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px}
 .team-ehp{margin-top:14px;border-top:1px solid #22335a;padding-top:10px}
 .team-ehp h4{margin:0 0 6px;font-size:12.5px;letter-spacing:.05em;color:var(--mut);text-transform:uppercase}
+.ehb-full{max-width:940px}
+.ehb-full th:nth-child(1),.ehb-full td:nth-child(1){width:44px}
+.ehb-full th.r,.ehb-full td.r{width:128px}
 .recap-sec{margin-top:10px}
 .recap-sec h4{margin:0 0 4px;font-size:13.5px}
 .recap-sec div{font-weight:600;line-height:1.55}
@@ -490,8 +493,9 @@ td.when{white-space:nowrap}
     <div class="note-card">
       <h3>Overall EHB <span id="ehbBig" style="color:var(--acc2)">—</span> · Overall EHP <span id="ehpBig" style="color:var(--acc2)">—</span></h3>
       <p style="margin-bottom:12px">Efficient Hours Played and Efficient Hours Bossed by player, from the event's Wise Old Man competition. EHP counts skilling and bossing; EHB counts bossing only.</p>
+      <div style="margin-bottom:10px"><input id="ehbSearch" class="map-search" type="text" placeholder="🔍 Search a player…" autocomplete="off" style="min-width:250px"></div>
       <div class="tblwrap">
-      <table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
+      <table class="ehb-full"><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">EHB ↓</th><th class="r">EHP</th><th class="r">XP Gained</th></tr></thead>
       <tbody id="ehbFullBody"></tbody></table>
       </div>
     </div>
@@ -924,6 +928,7 @@ function renderTeam(){
 
 /* ============ MVP ============ */
 var PLAYERS = []; /* filled from WOM: {name, team, xp, ehb} */
+var EHB_RANKED = [];
 function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
 function podiumHTML(ranked, key, unit, fmtFn){
   var top = [ranked[1], ranked[0], ranked[2]];
@@ -955,6 +960,16 @@ function renderMVP(){
   var totalEhp = PLAYERS.reduce(function(a, p){ return a + p.ehp; }, 0);
   document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + PLAYERS.length + '</b> \u00B7 Total EHB <b>' + totalEhb.toFixed(1) + '</b> \u00B7 Total EHP <b>' + totalEhp.toFixed(1) + '</b> \u00B7 Total XP Gained <b>' + fmt(totalXp) + '</b>';
 }
+function renderEhbFull(){
+  var box = document.getElementById("ehbFullBody"); if (!box) return;
+  var inp = document.getElementById("ehbSearch");
+  var q = inp ? (inp.value || "").trim().toLowerCase() : "";
+  var rows = EHB_RANKED.map(function(p, i){ return { p: p, rank: i + 1 }; }).filter(function(r){ return !q || r.p.name.toLowerCase().indexOf(q) >= 0; });
+  box.innerHTML = rows.length ? rows.map(function(r){
+    var p = r.p;
+    return '<tr><td>' + r.rank + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="empty">No players match that search.</td></tr>';
+}
 function renderEHB(){
   var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
   var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
@@ -971,9 +986,8 @@ function renderEHB(){
   document.getElementById("ehbBody").innerHTML = ranked.slice(0, 10).map(function(p, i){
     return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td></tr>';
   }).join("");
-  document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
-  }).join("");
+  EHB_RANKED = ranked;
+  renderEhbFull();
 }
 
 /* ============ WISE OLD MAN (live) ============ */
@@ -1871,6 +1885,7 @@ function renderRecap(){
   }).join("") + '</div>';
   box.innerHTML = h;
 }
+document.getElementById("ehbSearch").addEventListener("input", renderEhbFull);
 document.getElementById("recapCopy").addEventListener("click", function(){
   var txt = recapText();
   var note = document.getElementById("recapNote");
