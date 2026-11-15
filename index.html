@@ -232,6 +232,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .pfp-badge img.pfp-face{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .pfp-badge .pfp-cc{position:absolute;right:-6px;bottom:-6px;width:15px;height:15px;background:#0d1526;border:1.5px solid #33477a;border-radius:50%;padding:1.5px;box-sizing:border-box;image-rendering:pixelated;z-index:2}
 .cc-ico{width:15px;height:15px;vertical-align:-3px;margin-right:5px;image-rendering:pixelated}
+.wl{color:#8fc1ff;text-decoration:none;border-bottom:1px dotted #3d5a8a}
+.wl:hover{color:#d6e7ff;border-bottom-color:#8fc1ff}
 .map-dim{filter:brightness(.64) saturate(.78) contrast(1.03)}
 .map-search{background:#0d1830;border:1.5px solid #2c3d63;border-radius:9px;color:#e8eefc;padding:6px 10px;font:700 13px Nunito,'Segoe UI',sans-serif;min-width:175px}
 .map-search:focus{outline:none;border-color:#f2b134}
@@ -662,7 +664,7 @@ function renderClaims(){
   var cb = document.getElementById("claimsBody");
   if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; }
   else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + esc(cl.item) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join(""); }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
@@ -706,7 +708,7 @@ function renderTeam(){
   document.getElementById("skipsBox").innerHTML = '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span> has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
   var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
   document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
-    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + sourceLink(cl) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join("") : '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
 }
 
@@ -719,14 +721,14 @@ function renderMVP(){
   var medals = ["🥈","🥇","🥉"], labels = ["2nd","1st","3rd"];
   document.getElementById("podium").innerHTML = top.map(function(p, i){
     if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 XP</div><div class="tm">' + labels[i] + ' place</div></div>';
-    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + esc(p.team) + '</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + teamSpan(p.team) + '</div></div>';
   }).join("");
   if (!ranked.length){
     document.getElementById("mvpBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
     return;
   }
   document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
   document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average per Player <b>' + fmt(total / ranked.length) + '</b>';
@@ -745,10 +747,10 @@ function renderEHB(){
     return;
   }
   document.getElementById("ehbBody").innerHTML = ranked.slice(0, 10).map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
 }
 
@@ -926,6 +928,9 @@ var peopleLayer = null;
 var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2b.png"];
 function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
 function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return ccImg(i); return ''; }
+function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
+function itemLink(cl){ var u = cl.w ? 'https://oldschool.runescape.wiki/w/' + cl.w : 'https://oldschool.runescape.wiki/w/Special:Search?search=' + encodeURIComponent(cl.item); return '<a class="wl" href="' + u + '" target="_blank" rel="noopener">' + esc(cl.item) + '</a>'; }
+function sourceLink(cl){ var t = cl.sw || (typeof cl.tile === 'number' && window.WIKI ? WIKI[cl.tile] : null); return t ? '<a class="wl" href="https://oldschool.runescape.wiki/w/' + t + '" target="_blank" rel="noopener">' + esc(cl.source) + '</a>' : esc(cl.source); }
 var peopleMarkers = [];
 function buildPeopleLayer(){
   if (!window.PEOPLE || !PEOPLE.length || !progMap) return;
@@ -1037,7 +1042,7 @@ function initMap(){
 function niceCeil(maxV, mode){
   var v = maxV * 1.1;
   if (mode === "xp") return Math.max(1e6, Math.ceil(v / 1e6) * 1e6);
-  return Math.max(10, Math.ceil(v / 10) * 10);
+  return Math.max(10, Math.ceil(v / 5) * 5);
 }
 function nyMidnights(from, to){
   var out = [], seen = {}, t = from;
@@ -1109,7 +1114,10 @@ function renderMomentum(){
   series.forEach(function(sr, ti){
     if (!sr.pts.length) return;
     var d = sr.pts.map(function(p, k){ return (k ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join(" ");
+    var lastPt = sr.pts[sr.pts.length - 1];
+    s += '<path d="' + d + 'L' + X(lastPt[0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'L' + X(sr.pts[0][0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'Z" fill="' + TEAMS[ti].color + '" opacity="0.10" stroke="none"/>';
     s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; s += '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; });
     var lp = sr.pts[sr.pts.length - 1];
     s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5"/>';
   });
