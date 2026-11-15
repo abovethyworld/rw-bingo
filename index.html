@@ -243,6 +243,16 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 @keyframes bubbleBob{0%,100%{margin-bottom:0}50%{margin-bottom:3px}}
 .pfp-badge.found{animation:pfpPulse .8s ease 4}
 @keyframes pfpPulse{0%,100%{box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85)}50%{box-shadow:0 0 0 4px #f2b134,0 0 22px #f2b134}}
+.pfp-bubble{display:none}
+.pfp-bubble.show{display:block}
+.updated-line{color:var(--mut);font-size:12.5px;font-weight:700;margin-top:3px}
+.item-ico{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px}
+.team-ehp{margin-top:14px;border-top:1px solid #22335a;padding-top:10px}
+.team-ehp h4{margin:0 0 6px;font-size:12.5px;letter-spacing:.05em;color:var(--mut);text-transform:uppercase}
+.recap-sec{margin-top:10px}
+.recap-sec h4{margin:0 0 4px;font-size:13.5px}
+.recap-sec div{font-weight:600;line-height:1.55}
+.rest-chip{display:flex;align-items:center;gap:6px;background:#0d1830;border:2px solid #5a6c8c;border-radius:999px;padding:4px 10px;font:800 11.5px Nunito,'Segoe UI',sans-serif;color:#dbe6ff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.85);cursor:pointer}
 .pfp-pop{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.45;color:#e8ecf2}
 .pfp-pop img{width:44px;height:44px;border-radius:50%}
 .leaflet-popup-content-wrapper{background:#0d1526;color:#e8ecf2;border-radius:10px}
@@ -302,6 +312,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     </div>
   </div>
   <div class="dateline">Nov 14, 1:00 PM → Nov 22, 1:00 PM ET</div>
+  <div class="updated-line" id="updatedLine"></div>
   <div class="progress"><i id="timeBar" style="width:0%"></i></div>
   <div class="underbar">
     <div id="pctComplete">0% complete</div>
@@ -332,6 +343,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
   <!-- OVERVIEW -->
   <section class="view" id="view-overview">
     <div class="boards" id="boards"></div>
+    <div class="tcard" id="sinceStrip" style="margin-top:16px;font-weight:700;display:none"></div>
     <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there. Drop tiles and the items table come from the clan's drop log sheet.</div>
     <div class="lower">
       <div class="tcard">
@@ -360,7 +372,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th class="r">Count</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th>When</th><th class="r">Count</th></tr></thead>
         <tbody id="teamClaimsBody"></tbody></table>
         </div>
       </div>
@@ -368,6 +380,12 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
         <h3>Skips</h3>
         <div class="empty" id="skipsBox"></div>
       </div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h3>📣 Team Recap</h3>
+      <div id="recapBody"></div>
+      <button class="pillbtn" id="recapCopy" style="margin-top:12px">📋 Copy recap for Discord</button>
+      <span id="recapNote" style="color:var(--mut);font-weight:700;margin-left:8px"></span>
     </div>
   </section>
 
@@ -582,6 +600,7 @@ var CLAIMS = []; /* {item, player, team, source, count} - filled from DROPS belo
 var DROPS = {"claims": [{"item": "Guthan's Spear", "player": "Nayrune", "team": "Buying GF", "source": "Barrows", "count": 1, "tile": 7}, {"item": "Verac's Plateskirt", "player": "iKronken", "team": "Buying GF", "source": "Barrows", "count": 1, "tile": 7, "t": 1794707196579}, {"item": "Torag's Platebody", "player": "Azzyl", "team": "Unpossible", "source": "Barrows", "count": 1, "tile": 7}, {"item": "Soaked Pages", "player": "Kenna", "team": "Buying GF", "source": "Tempoross", "count": 1, "tile": 12, "t": 1794723470792}, {"item": "Beef", "player": "Mrkulaid", "team": "Unpossible", "source": "Brutus", "count": 1, "tile": 14, "w": "Beef", "sw": "Brutus"}, {"item": "Whistle Blueprints", "player": "Buf", "team": "Buying GF", "source": "Hunter Rumours", "count": 1, "tile": 17}, {"item": "Guild Hunter Headwear", "player": "Mrkulaid", "team": "Unpossible", "source": "Hunter Rumours", "count": 1, "tile": 17}, {"item": "Guild Hunter Top", "player": "Have Marcy", "team": "Unpossible", "source": "Hunter Rumours", "count": 1, "tile": 17}, {"item": "Bottled Storm", "player": "Hex Bun", "team": "Unpossible", "source": "Armoured & Vampyre Krakens", "count": 1, "tile": 19}, {"item": "Jeweller's Chisel", "player": "Oden", "team": "Buying GF", "source": "Golem Crafting", "count": 1, "tile": 20, "w": "Jeweller%27s_chisel", "sw": "Golem_crafting", "t": 1794692894110}, {"item": "Jeweller's Chisel", "player": "Pearls", "team": "Buying GF", "source": "Golem Crafting", "count": 1, "tile": 20, "w": "Jeweller%27s_chisel", "sw": "Golem_crafting", "t": 1794706439615}, {"item": "Belle's Folly", "player": "iKronken", "team": "Buying GF", "source": "Shellbane Gryphon", "count": 3, "tile": 31, "w": "Belle%27s_folly", "sw": "Shellbane_gryphon", "t": 1794713081426}, {"item": "Jar of Dirt", "player": "Latheon", "team": "Unpossible", "source": "Kraken", "count": 2, "tile": 34}, {"item": "Dihn's Bulwark", "player": "Maeve", "team": "Buying GF", "source": "Chambers of Xeric", "count": 1, "tile": 46, "w": "Dihn%27s_bulwark", "t": 1794692256386}, {"item": "Dragon Claws", "player": "Taylay", "team": "Buying GF", "source": "Chambers of Xeric", "count": 1, "tile": 46, "w": "Dragon_claws", "t": 1794694293482}, {"item": "Dihn's Bulwark", "player": "Ross", "team": "Buying GF", "source": "Chambers of Xeric", "count": 1, "tile": 46, "w": "Dihn%27s_bulwark", "t": 1794712334722}], "prog": {"7": {"0": 1, "1": 1}, "12": {"0": 1}, "14": {"1": 1}, "17": {"0": 1, "1": 2}, "19": {"1": 1}, "20": {"0": 2}, "31": {"0": 3}, "34": {"1": 2}, "46": {"0": 3}}}; /* baked by the sheet sync from the clan drop-log sheet */
 var PEOPLE = [{"n": "Ross", "r": "itsachocobo", "tm": 0, "av": "https://cdn.discordapp.com/avatars/275238803000524800/8328a2ee593ad49e77d288d8111d1dee.png?size=64", "un": "ARareChocobo", "t": 39, "w": "+83 Maggot King KC in the last hour"}, {"n": "Elle", "r": "nayrune", "tm": 0, "av": "https://cdn.discordapp.com/avatars/684571307337318402/5ffafa714153b26b90a57f6c72c88b5c.png?size=64", "un": "elle", "t": 35, "w": "+3 Corrupted Gauntlet KC in the last hour"}, {"n": "Maeve", "r": "Kiwi1281Iron", "tm": 0, "av": "https://cdn.discordapp.com/avatars/218086418059100160/f1c78d1a7efc9000b11b78a1ab4aa2ca.png?size=64", "un": "maeve", "t": 39, "w": "+10 Maggot King KC in the last hour"}, {"n": "MightyHonk", "r": "", "tm": 0, "av": "https://cdn.discordapp.com/avatars/245404473390792705/c993a812867c02c59b7aa4dc98862996.png?size=64", "un": "Caboose", "t": 45, "w": "No new gains in the last hour"}, {"n": "Limp", "r": "Sheslimp", "tm": 0, "av": "https://cdn.discordapp.com/avatars/371074254625832961/ae1fa0a6febeccc7382a43c26779482b.png?size=64", "un": "Limp Here", "t": 14, "w": "+200 Brutus KC in the last hour"}, {"n": "Dr. Pearls", "r": "Pearls | Dr Tim", "tm": 0, "av": "https://cdn.discordapp.com/avatars/991381637944320100/0ed2a430dee2c6c255fe76d3eb387c45.png?size=64", "un": "Gas", "t": 14, "w": "+166 Brutus KC in the last hour"}, {"n": "Eric", "r": "EvilFarore", "tm": 0, "av": "https://cdn.discordapp.com/avatars/168412373223211008/f4f95a85f2795e5092263b958577537f.png?size=64", "un": "RoonerSpism", "t": 28, "w": "+13 Phosani's Nightmare KC in the last hour"}, {"n": "BoilShad0w5", "r": "Boilshadows", "tm": 0, "av": "https://cdn.discordapp.com/avatars/141691395017539585/a96aa95fdc30dfe36e3957bfc14d7029.png?size=64", "un": "BoilingShadows", "t": 14, "w": "+325 Brutus KC in the last hour"}, {"n": "Kenna", "r": "sunshine4evr", "tm": 0, "av": "https://cdn.discordapp.com/avatars/187739693272530945/13f65363662db836acb6ecf001e62f1b.png?size=64", "un": "Sundress Season", "t": 12, "w": "+3 Tempoross KC in the last hour"}, {"n": "Suga", "r": "Ikuradon", "tm": 0, "av": "https://cdn.discordapp.com/avatars/273498454485893120/1dbb80a3597ac84a2c5beff1063aa53f.png?size=64", "un": "Suga", "t": 7, "w": "+1 Barrows KC in the last hour"}, {"n": "Jo", "r": "JobeeFe / Jo be safer", "tm": 0, "av": "https://cdn.discordapp.com/avatars/865564036907925545/f8650f868baef1a6046d7d1e1684ba6d.png?size=64", "un": "Jobee", "t": 14, "w": "+484 Brutus KC in the last hour"}, {"n": "Dan", "r": "Thaidacar", "tm": 0, "av": "https://cdn.discordapp.com/avatars/701626878603034737/a15b7ed185721a48ea614b3b80479541.png?size=64", "un": "Mrtibbles", "t": 36, "w": "+57 Zulrah KC in the last hour"}, {"n": "Taylay", "r": "Taylays", "tm": 0, "av": "https://cdn.discordapp.com/avatars/214396125384409089/c34d7f0603948d97111f49013615b45b.png?size=64", "un": "Taylay", "t": 36, "w": "+2 Zulrah KC in the last hour"}, {"n": "Oden", "r": "Dredlax", "tm": 0, "av": "https://cdn.discordapp.com/avatars/179322515297009665/a_22f7b151fa9099c91f0ed85f6e0fa0dd.png?size=64", "un": "Oden", "t": 8, "w": "+3 Abyssal Sire KC in the last hour"}, {"n": "iKronken", "r": "", "tm": 0, "av": "https://cdn.discordapp.com/avatars/325711467645239296/ad55c4fd9b40c003d09f6b38e570cc3c.png?size=64", "un": "The Kronken", "t": 31, "w": "+57 Shellbane Gryphon KC in the last hour", "b": "EZ Belle's Folly"}, {"n": "Zefy", "r": "Zefy Sunless", "tm": 0, "av": "https://cdn.discordapp.com/avatars/877691416799744001/b3b21433e1b996fd790b70604cd3c3aa.png?size=64", "un": "Zefy", "t": -1, "w": "No gains yet this bingo"}, {"n": "r\u014dnin", "r": "i Ronin", "tm": 0, "av": "https://cdn.discordapp.com/avatars/595431865297403904/1c9576718bc6c94e351b82d456c566fe.png?size=64", "un": "r\u014cnin", "t": 7, "w": "+7 Barrows KC in the last hour"}, {"n": "Buf", "r": "uBeeez", "tm": 0, "av": "https://cdn.discordapp.com/avatars/1321552101322522709/08d0da48416e31d661ea2814755a7a85.png?size=64", "un": "Buf", "t": 7, "w": "+11 Barrows KC in the last hour"}, {"n": "Nama", "r": "Namasar", "tm": 0, "av": "https://cdn.discordapp.com/avatars/470445964591759370/44ae21af2cfba0ef20fa5634237e6270.png?size=64", "un": "Namaser", "t": 10, "w": "+54 Zalcano KC in the last hour"}, {"n": "Door Man Nic", "r": "Azzyl", "tm": 1, "av": "https://cdn.discordapp.com/avatars/185940848494641153/5b7c62c5913f87135afb5d685b021d2a.png?size=64", "un": "Azzyl", "t": 14, "w": "+160 Brutus KC in the last hour"}, {"n": "Kelsen", "r": "Idne", "tm": 1, "av": "https://cdn.discordapp.com/avatars/611000024536449026/cf376d9f166be0c0d46076a5ec6bfb41.png?size=64", "un": "Idne", "t": 40, "w": "+36 Duke Sucellus KC in the last hour"}, {"n": "Dake", "r": "Dake_st_farm", "tm": 1, "av": "https://cdn.discordapp.com/avatars/747644320806600805/949284035a0d09975449f6fa7151086f.png?size=64", "un": "Dakevinat0r", "t": 45, "w": "+2 ToA (Expert) KC in the last hour"}, {"n": "Chowder", "r": "IronClamChow", "tm": 1, "av": "https://cdn.discordapp.com/avatars/210259442317524993/af954e1d029592bf9f8b1fa6b452fa50.png?size=64", "un": "Chowder", "t": 36, "w": "+7 Zulrah KC in the last hour"}, {"n": "Lath", "r": "Latheon", "tm": 1, "av": "https://cdn.discordapp.com/avatars/402756853748072448/ca2680b8522fadd65f5007a7260f2236.png?size=64", "un": "Perspex", "t": 34, "w": "+205 Kraken KC in the last hour", "b": "Another Jar of Dirt for the log"}, {"n": "Nick", "r": "Ferric Niko", "tm": 1, "av": "https://cdn.discordapp.com/avatars/1222683261457797121/4864dc74bacc370e1f9b532e5294ae94.png?size=64", "un": "Nicks", "t": 44, "w": "No new gains in the last hour"}, {"n": "Donnie", "r": "Dontropic", "tm": 1, "av": "https://cdn.discordapp.com/avatars/163429410043723776/fd9b4ccf97b64123e7c23ad0f0e20f91.png?size=64", "un": "donniekim", "t": 7, "w": "+9 Barrows KC in the last hour"}, {"n": "Rob", "r": "Its Me Cia", "tm": 1, "av": "https://cdn.discordapp.com/avatars/455050560975142923/a_cc4719e97ec8183e0d853243576a2dd7.png?size=64", "un": "IdleRobin", "t": 36, "w": "+97 Zulrah KC in the last hour"}, {"n": "riir", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/588493413989613569/afbe471fb6d4475f37f6619def0ca77b.png?size=64", "un": "Todd Dillerson", "t": 2, "w": "No new gains in the last hour"}, {"n": "Ami", "r": "Amaris Eden", "tm": 1, "av": "https://cdn.discordapp.com/avatars/239082356877557760/1986c6fd953c55943b335049b9a9ee78.png?size=64", "un": "Robbe517", "t": 43, "w": "+114 Araxxor KC in the last hour"}, {"n": "Marcy", "r": "Have Marcy", "tm": 1, "av": "https://cdn.discordapp.com/avatars/102487935772815360/61b31c3857e0e48039f21ede19fe5c53.png?size=64", "un": "PleaseHaveMarcy", "t": 36, "w": "+3 Zulrah KC in the last hour"}, {"n": "Chris", "r": "StrKes", "tm": 1, "av": "https://cdn.discordapp.com/avatars/802320961399029865/2ff6edefba76184b0a1f83df5a77c293.png?size=64", "un": "chris", "t": 35, "w": "+6 Corrupted Gauntlet KC in the last hour"}, {"n": "Tydreamt", "r": "ni Dream", "tm": 1, "av": "https://cdn.discordapp.com/avatars/110780984311431168/cf5c46dc655295f198a691d71ec85155.png?size=64", "un": "Flux", "t": 1, "w": "No new gains in the last hour"}, {"n": "Raven", "r": "Ultimate RVN", "tm": 1, "av": "https://cdn.discordapp.com/avatars/151685984386416640/a_e080421636b9eff132f3a20008f0ff23.png?size=64", "un": "RavenSire", "t": 9, "w": "+12 Wintertodt KC in the last hour"}, {"n": "Quough", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/125159198936793088/51798fd98ca90fcc1fa1eb3af9b7de79.png?size=64", "un": "nezticle", "t": 26, "w": "+16 Guardians of the Rift KC in the last hour"}, {"n": "Allie", "r": "Hex Bun", "tm": 1, "av": "https://cdn.discordapp.com/avatars/554315330466611210/2400772f045018bc5e3a05973e94a03d.png?size=64", "un": "Allie Star", "t": 7, "w": "+1 Barrows KC in the last hour"}, {"n": "MrKulaid", "r": "", "tm": 1, "av": "https://cdn.discordapp.com/avatars/155961976449794058/df27e6a05019bc8a64c7799a1a6c7168.png?size=64", "un": "Kulaid", "t": 14, "w": "+90 Brutus KC in the last hour"}, {"n": "Andy", "r": "cutedog jpeg", "tm": 1, "av": "https://cdn.discordapp.com/avatars/709103581885890602/da8612fd50f70e00c8f06be06569c5fb.png?size=64", "un": "I Andy I", "t": 26, "w": "+22 Guardians of the Rift KC in the last hour"}, {"n": "Aaron", "r": "This Hellboy", "tm": 2, "av": "https://cdn.discordapp.com/avatars/210217511222771712/4dca4a4cec63e3a12867326e744f1b40.png?size=64", "un": "aronthabeast", "t": 40, "w": "+16 Duke Sucellus KC in the last hour"}, {"n": "Cinderbulk", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/1400988474672414850/285d60c86fb91503bd8c3f350b714fa4.png?size=64", "un": "Cinderbulk", "t": 33, "w": "+17 Phantom Muspah KC in the last hour"}, {"n": "DJRookies", "r": "Abg Hunts", "tm": 2, "av": "https://cdn.discordapp.com/avatars/452744678891192320/47aa4de84ca77ea3d1742be9ebec1c14.png?size=64", "un": "DjRookies", "t": 28, "w": "+29 Phosani's Nightmare KC in the last hour"}, {"n": "Apple Blood", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/449414018549940244/a628461a5d5dd822f75281a276f06757.png?size=64", "un": "Cosmetric", "t": 43, "w": "+55 Araxxor KC in the last hour"}, {"n": "Huge swords", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/234279444154548225/9d1cba0a6892f11e57367132081531c9.png?size=64", "un": "cryo", "t": 10, "w": "+13 Zalcano KC in the last hour"}, {"n": "Casval", "r": "Casval8", "tm": 2, "av": "https://cdn.discordapp.com/avatars/164603230192533504/53a470ac8909fcc24786eee300106820.png?size=64", "un": "", "t": 35, "w": "+18 Corrupted Gauntlet KC in the last hour"}, {"n": "scylla", "r": "scyllacybin", "tm": 2, "av": "https://cdn.discordapp.com/avatars/1017533174894579763/3e33268bfb9b1df83493e0a0b93e2eb3.png?size=64", "un": "scylla", "t": 10, "w": "+5 Zalcano KC in the last hour"}, {"n": "Martel", "r": "Holy Martel", "tm": 2, "av": "https://cdn.discordapp.com/avatars/402764919184949249/d4482e4278f1ad44297f8bf09956e566.png?size=64", "un": "ilyanna119", "t": 35, "w": "+17 Corrupted Gauntlet KC in the last hour"}, {"n": "Bottled Up", "r": "Cev", "tm": 2, "av": "https://cdn.discordapp.com/avatars/99317974350966784/8c82004c603af57110a01a8a9421cba2.png?size=64", "un": "Cev", "t": 26, "w": "+44 Guardians of the Rift KC in the last hour"}, {"n": "Louie", "r": "IronMamba34", "tm": 2, "av": "https://cdn.discordapp.com/avatars/444711864006606850/32f06e1482e3e5456417d71e0aff1ca1.png?size=64", "un": "Mamba", "t": 14, "w": "+367 Brutus KC in the last hour"}, {"n": "Rad", "r": "Iron Tomoko", "tm": 2, "av": "https://cdn.discordapp.com/avatars/94808640086609920/24a7ce00a469116420659cea17453c23.png?size=64", "un": "Rad", "t": -1, "w": "No gains yet this bingo"}, {"n": "HappyShake", "r": "Danni", "tm": 2, "av": "https://cdn.discordapp.com/avatars/147168597205057537/c7fd0959cf10a8e9227c701de91edd70.png?size=64", "un": "Meko-Isa", "t": 36, "w": "+26 Zulrah KC in the last hour"}, {"n": "SPOOSER", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/363132948666646529/90800de35f43f7f87462ad82175a1ff8.png?size=64", "un": "SPOOSER", "t": 10, "w": "+13 Zalcano KC in the last hour"}, {"n": "HappyTweak", "r": "Chris", "tm": 2, "av": "https://cdn.discordapp.com/avatars/191014449883250688/12c116307695c3c360e0e3d81ecfa723.png?size=64", "un": "Chizzey", "t": 0, "w": "No new gains in the last hour"}, {"n": "Potato", "r": "Ptaters", "tm": 2, "av": "https://cdn.discordapp.com/avatars/148261592578916352/39ee0c02b7b61a4bea57f57960d4d807.png?size=64", "un": "Potato", "t": 1, "w": "No new gains in the last hour"}, {"n": "ShaolinDildo", "r": "Washiiii", "tm": 2, "av": "https://cdn.discordapp.com/avatars/202313096323268608/65c8eca80e6bbe093933e5f850cda9b7.png?size=64", "un": "WashableSteak", "t": 31, "w": "+39 Shellbane Gryphon KC in the last hour"}, {"n": "Dave", "r": "Crab Admiral", "tm": 2, "av": "https://cdn.discordapp.com/avatars/144184605782704129/49dee283b95c0515d54ed6dee3d8d1b1.png?size=64", "un": "Dave", "t": 6, "w": "No new gains in the last hour"}, {"n": "Rhombusaurus", "r": "", "tm": 2, "av": "https://cdn.discordapp.com/avatars/380506243103719424/62068c26e7cc26e5d3fc04a905fe44df.png?size=64", "un": "Rhombusaurus", "t": 14, "w": "+745 Brutus KC in the last hour"}]; /* baked by the sync: {n, r, tm, av, un, t, w} per roster member for the map's pfp layer */
 var FLAGS = {}; /* baked by the sync: "team:tile" -> why a sheet-marked completion is not backed by Wise Old Man */
+var UPDATED = 0; /* baked by the sync: ms epoch of the last data bake */
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
 CLAIMS = DROPS.claims;
 var TIMELINE = [{"t": 1794712334722, "team": 0, "tile": 46}, {"t": 1794713081426, "team": 0, "tile": 31}, {"t": 1794717324404, "team": 0, "tile": 25}, {"t": 1794717324404, "team": 1, "tile": 11}, {"t": 1794717324404, "team": 2, "tile": 39}, {"t": 1794717361508, "team": 1, "tile": 44}, {"t": 1794721142610, "team": 1, "tile": 28}]; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
@@ -671,17 +690,43 @@ function renderClaims(){
   var cb = document.getElementById("claimsBody");
   if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; }
   else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join(""); }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
 
+function renderSince(){
+  var el = document.getElementById("sinceStrip");
+  if (!el) return;
+  var cut = Date.now() - 24 * 3600 * 1000;
+  var done = TIMELINE.filter(function(e){ return e.t >= cut; });
+  var drops = CLAIMS.filter(function(cl){ return cl.t && cl.t >= cut; });
+  if (!done.length && !drops.length){ el.style.display = "none"; return; }
+  el.style.display = "";
+  var per = TEAMS.map(function(tm, ti){
+    var n = done.filter(function(e){ return e.team === ti; }).length;
+    return n ? teamSpan(tm.name) + " " + n : "";
+  }).filter(Boolean).join(" · ");
+  el.innerHTML = "🕘 Last 24 hours: <b>" + done.length + "</b> " + (done.length === 1 ? "tile" : "tiles") + " landed" + (per ? " (" + per + ")" : "") + " · <b>" + drops.length + "</b> " + (drops.length === 1 ? "drop" : "drops") + " logged";
+}
+
 /* ============ TEAM VIEW ============ */
 var curTeam = 1; /* Unpossible first: the home team */
+var TEAM_SLUGS = ["buying", "unpossible", "2b"];
 function renderTeamTabs(){
   document.getElementById("teamTabs").innerHTML = TEAMS.map(function(tm, i){
     return '<button data-team="' + i + '" style="color:' + tm.color + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
   }).join("");
+}
+function teamEhpHtml(tm){
+  var tp = PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); })
+    .sort(function(a, b){ return b.ehp - a.ehp; });
+  if (!tp.length) return '<div class="team-ehp"><h4>EHP / EHB</h4><div style="color:var(--mut);font-weight:700">Loading from Wise Old Man…</div></div>';
+  var tEhp = tp.reduce(function(a, p){ return a + p.ehp; }, 0);
+  var tEhb = tp.reduce(function(a, p){ return a + p.ehb; }, 0);
+  return '<div class="team-ehp"><h4>EHP / EHB</h4>' + tp.map(function(p){
+    return '<div class="member"><span>' + esc(p.name) + '</span><span class="rsn">' + p.ehp.toFixed(1) + ' EHP · ' + p.ehb.toFixed(1) + ' EHB</span></div>';
+  }).join("") + '<div class="member"><span><b>Team total</b></span><span class="rsn"><b>' + tEhp.toFixed(1) + ' EHP · ' + tEhb.toFixed(1) + ' EHB</b></span></div></div>';
 }
 function renderTeam(){
   renderTeamTabs();
@@ -693,7 +738,7 @@ function renderTeam(){
     tm.members.map(function(m){
       return '<div class="member"><span>' + esc(m.d) + '</span>' + (m.cap ? '<span class="cap">Captain</span>' : '') +
         (m.r ? '<span class="rsn">' + esc(m.r) + '</span>' : '') + '</div>';
-    }).join("");
+    }).join("") + teamEhpHtml(tm);
   var tiles = TILES.map(function(tile, idx){
     var done = tm.done.indexOf(idx) >= 0;
     return '<button class="tile tile-lg ' + (done ? "done" : "open") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + '">' +
@@ -715,8 +760,9 @@ function renderTeam(){
   document.getElementById("skipsBox").innerHTML = '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span> has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
   var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
   document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
-    return '<tr><td>' + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + sourceLink(cl) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
-  }).join("") : '<tr><td colspan="4" class="empty">No items received yet.</td></tr>';
+    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+  }).join("") : '<tr><td colspan="5" class="empty">No items received yet.</td></tr>';
+  renderRecap();
 }
 
 /* ============ MVP ============ */
@@ -936,27 +982,81 @@ var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2
 function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
 function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return ccImg(i); return ''; }
 function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
+function itemIcon(cl){ var fn = cl.w ? decodeURIComponent(cl.w) : String(cl.item).replace(/ /g, "_"); return '<img class="item-ico" src="https://oldschool.runescape.wiki/w/Special:FilePath/' + encodeURIComponent(fn) + '.png" alt="" loading="lazy" onerror="this.remove()">'; }
 function itemLink(cl){ var u = cl.w ? 'https://oldschool.runescape.wiki/w/' + cl.w : 'https://oldschool.runescape.wiki/w/Special:Search?search=' + encodeURIComponent(cl.item); return '<a class="wl" href="' + u + '" target="_blank" rel="noopener">' + esc(cl.item) + '</a>'; }
 function sourceLink(cl){ var t = cl.sw || (typeof cl.tile === 'number' && window.WIKI ? WIKI[cl.tile] : null); return t ? '<a class="wl" href="https://oldschool.runescape.wiki/w/' + t + '" target="_blank" rel="noopener">' + esc(cl.source) + '</a>' : esc(cl.source); }
 var peopleMarkers = [];
+var peoplePos = []; /* {mk, gx, gy, k} per PEOPLE index, for pixel-offset layout */
+var bubbleTimer = null, bubbleOrder = [], bubbleStart = 0;
+function peopleSlotPx(k){
+  /* Pixel ring slots around a tile pin. Slot 0 would sit on the pin itself,
+     so the first person starts on the inner ring and the pin stays visible. */
+  var rings = [[38, 8], [62, 12], [88, 16], [116, 20]];
+  var n = k;
+  for (var r = 0; r < rings.length; r++){
+    if (n < rings[r][1]){
+      var a = (n / rings[r][1]) * Math.PI * 2 - Math.PI / 2;
+      return [Math.round(Math.cos(a) * rings[r][0]), Math.round(Math.sin(a) * rings[r][0])];
+    }
+    n -= rings[r][1];
+  }
+  var a2 = (n % 24) / 24 * Math.PI * 2;
+  return [Math.round(Math.cos(a2) * 145), Math.round(Math.sin(a2) * 145)];
+}
+function peopleLayout(){
+  if (!progMap) return;
+  var z = progMap.getZoom();
+  peoplePos.forEach(function(pp){
+    if (!pp) return;
+    var off = peopleSlotPx(pp.k);
+    var pt = progMap.project([12800 - pp.gy, pp.gx], z);
+    pp.mk.setLatLng(progMap.unproject([pt.x + off[0], pt.y + off[1]], z));
+  });
+}
+function bubbleShow(){
+  var shown = 0;
+  bubbleOrder.forEach(function(pi, i){
+    var mk = peopleMarkers[pi];
+    var el = mk && mk.getElement ? mk.getElement() : null;
+    var b = el ? el.querySelector(".pfp-bubble") : null;
+    if (!b) return;
+    var on = bubbleOrder.length <= 5 || ((i - bubbleStart + bubbleOrder.length) % bubbleOrder.length) < 5;
+    b.classList.toggle("show", on);
+    if (on) shown++;
+  });
+  return shown;
+}
+function bubbleCycleStart(){
+  if (bubbleTimer) clearInterval(bubbleTimer);
+  bubbleTimer = null;
+  bubbleShow();
+  if (bubbleOrder.length > 5){
+    bubbleTimer = setInterval(function(){ bubbleStart = (bubbleStart + 5) % bubbleOrder.length; bubbleShow(); }, 4500);
+  }
+}
+function bubbleJump(pi){
+  var i = bubbleOrder.indexOf(pi);
+  if (i < 0) return;
+  bubbleStart = i;
+  bubbleCycleStart();
+}
 function buildPeopleLayer(){
   if (!window.PEOPLE || !PEOPLE.length || !progMap) return;
   peopleLayer = L.layerGroup();
   peopleMarkers = [];
   var byTile = {};
-  var ring = [[0,0],[36,0],[-36,0],[0,36],[0,-36],[26,26],[-26,26],[26,-26],[-26,-26],[52,0],[-52,0],[0,52],[0,-52],[40,40],[-40,40],[40,-40],[-40,-40],[68,0],[-68,0]];
+  peoplePos = [];
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem("rwSpots") || "{}"); } catch (e) {}
-  var nowSpots = {}, glide = [];
+  var nowSpots = {}, glide = false;
   PEOPLE.forEach(function(p, pi){
     var base = p.t >= 0 ? MAP_POS[p.t] : [3222, 3218];
     if (!base) return;
-    var k = byTile[p.t] || 0; byTile[p.t] = k + 1;
-    var off = ring[k % ring.length];
     var tm = TEAMS[p.tm]; if (!tm) return;
-    var gx = base[0] + off[0], gy = base[1] + off[1];
+    var k = byTile[p.t] || 0; byTile[p.t] = k + 1;
+    var gx = base[0], gy = base[1];
     var key = p.r || p.n;
-    nowSpots[key] = [gx, gy];
+    nowSpots[key] = [gx, gy, k];
     var icon = L.divIcon({ className: "pfp-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
         (p.av ? '<img class="pfp-face" src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) +
@@ -964,7 +1064,9 @@ function buildPeopleLayer(){
     var prev = saved[key];
     var mk = L.marker(prev ? [12800 - prev[1], prev[0]] : [12800 - gy, gx], { icon: icon }).addTo(peopleLayer);
     peopleMarkers[pi] = mk;
-    if (prev && (prev[0] !== gx || prev[1] !== gy)) glide.push([mk, [12800 - gy, gx]]);
+    peoplePos[pi] = { mk: mk, gx: gx, gy: gy, k: k };
+    if (prev && (prev[0] !== gx || prev[1] !== gy || prev[2] !== k)) glide = true;
+    mk.on("click", function(){ bubbleJump(pi); });
     mk.bindPopup('<div class="pfp-pop">' + (p.av ? '<img src="' + esc(p.av) + '" alt="">' : '') +
       '<div><b>' + esc(p.un || p.n) + '</b><br>' +
       (p.r ? 'RSN: ' + esc(p.r) + '<br>' : '') +
@@ -973,11 +1075,24 @@ function buildPeopleLayer(){
   peopleLayer.addTo(progMap);
   var dl = document.getElementById("mapSearchList");
   if (dl) dl.innerHTML = PEOPLE.map(function(p){ return '<option value="' + esc(p.n) + '"></option>'; }).join("");
-  if (glide.length){
+  /* Speech bubbles: newest drops first, only 5 on screen at a time,
+     the rest cycle in every few seconds. Tapping a token jumps to theirs. */
+  var lastDrop = {};
+  (DROPS.claims || []).forEach(function(cl){ if (cl.t){ var kk = String(cl.player).toLowerCase(); if (!lastDrop[kk] || cl.t > lastDrop[kk]) lastDrop[kk] = cl.t; } });
+  bubbleOrder = PEOPLE.map(function(p, pi){ return p.b ? pi : -1; }).filter(function(x){ return x >= 0; });
+  bubbleOrder.sort(function(a, b){
+    function lt(p){ return Math.max(lastDrop[String(p.n).toLowerCase()] || 0, lastDrop[String(p.r).toLowerCase()] || 0, lastDrop[String(p.un).toLowerCase()] || 0); }
+    return lt(PEOPLE[b]) - lt(PEOPLE[a]);
+  });
+  bubbleStart = 0;
+  if (glide){
     var mel = document.getElementById("map");
     mel.classList.add("gliding");
-    setTimeout(function(){ glide.forEach(function(g){ g[0].setLatLng(g[1]); }); }, 600);
-    setTimeout(function(){ mel.classList.remove("gliding"); }, 3700);
+    setTimeout(function(){ peopleLayout(); }, 600);
+    setTimeout(function(){ mel.classList.remove("gliding"); bubbleCycleStart(); }, 3700);
+  } else {
+    peopleLayout();
+    bubbleCycleStart();
   }
   try { localStorage.setItem("rwSpots", JSON.stringify(nowSpots)); } catch (e) {}
 }
@@ -1028,6 +1143,7 @@ function initMap(){
   document.getElementById("mapPlay").addEventListener("click", mapPlayToggle);
   document.getElementById("mapReset").addEventListener("click", mapReset);
   buildPeopleLayer();
+  progMap.on("zoomend", function(){ peopleLayout(); });
   document.getElementById("mapPeople").addEventListener("click", function(){
     if (!peopleLayer) return;
     if (progMap.hasLayer(peopleLayer)){ progMap.removeLayer(peopleLayer); this.classList.remove("on"); }
@@ -1118,11 +1234,12 @@ function renderMomentum(){
     s += '<line x1="' + L0 + '" y1="' + y + '" x2="' + (L0 + pw) + '" y2="' + y + '" stroke="#22335a" stroke-width="1"' + (i ? ' stroke-dasharray="3 4"' : '') + '/>' +
          '<text x="' + (L0 - 8) + '" y="' + (+y + 4) + '" fill="#8fa3c8" font-size="11" font-weight="700" text-anchor="end">' + (mode === "xp" ? compact(v) : fmt(v)) + '</text>';
   }
-  var evTitles = {};
+  var evTitles = {}, evTiles = {};
   if (mode === "points") steps.forEach(function(st){
     var tile = TILES[st.e.tile], base = tile ? tile.p : 0, bonus = st.delta - base;
     evTitles[st.team + "|" + st.e.t + "|" + st.after] = fmtEventTime(st.e.t, true) + " · " + TEAMS[st.team].name + "\n" +
       (tile ? tile.t : "Tile") + " +" + base + (bonus > 0 ? " · line bonus +" + bonus : "") + "  →  " + st.after + " pts";
+    evTiles[st.team + "|" + st.e.t + "|" + st.after] = st.e.tile;
   });
   series.forEach(function(sr, ti){
     if (!sr.pts.length) return;
@@ -1130,7 +1247,7 @@ function renderMomentum(){
     var lastPt = sr.pts[sr.pts.length - 1];
     s += '<path d="' + d + 'L' + X(lastPt[0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'L' + X(sr.pts[0][0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'Z" fill="' + TEAMS[ti].color + '" opacity="0.10" stroke="none"/>';
     s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
-    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; if (ev) s += '<circle class="mom-hit" data-info="' + esc(ev) + '" cx="' + cx + '" cy="' + cy + '" r="10" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
+    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; var evT = evTiles[ti + "|" + p[0] + "|" + p[1]]; if (ev) s += '<circle class="mom-hit" data-info="' + esc(ev) + '"' + (evT != null ? ' data-tile="' + evT + '"' : '') + ' cx="' + cx + '" cy="' + cy + '" r="15" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
     var lp = sr.pts[sr.pts.length - 1];
     s += '<circle class="mom-hit" data-info="' + esc(TEAMS[ti].name + " — " + (mode === "xp" ? compact(lp[1]) + " XP" : lp[1] + " pts") + " right now") + '" cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="9" fill="transparent" style="cursor:pointer"><title>' + esc(TEAMS[ti].name) + '</title></circle>';
     s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5" pointer-events="none"/>';
@@ -1141,7 +1258,11 @@ function renderMomentum(){
   if (momInfo){
     momInfo.textContent = mode === "points" ? "Click a dot to see which tile it was." : "";
     document.querySelectorAll(".mom-hit").forEach(function(c){
-      c.addEventListener("click", function(){ momInfo.textContent = (c.getAttribute("data-info") || "").replace(/\n/g, " — "); });
+      c.addEventListener("click", function(){
+        momInfo.textContent = (c.getAttribute("data-info") || "").replace(/\n/g, " — ");
+        var mt = c.getAttribute("data-tile");
+        if (mt != null) openTile(+mt);
+      });
     });
   }
 }
@@ -1201,6 +1322,110 @@ function renderProgress(){
   }
 }
 
+/* ============ RECAP ============ */
+function progRatio(ti, tile, idx){
+  var lbl = String(teamProg(ti, tile, idx)).replace(/,/g, "");
+  var m = lbl.match(/([\d.]+)\s*\/\s*([\d.]+)/);
+  if (!m) return 0;
+  var cur = parseFloat(m[1]), tgt = parseFloat(m[2]);
+  return tgt > 0 ? cur / tgt : 0;
+}
+function recapLineList(tm){
+  var doneSet = {};
+  tm.done.forEach(function(i){ doneSet[i] = true; });
+  var lines = [], r, c;
+  for (r = 0; r < 7; r++){ var row = []; for (c = 0; c < 7; c++) row.push(r * 7 + c); lines.push({ name: "Row " + (r + 1), tiles: row, bonus: 3 }); }
+  for (c = 0; c < 7; c++){ var col = []; for (r = 0; r < 7; r++) col.push(r * 7 + c); lines.push({ name: "Column " + (c + 1), tiles: col, bonus: 3 }); }
+  lines.push({ name: "Diagonal", tiles: [0, 8, 16, 24, 32, 40, 48], bonus: 10 });
+  lines.push({ name: "Diagonal", tiles: [6, 12, 18, 24, 30, 36, 42], bonus: 10 });
+  return lines.map(function(L){
+    L.left = L.tiles.filter(function(t){ return !doneSet[t]; });
+    return L;
+  }).filter(function(L){ return L.left.length > 0; })
+    .sort(function(a, b){ return b.bonus - a.bonus || a.left.length - b.left.length; });
+}
+function recapData(){
+  var tm = TEAMS[curTeam], s = teamStats(tm);
+  var order = standings();
+  var rank = 0; order.forEach(function(o, i){ if (o.i === curTeam) rank = i; });
+  var tied = order.some(function(o){ return o.i !== curTeam && o.s.pts === s.pts; });
+  var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
+  var cut = 0;
+  try { cut = +(localStorage.getItem("rwRecapAt-" + curTeam) || 0); } catch (e) {}
+  if (!cut || cut < START) cut = Date.now() - 24 * 3600 * 1000;
+  var steps = pointSteps();
+  var done = TIMELINE.filter(function(e){ return e.team === curTeam && e.t > cut; }).map(function(e){
+    var st = null;
+    steps.forEach(function(x){ if (x.e === e) st = x; });
+    var names = [];
+    CLAIMS.forEach(function(cl){ if (cl.tile === e.tile && cl.team === tm.name && names.indexOf(cl.player) < 0) names.push(cl.player); });
+    return { tile: e.tile, delta: st ? st.delta : TILES[e.tile].p, names: names, flagged: !!FLAGS[curTeam + ":" + e.tile] };
+  });
+  var close = TILES.map(function(tile, idx){
+    if (tm.done.indexOf(idx) >= 0) return null;
+    var r = progRatio(curTeam, tile, idx);
+    return r >= 0.5 ? { idx: idx, r: r, lbl: teamProg(curTeam, tile, idx) } : null;
+  }).filter(Boolean).sort(function(a, b){ return b.r - a.r; }).slice(0, 5);
+  var allLines = recapLineList(tm);
+  var watch = allLines.slice(0, 3);
+  var lineVal = {};
+  allLines.forEach(function(L){ L.left.forEach(function(t){ lineVal[t] = Math.max(lineVal[t] || 0, L.bonus); }); });
+  var nothing = TILES.map(function(tile, idx){
+    if (tm.done.indexOf(idx) >= 0) return null;
+    return progRatio(curTeam, tile, idx) <= 0 ? { idx: idx, score: tile.p + (lineVal[idx] || 0) } : null;
+  }).filter(Boolean).sort(function(a, b){ return b.score - a.score; }).slice(0, 4);
+  var flaggedDone = tm.done.filter(function(idx){ return FLAGS[curTeam + ":" + idx]; });
+  return { tm: tm, s: s, place: place, done: done, close: close, watch: watch, nothing: nothing, flaggedDone: flaggedDone };
+}
+function recapText(){
+  var d = recapData(), tm = d.tm;
+  var day = new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" });
+  var out = ["**" + tm.name + "** · " + day + " · " + d.s.pts + " pts · " + d.place + " · " + (3 - tm.skips) + " skips left"];
+  var doneLines = d.done.filter(function(x){ return !x.flagged; }).map(function(x){
+    return TILES[x.tile].t + " +" + x.delta + (x.names.length ? " (" + x.names.join(", ") + ")" : "");
+  });
+  if (doneLines.length){ out.push("", "✅ Done"); doneLines.forEach(function(l){ out.push(l); }); }
+  if (d.close.length){ out.push("", "⏳ Close"); d.close.forEach(function(c){ out.push(TILES[c.idx].t + " " + c.lbl); }); }
+  if (d.watch.length){ out.push("", "🎯 Line watch"); d.watch.forEach(function(L){
+    out.push(L.name + ": " + L.left.length + (L.left.length === 1 ? " tile" : " tiles") + " left (+" + L.bonus + "). Need: " + L.left.map(function(t){ return TILES[t].t; }).join(", "));
+  }); }
+  if (d.nothing.length){ out.push("", "❌ Nothing yet"); d.nothing.forEach(function(n){ out.push(TILES[n.idx].t + " (" + TILES[n.idx].p + ")"); }); }
+  return out.join("\n");
+}
+function renderRecap(){
+  var box = document.getElementById("recapBody");
+  if (!box) return;
+  var d = recapData();
+  var h = '<div style="font-weight:800;font-size:15px"><span style="color:' + d.tm.color + '">' + esc(d.tm.name) + '</span> · ' + d.s.pts + ' pts · ' + d.place + ' · ' + (3 - d.tm.skips) + ' skips left</div>';
+  if (d.done.length){
+    h += '<div class="recap-sec"><h4>✅ Done since the last recap</h4>' + d.done.map(function(x){
+      return '<div>' + esc(TILES[x.tile].t) + ' +' + x.delta + (x.names.length ? ' (' + esc(x.names.join(", ")) + ')' : '') + (x.flagged ? ' ⚠️' : '') + '</div>';
+    }).join("") + '</div>';
+  } else {
+    h += '<div class="recap-sec"><h4>✅ Done since the last recap</h4><div>Nothing new yet.</div></div>';
+  }
+  if (d.close.length) h += '<div class="recap-sec"><h4>⏳ Close</h4>' + d.close.map(function(c){ return '<div>' + esc(TILES[c.idx].t) + ' ' + esc(c.lbl) + '</div>'; }).join("") + '</div>';
+  if (d.watch.length) h += '<div class="recap-sec"><h4>🎯 Line watch</h4>' + d.watch.map(function(L){
+    return '<div>' + esc(L.name) + ': ' + L.left.length + (L.left.length === 1 ? ' tile' : ' tiles') + ' left (+' + L.bonus + '). Need: ' + esc(L.left.map(function(t){ return TILES[t].t; }).join(", ")) + '</div>';
+  }).join("") + '</div>';
+  if (d.nothing.length) h += '<div class="recap-sec"><h4>❌ Nothing yet</h4>' + d.nothing.map(function(n){ return '<div>' + esc(TILES[n.idx].t) + ' (' + TILES[n.idx].p + ')</div>'; }).join("") + '</div>';
+  if (d.flaggedDone.length) h += '<div class="recap-sec"><h4>⚠️ Held back</h4>' + d.flaggedDone.map(function(idx){
+    return '<div>' + esc(TILES[idx].t) + ': ' + esc(FLAGS[curTeam + ":" + idx]) + ' Left out of the Discord paste.</div>';
+  }).join("") + '</div>';
+  box.innerHTML = h;
+}
+document.getElementById("recapCopy").addEventListener("click", function(){
+  var txt = recapText();
+  var note = document.getElementById("recapNote");
+  function ok(){ try { localStorage.setItem("rwRecapAt-" + curTeam, String(Date.now())); } catch (e) {} note.textContent = "Copied. The next recap starts from now."; renderRecap(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ note.textContent = "Copy failed on this browser."; });
+  else {
+    var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); } catch (e) { note.textContent = "Copy failed on this browser."; }
+    ta.remove();
+  }
+});
+
 /* ============ WIRING ============ */
 function setView(v){
   var views = ["overview","team","ehb","mvp","progress"];
@@ -1215,6 +1440,7 @@ function setView(v){
     a.classList.toggle("on", a.getAttribute("data-nav") === v);
   });
   var url = new URL(window.location.href); url.searchParams.set("view", v);
+  url.searchParams.set("team", TEAM_SLUGS[curTeam]);
   history.replaceState(null, "", url);
   window.scrollTo({ top: 0 });
   if (v === "progress") renderProgress();
@@ -1226,7 +1452,14 @@ document.querySelectorAll("[data-nav]").forEach(function(a){
   a.addEventListener("click", function(e){ e.preventDefault(); setView(a.getAttribute("data-nav")); });
 });
 document.getElementById("teamTabs").addEventListener("click", function(e){
-  var b = e.target.closest("button[data-team]"); if (b){ curTeam = +b.getAttribute("data-team"); renderTeam(); }
+  var b = e.target.closest("button[data-team]");
+  if (b){
+    curTeam = +b.getAttribute("data-team");
+    try { localStorage.setItem("rwTeam", String(curTeam)); } catch (err) {}
+    var url = new URL(window.location.href); url.searchParams.set("team", TEAM_SLUGS[curTeam]);
+    history.replaceState(null, "", url);
+    renderTeam();
+  }
 });
 document.addEventListener("click", function(e){
   var t = e.target.closest("[data-tile]"); if (t) openTile(+t.getAttribute("data-tile"));
@@ -1307,6 +1540,8 @@ document.getElementById("tlSlider").addEventListener("click", function(e){
   }
 })();
 function tick(){
+  var ul = document.getElementById("updatedLine");
+  if (ul && UPDATED) ul.textContent = "Last updated " + fmtEventTime(UPDATED, true) + " ET · scores and drops refresh every 30 minutes";
   var now = Date.now();
   var pct = Math.max(0, Math.min(100, (now - START) / (END - START) * 100));
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
@@ -1337,7 +1572,14 @@ var TILE_BLURB = {
 document.getElementById("tileInfo").innerHTML = TILES.map(function(t, i){
   return '<p><b>' + esc(t.t) + ' — ' + t.p + (t.p === 1 ? ' point.' : ' points.') + '</b>' + (TILE_DESC[i] ? ' ' + esc(TILE_DESC[i]) : '') + '</p>';
 }).join("");
-renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); loadWOM(); tick(); setInterval(tick, 60000);
+(function(){
+  var q = new URLSearchParams(window.location.search);
+  var tp = q.get("team"), ti = -1;
+  if (tp != null){ ti = TEAM_SLUGS.indexOf(tp.toLowerCase()); if (ti < 0 && /^[0-2]$/.test(tp)) ti = +tp; }
+  if (ti >= 0) curTeam = ti;
+  else { var sv = null; try { sv = localStorage.getItem("rwTeam"); } catch (e) {} if (sv != null && TEAMS[+sv]) curTeam = +sv; }
+})();
+renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); loadWOM(); tick(); setInterval(tick, 60000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
 </body>
