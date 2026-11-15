@@ -142,7 +142,7 @@ td.r,th.r{text-align:right}
   .team-cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"board board" "side lb"}
   #teamBoard{grid-area:board} #teamSide{grid-area:side} #teamLb{grid-area:lb}
 }
-@media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamLb{grid-area:auto}}
+@media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamLb{grid-area:auto}#teamBoard{order:-1}}
 /* Phones: a labelled 7x7 board cannot fit 320px, so it scrolls sideways inside its own card instead of widening the page. */
 #teamBoard{overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:600px){#teamBoard .grid7{min-width:500px}#teamBoard{padding:12px}}
