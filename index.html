@@ -228,8 +228,16 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .flagb{position:absolute;left:1px;bottom:0;font-size:10px;line-height:1;z-index:2}
 .m-flag{color:#ffb02e;font-weight:700;font-size:12.5px;padding:2px 0 10px 26px;border-bottom:1px solid var(--hair)}
 .pfp-node{background:none;border:none}
-.pfp-badge{width:26px;height:26px;border-radius:50%;border:2px solid #fff;overflow:hidden;background:#1a2438;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;box-shadow:0 1px 5px rgba(0,0,0,.65);cursor:pointer}
-.pfp-badge img{width:100%;height:100%;object-fit:cover}
+.pfp-badge{position:relative;width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;background:#1a2438;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85);cursor:pointer}
+.pfp-badge img.pfp-face{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pfp-badge .pfp-cc{position:absolute;right:-6px;bottom:-6px;width:15px;height:15px;background:#0d1526;border:1.5px solid #33477a;border-radius:50%;padding:1.5px;box-sizing:border-box;image-rendering:pixelated;z-index:2}
+.cc-ico{width:15px;height:15px;vertical-align:-3px;margin-right:5px;image-rendering:pixelated}
+.map-dim{filter:brightness(.64) saturate(.78) contrast(1.03)}
+.map-search{background:#0d1830;border:1.5px solid #2c3d63;border-radius:9px;color:#e8eefc;padding:6px 10px;font:700 13px Nunito,'Segoe UI',sans-serif;min-width:175px}
+.map-search:focus{outline:none;border-color:#f2b134}
+#map.gliding .leaflet-marker-icon{transition:transform 1.5s ease}
+.pfp-badge.found{animation:pfpPulse .8s ease 4}
+@keyframes pfpPulse{0%,100%{box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85)}50%{box-shadow:0 0 0 4px #f2b134,0 0 22px #f2b134}}
 .pfp-pop{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.45;color:#e8ecf2}
 .pfp-pop img{width:44px;height:44px;border-radius:50%}
 .leaflet-popup-content-wrapper{background:#0d1526;color:#e8ecf2;border-radius:10px}
@@ -389,6 +397,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
           <button id="mapPlay">▶ Play the week</button>
           <button id="mapReset">Reset</button>
           <button id="mapPeople" class="on">👥 People</button>
+          <input id="mapSearch" class="map-search" type="text" placeholder="🔍 Find a player…" list="mapSearchList" autocomplete="off">
+          <datalist id="mapSearchList"></datalist>
           <span id="mapCaption"></span>
         </div>
         <div class="map-legend" id="mapLegend"></div>
@@ -652,7 +662,7 @@ function renderClaims(){
   var cb = document.getElementById("claimsBody");
   if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; }
   else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + esc(cl.item) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join(""); }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
@@ -709,14 +719,14 @@ function renderMVP(){
   var medals = ["🥈","🥇","🥉"], labels = ["2nd","1st","3rd"];
   document.getElementById("podium").innerHTML = top.map(function(p, i){
     if (!p) return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">—</div><div class="pts2">0 XP</div><div class="tm">' + labels[i] + ' place</div></div>';
-    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + esc(p.team) + '</div></div>';
+    return '<div class="pod"><div class="medal">' + medals[i] + '</div><div class="who">' + ccImgFor(p.team) + esc(p.name) + '</div><div class="pts2">' + fmt(p.xp) + ' XP gained</div><div class="tm">' + esc(p.team) + '</div></div>';
   }).join("");
   if (!ranked.length){
     document.getElementById("mvpBody").innerHTML = '<tr><td colspan="6" class="empty">Loading from Wise Old Man…</td></tr>';
     return;
   }
   document.getElementById("mvpBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   var total = ranked.reduce(function(a, p){ return a + p.xp; }, 0);
   document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + ranked.length + '</b> · Total XP Gained <b>' + fmt(total) + '</b> · Average per Player <b>' + fmt(total / ranked.length) + '</b>';
@@ -738,7 +748,7 @@ function renderEHB(){
     return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
   document.getElementById("ehbFullBody").innerHTML = ranked.map(function(p, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + esc(p.team) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td><td class="r">' + fmt(p.xp) + '</td></tr>';
   }).join("");
 }
 
@@ -913,27 +923,65 @@ function mapReset(){
 }
 var mapMarkers = [];
 var peopleLayer = null;
+var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2b.png"];
+function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
+function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return ccImg(i); return ''; }
+var peopleMarkers = [];
 function buildPeopleLayer(){
   if (!window.PEOPLE || !PEOPLE.length || !progMap) return;
   peopleLayer = L.layerGroup();
+  peopleMarkers = [];
   var byTile = {};
   var ring = [[0,0],[36,0],[-36,0],[0,36],[0,-36],[26,26],[-26,26],[26,-26],[-26,-26],[52,0],[-52,0],[0,52],[0,-52],[40,40],[-40,40],[40,-40],[-40,-40],[68,0],[-68,0]];
-  PEOPLE.forEach(function(p){
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("rwSpots") || "{}"); } catch (e) {}
+  var nowSpots = {}, glide = [];
+  PEOPLE.forEach(function(p, pi){
     var base = p.t >= 0 ? MAP_POS[p.t] : [3222, 3218];
     if (!base) return;
     var k = byTile[p.t] || 0; byTile[p.t] = k + 1;
     var off = ring[k % ring.length];
     var tm = TEAMS[p.tm]; if (!tm) return;
-    var icon = L.divIcon({ className: "pfp-node", iconSize: [26, 26], iconAnchor: [13, 13],
+    var gx = base[0] + off[0], gy = base[1] + off[1];
+    var key = p.r || p.n;
+    nowSpots[key] = [gx, gy];
+    var icon = L.divIcon({ className: "pfp-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
-        (p.av ? '<img src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) + '</div>' });
-    var mk = L.marker([12800 - (base[1] + off[1]), base[0] + off[0]], { icon: icon }).addTo(peopleLayer);
+        (p.av ? '<img class="pfp-face" src="' + esc(p.av) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(p.n.charAt(0)) + '\'">' : esc(p.n.charAt(0))) +
+        '<img class="pfp-cc" src="' + CC_ICONS[p.tm] + '" alt="">' + '</div>' });
+    var prev = saved[key];
+    var mk = L.marker(prev ? [12800 - prev[1], prev[0]] : [12800 - gy, gx], { icon: icon }).addTo(peopleLayer);
+    peopleMarkers[pi] = mk;
+    if (prev && (prev[0] !== gx || prev[1] !== gy)) glide.push([mk, [12800 - gy, gx]]);
     mk.bindPopup('<div class="pfp-pop">' + (p.av ? '<img src="' + esc(p.av) + '" alt="">' : '') +
       '<div><b>' + esc(p.un || p.n) + '</b><br>' +
       (p.r ? 'RSN: ' + esc(p.r) + '<br>' : '') +
-      '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span><br>' + esc(p.w) + '</div></div>');
+      '<span style="color:' + tm.color + ';font-weight:800">' + ccImg(p.tm) + esc(tm.name) + '</span><br>' + esc(p.w) + '</div></div>');
   });
   peopleLayer.addTo(progMap);
+  var dl = document.getElementById("mapSearchList");
+  if (dl) dl.innerHTML = PEOPLE.map(function(p){ return '<option value="' + esc(p.n) + '"></option>'; }).join("");
+  if (glide.length){
+    var mel = document.getElementById("map");
+    mel.classList.add("gliding");
+    setTimeout(function(){ glide.forEach(function(g){ g[0].setLatLng(g[1]); }); }, 450);
+    setTimeout(function(){ mel.classList.remove("gliding"); }, 2400);
+  }
+  try { localStorage.setItem("rwSpots", JSON.stringify(nowSpots)); } catch (e) {}
+}
+function focusPerson(pi){
+  var mk = peopleMarkers[pi];
+  if (!mk || !progMap) return;
+  if (peopleLayer && !progMap.hasLayer(peopleLayer)){
+    peopleLayer.addTo(progMap);
+    document.getElementById("mapPeople").classList.add("on");
+  }
+  progMap.flyTo(mk.getLatLng(), Math.max(progMap.getZoom(), 1), { duration: 1.1 });
+  setTimeout(function(){
+    mk.openPopup();
+    var el = mk.getElement();
+    if (el){ var b = el.querySelector(".pfp-badge"); if (b){ b.classList.add("found"); setTimeout(function(){ b.classList.remove("found"); }, 3300); } }
+  }, 1250);
 }
 function initMap(){
   var wrap = document.getElementById("mapWrap");
@@ -951,7 +999,7 @@ function initMap(){
   // image aligned to game coordinates at exactly 1px per game tile:
   // x 1024..3968, y 2112..4160. (The live tile service's zoomed-out
   // renders are stale — Varlamore and the Sailing seas are missing.)
-  L.imageOverlay('assets/gielinor-sailing.jpg', [[8640, 1024], [10688, 3968]], {
+  L.imageOverlay('assets/gielinor-sailing.jpg', [[8640, 1024], [10688, 3968]], { className: 'map-dim',
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
   progMap.fitBounds([[8750, 1150], [10450, 4000]]);
@@ -972,6 +1020,14 @@ function initMap(){
     if (!peopleLayer) return;
     if (progMap.hasLayer(peopleLayer)){ progMap.removeLayer(peopleLayer); this.classList.remove("on"); }
     else { peopleLayer.addTo(progMap); this.classList.add("on"); }
+  });
+  var msEl = document.getElementById("mapSearch");
+  msEl.addEventListener("change", function(){
+    var q = msEl.value.trim().toLowerCase(); if (!q) return;
+    for (var i = 0; i < PEOPLE.length; i++){
+      var p = PEOPLE[i];
+      if (p.n.toLowerCase() === q || (p.r && p.r.toLowerCase() === q) || (p.un && p.un.toLowerCase() === q) || p.n.toLowerCase().indexOf(q) === 0 || (p.r && p.r.toLowerCase().indexOf(q) === 0)){ focusPerson(i); return; }
+    }
   });
   mapReset();
   setTimeout(function(){ progMap.invalidateSize(); }, 50);
@@ -1072,7 +1128,7 @@ function renderHeat(){
     days.map(function(d){ return '<th>' + esc(d) + '</th>'; }).join("") + '</tr></thead><tbody>';
   pl.forEach(function(p){
     var tm = TEAMS[p.tm];
-    h += '<tr><td class="hm-name"><i class="map-dot" style="background:' + (tm ? tm.color : "#5a6c8c") + ';margin-right:7px"></i>' + esc(p.n) + '</td>';
+    h += '<tr><td class="hm-name">' + ccImg(p.tm) + esc(p.n) + '</td>';
     days.forEach(function(d, k){
       var g = p.g ? p.g[k] : null;
       if (g == null) h += '<td class="hm-cell hm-empty"></td>';
