@@ -575,17 +575,6 @@ td.when{white-space:nowrap}
           <span id="mapCaption"></span>
         </div>
         <div class="map-legend" id="mapLegend"></div>
-        <div class="tl-panel map-tl" id="tlPanel2">
-          <div class="tl-controls">
-            <button class="tl-play" id="tlPlay2" title="Play / pause">▶</button>
-            <button class="pillbtn" id="tlStart2">⏮ Start</button>
-            <span class="tl-clock" id="tlStamp2">Live</span>
-            <span class="tl-chip" id="tlElapsed2"></span>
-            <span class="tl-spds"><span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span></span>
-            <button class="pillbtn" id="tlFinal2">Back to live</button>
-          </div>
-          <div class="tl-slider" id="tlSlider2"><div class="tl-fill" id="tlFill2"></div><div id="tlDots2"></div><div class="tl-knob" id="tlKnob2"></div></div>
-        </div>
       </div>
     </div>
     <div class="prog-cols">
@@ -960,8 +949,9 @@ function podiumHTML(ranked, key, unit, fmtFn){
   }).join("");
 }
 function renderMVP(){
-  var byEhb = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
-  var byXp = PLAYERS.slice().sort(function(a, b){ return b.xp - a.xp || b.ehp - a.ehp; });
+  var TP = tlPlayers();
+  var byEhb = TP.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
+  var byXp = TP.slice().sort(function(a, b){ return b.xp - a.xp || b.ehp - a.ehp; });
   document.getElementById("pvmPodium").innerHTML = podiumHTML(byEhb, "ehb", "EHB");
   document.getElementById("skillPodium").innerHTML = podiumHTML(byXp, "xp", "XP", fmt);
   if (!PLAYERS.length){
@@ -991,7 +981,7 @@ function renderEhbFull(){
   }).join("") : '<tr><td colspan="6" class="empty">No players match that search.</td></tr>';
 }
 function renderEHB(){
-  var ranked = PLAYERS.slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
+  var ranked = tlPlayers().slice().sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
   var totalEhb = ranked.reduce(function(a, p){ return a + p.ehb; }, 0);
   var totalEhp = ranked.reduce(function(a, p){ return a + p.ehp; }, 0);
   document.getElementById("overallEhb").textContent = ranked.length ? totalEhb.toFixed(1) : "—";
@@ -1049,7 +1039,7 @@ function loadWOM(){
           }
         });
       });
-      if (tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlApply(); renderEHB(); renderMVP(); }
+      if (tlActive){ tlApply(); renderEHB(); renderMVP(); renderCaptain(); renderChase(); }
       else { renderBoards(); renderTeam(); renderEHB(); renderMVP(); renderCaptain(); }
     })
     .catch(function(){
@@ -1061,7 +1051,7 @@ function loadWOM(){
 /* ============ TILE MODAL ============ */
 function tileWho(ti, idx){
   var seen = {}, out = [];
-  CLAIMS.forEach(function(cl){
+  claimsAt().forEach(function(cl){
     if (cl.tile !== idx || cl.team !== TEAMS[ti].name) return;
     var k = cl.player + "|" + cl.item;
     if (seen[k]) return; seen[k] = 1;
@@ -1681,12 +1671,12 @@ function canonName(any){
 }
 function capTeamPlayers(ti){
   var tm = TEAMS[ti];
-  return PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); });
+  return tlPlayers().filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); });
 }
 function picksForTile(ti, tile, idx){
   var tm = TEAMS[ti];
   var claimCount = {};
-  CLAIMS.forEach(function(cl){
+  claimsAt().forEach(function(cl){
     if (cl.tile === idx && String(cl.team).toLowerCase() === tm.name.toLowerCase()){
       var cn = canonName(cl.player) || cl.player, k = String(cn).toLowerCase();
       claimCount[k] = (claimCount[k] || 0) + cl.count;
@@ -1723,7 +1713,7 @@ function avFor(name){
 }
 function renderChase(){
   var entries = TILES.map(function(tile, idx){
-    var st = TILESTATS[idx];
+    var st = chasedAt(idx);
     return { idx: idx, tile: tile, st: st, total: st ? st.tot.reduce(function(a, b){ return a + b; }, 0) : 0 };
   }).sort(function(a, b){ return b.total - a.total; });
   var withData = entries.filter(function(e){ return e.total > 0; }).length;
@@ -1745,7 +1735,7 @@ function renderChase(){
   }).join("");
 }
 function openChaseTile(idx){
-  var tile = TILES[idx], st = TILESTATS[idx];
+  var tile = TILES[idx], st = chasedAt(idx);
   document.getElementById("mIcon").innerHTML = iconHTML(tile);
   document.getElementById("mTitle").textContent = tile.t;
   document.getElementById("mPts").textContent = tile.p + " pts";
@@ -1782,37 +1772,41 @@ function renderCaptain(){
   if (!PLAYERS.length){
     picksBox.innerHTML = '<div class="empty">Loading from Wise Old Man…</div>';
   } else {
-    var seen = {}, tilesOut = [];
-    recapLineList(tm).slice(0, 2).forEach(function(L){
-      L.left.forEach(function(idx){
-        if (!seen[idx]){ seen[idx] = 1; tilesOut.push({ idx: idx, why: L.left.length === 1 ? "Last tile on the " + L.name.toLowerCase() + " (+" + L.bonus + ")" : L.left.length + " left on the " + L.name.toLowerCase() + " (+" + L.bonus + ")" }); }
-      });
-    });
+    var lines = recapLineList(tm), cands = [];
     TILES.forEach(function(tile, idx){
-      if (tm.done.indexOf(idx) >= 0 || seen[idx]) return;
-      if (progRatio(curTeam, tile, idx) >= 0.5){ seen[idx] = 1; tilesOut.push({ idx: idx, why: "Close: " + teamProg(curTeam, tile, idx) }); }
+      if (tm.done.indexOf(idx) >= 0) return;
+      var frac = progRatio(curTeam, tile, idx), bestLine = null;
+      lines.forEach(function(L){
+        if (L.tiles.indexOf(idx) < 0) return;
+        if (!bestLine || L.bonus / L.left.length > bestLine.bonus / bestLine.left.length) bestLine = L;
+      });
+      var tier = frac >= 0.5 ? 0 : (bestLine && bestLine.left.length <= 2 ? 1 : 2), why;
+      if (frac > 0) why = "Close: " + teamProg(curTeam, tile, idx);
+      else if (bestLine && bestLine.left.length <= 3) why = bestLine.left.length === 1 ? "Last tile on the " + bestLine.name.toLowerCase() + " (+" + bestLine.bonus + ")" : bestLine.left.length + " left on the " + bestLine.name.toLowerCase() + " (+" + bestLine.bonus + ")";
+      else why = "Worth " + tile.p + " pts";
+      cands.push({ idx: idx, why: why, score: (2 - tier) * 10000 + frac * 1000 + (bestLine ? bestLine.bonus / bestLine.left.length * 10 : 0) + tile.p });
     });
-    tilesOut = tilesOut.slice(0, 5);
+    cands.sort(function(a, b){ return b.score - a.score; });
+    var tilesOut = cands.slice(0, 5);
     var usedCt = {};
     picksBox.innerHTML = tilesOut.length ? '<div class="pick-grid">' + tilesOut.map(function(t){
       var tile = TILES[t.idx];
       var res = picksForTile(curTeam, tile, t.idx);
-      var who = res.list.filter(function(c){ return (usedCt[String(c.cn).toLowerCase()] || 0) < 2; }).slice(0, 3);
-      if (!who.length) who = res.list.slice(0, 3);
+      var who = res.list.filter(function(c){ return c.ev && (usedCt[String(c.cn).toLowerCase()] || 0) < 2; }).slice(0, 3);
       who.forEach(function(c){ var k = String(c.cn).toLowerCase(); usedCt[k] = (usedCt[k] || 0) + 1; });
-      var head = res.hasEv ? "" : '<div class="pick-none">Nobody on this tile yet · free grinders:</div>';
+      var head = "";
       return '<div class="pick-card"><div class="pc-head">' + iconHTML(tile) + '<span class="pick-name">' + esc(tile.t) + '</span></div>' +
         '<span class="pick-why">' + esc(t.why) + '</span>' + head +
         (who.length ? who.map(function(c){ var av = avFor(c.cn); return '<div class="pc-row">' + (av ? '<img src="' + esc(av) + '" alt="" onerror="this.remove()">' : '') + '<span><b>' + esc(c.p.name) + '</b> · ' + esc(c.why) + '</span></div>'; }).join("") : '<div class="pc-row">Nobody on the team has a head start logged yet.</div>') + '</div>';
     }).join("") + '</div>' : '<div class="empty">No urgent tiles right now.</div>';
   }
   var helped = {};
-  CLAIMS.forEach(function(cl){
+  claimsAt().forEach(function(cl){
     var k = String(canonName(cl.player) || cl.player).toLowerCase();
     helped[k] = helped[k] || {};
     helped[k][cl.tile] = 1;
   });
-  var gr = PLAYERS.map(function(p){
+  var gr = tlPlayers().map(function(p){
     var pk = String(canonName(p.name) || canonName(p.raw && p.raw.player ? p.raw.player.username : "") || p.name).toLowerCase();
     var tiles = helped[pk] ? Object.keys(helped[pk]).length : 0;
     return { p: p, tiles: tiles, score: tiles * 1000 + p.ehb * 100 + p.ehp };
@@ -2079,6 +2073,36 @@ document.addEventListener("click", function(e){
 function openRules(){ document.getElementById("rulesBackdrop").classList.add("open"); }
 document.getElementById("rulesBtn").addEventListener("click", openRules);
 
+/* ============ TIME-AWARE DATA (timeline replay) ============ */
+function tlFac(key, ti){
+  if (!tlActive || typeof HIST === "undefined" || !HIST.t || !HIST.t.length) return 1;
+  var arr = HIST[key] && HIST[key][ti]; if (!arr || !arr.length) return 1;
+  var cutoff = tlCutoff(), i = 0;
+  for (var k = 0; k < HIST.t.length; k++){ if (HIST.t[k] <= cutoff) i = k; else break; }
+  var now = arr[arr.length - 1]; if (!now) return 1;
+  return (arr[Math.min(i, arr.length - 1)] || 0) / now;
+}
+function tlPlayers(){
+  if (!tlActive) return PLAYERS;
+  return PLAYERS.map(function(p){
+    var ti = 0; TEAMS.forEach(function(tm, x){ if (p.team && p.team.toLowerCase() === tm.name.toLowerCase()) ti = x; });
+    return { name: p.name, team: p.team, raw: p.raw, xp: p.xp * tlFac("txp", ti), ehb: p.ehb * tlFac("tehb", ti), ehp: p.ehp * tlFac("tehp", ti) };
+  });
+}
+function claimsAt(){
+  if (!tlActive) return CLAIMS;
+  var c = tlCutoff();
+  return CLAIMS.filter(function(cl){ return !cl.t || cl.t <= c; });
+}
+function chasedAt(idx){
+  var st = TILESTATS[idx]; if (!st) return null;
+  if (!tlActive) return st;
+  var key = st.u === "XP" ? "txp" : "tehb";
+  return { u: st.u,
+    tot: st.tot.map(function(v, ti){ return Math.round(v * tlFac(key, ti)); }),
+    top: (st.top || []).map(function(r){ return [r[0], r[1], Math.round(r[2] * tlFac(key, r[1]))]; }).filter(function(r){ return r[2] > 0; }) };
+}
+
 /* ============ TIMELINE ============ */
 var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
 function tlMax(){ return Math.max(0, Math.min(END, Date.now()) - START); }
@@ -2090,7 +2114,13 @@ function tlApply(){
     tm.done = TIMELINE.filter(function(e){ return e.team === ti && e.t <= cutoff; }).map(function(e){ return e.tile; });
   });
   var sig = TEAMS.map(function(tm){ return tm.done.join(","); }).join("|");
-  if (sig !== tlSig){ tlSig = sig; renderBoards(); renderTeam(); }
+  var sigChanged = sig !== tlSig;
+  if (sigChanged){ tlSig = sig; renderBoards(); renderTeam(); }
+  var nowMs = Date.now();
+  if (tlActive && (sigChanged || nowMs - tlDataAt > 600)){
+    tlDataAt = nowMs;
+    renderEHB(); renderMVP(); renderCaptain(); renderChase();
+  }
   var d = new Date(cutoff);
   var stampTxt = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   var landed = TIMELINE.filter(function(e){ return e.t <= cutoff; }).length;
@@ -2128,7 +2158,7 @@ function tlExit(){
   tlPause();
   if (LIVE) TEAMS.forEach(function(tm, ti){ tm.done = LIVE[ti]; });
   tlActive = false; LIVE = null; tlSig = null;
-  renderBoards(); renderTeam();
+  renderBoards(); renderTeam(); renderEHB(); renderMVP(); renderCaptain(); renderChase();
   if (typeof mapShowLive === "function"){ mapShowLive(); var cap2 = document.getElementById("mapCaption"); if (cap2) cap2.textContent = mapFinalCaption(); }
   TL_BARS.forEach(function(b){
     var st = document.getElementById(b.stamp); if (st) st.textContent = "Live";
@@ -2138,10 +2168,9 @@ function tlExit(){
   });
 }
 var TL_BARS = [
-  { play: "tlPlay", start: "tlStart", fin: "tlFinal", stamp: "tlStamp", elapsed: "tlElapsed", fill: "tlFill", knob: "tlKnob", dots: "tlDots", slider: "tlSlider" },
-  { play: "tlPlay2", start: "tlStart2", fin: "tlFinal2", stamp: "tlStamp2", elapsed: "tlElapsed2", fill: "tlFill2", knob: "tlKnob2", dots: "tlDots2", slider: "tlSlider2" }
+  { play: "tlPlay", start: "tlStart", fin: "tlFinal", stamp: "tlStamp", elapsed: "tlElapsed", fill: "tlFill", knob: "tlKnob", dots: "tlDots", slider: "tlSlider" }
 ];
-var tlHold = 0;
+var tlHold = 0, tlDataAt = 0;
 function tlPlayStart(){
   if (tlPlaying){ tlPause(); return; }
   tlEnter();
@@ -2188,7 +2217,7 @@ TL_BARS.forEach(function(b){
     var dt = document.getElementById(b.dots); if (dt && tlMax()) dt.innerHTML = TIMELINE.map(function(e){ return '<i style="left:' + ((e.t - START) / tlMax() * 100).toFixed(1) + '%"></i>'; }).join("");
   });
   if (TIMELINE.length){
-    document.getElementById("tlNote").textContent = "Press play and it loops through the week. Times are when each tile landed.";
+    document.getElementById("tlNote").textContent = "Press play and it loops through the week. Every board, table and the map follow the bar. Times are when each tile landed.";
   }
 })();
 function tick(){
