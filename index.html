@@ -152,10 +152,10 @@ td.r,th.r{text-align:right}
 .tile-lg .prog{overflow-wrap:anywhere;max-width:100%;text-align:center}
 /* 1081-1399px: three columns left the board ~350px wide with 10.5px labels in ~44px tiles; put the board on its own row. */
 @media(max-width:1399px){
-  .team-cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"board board" "side lb"}
-  #teamBoard{grid-area:board} #teamSide{grid-area:side} #teamLb{grid-area:lb}
+  .team-cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"board board" "side right"}
+  #teamBoard{grid-area:board} #teamSide{grid-area:side} #teamRight{grid-area:right}
 }
-@media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamLb{grid-area:auto}#teamBoard{order:-1}}
+@media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamRight{grid-area:auto}#teamBoard{order:-1}}
 /* Phones: a labelled 7x7 board cannot fit 320px, so it scrolls sideways inside its own card instead of widening the page. */
 #teamBoard{overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0}
 .team-cols>*{min-width:0}
@@ -328,6 +328,57 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
 .feed-tile{flex:1;min-width:0;overflow-wrap:anywhere}
 .feed-pts{color:var(--acc);font-weight:900;flex:none}
 @media(max-width:640px){.feed-row{flex-wrap:wrap;gap:4px 10px}.feed-time{width:100%}}
+/* Audit #3 fixes (Nov 15) */
+.podium .pod:nth-child(1){min-height:150px}
+.podium .pod:nth-child(2){min-height:172px}
+.podium .pod:nth-child(3){min-height:140px}
+.pod .who,.pod .tm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:640px){.podium .pod:nth-child(1){min-height:118px}.podium .pod:nth-child(2){min-height:136px}.podium .pod:nth-child(3){min-height:110px}}
+@media(min-width:1300px){.chase-grid{grid-template-columns:repeat(7,minmax(0,1fr))}.tc-big{font-size:20px}}
+.tc-card.zero{opacity:.55}
+.grid7{grid-auto-rows:1fr}
+.tile-lg .lab{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#view-ehb .note-card table{table-layout:fixed;width:100%}
+#view-ehb th:nth-child(1){width:6%}#view-ehb th:nth-child(2){width:30%}#view-ehb th:nth-child(3){width:24%}
+#view-ehb th:nth-child(4),#view-ehb th:nth-child(5),#view-ehb th:nth-child(6){width:13.3%}
+#view-ehb td{padding:6px 8px}
+#capGrinders table{table-layout:fixed;width:100%}
+#capGrinders th:nth-child(1){width:6%}#capGrinders th:nth-child(2){width:30%}#capGrinders th:nth-child(3){width:22%}
+td.when{white-space:nowrap}
+#view-overview .lower{align-items:start}
+#tlBtn{margin-left:auto;flex:none}
+.lb-main{flex:1;min-width:0}
+.lb-main .dt2{color:var(--mut);font-weight:700;font-size:12.5px;margin-top:1px}
+.team-right{display:flex;flex-direction:column;gap:18px;min-width:0}
+.hm-team td{font-weight:900;font-size:13.5px;padding:10px 4px 3px;text-align:left}
+.hm-more-row td{text-align:left;padding:2px 4px 8px}
+.pick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.pick-card{background:#0d1730;border:1px solid #22335a;border-radius:12px;padding:12px}
+.pc-head{display:flex;gap:8px;align-items:center}
+.pc-head img{width:26px;height:26px;object-fit:contain}
+.pick-card .pick-why{display:block;margin:5px 0 2px}
+.pc-row{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--mut);font-weight:700;line-height:1.35}
+.pc-row img{width:24px;height:24px;border-radius:50%;flex:none}
+.pc-row b{color:#fff}
+@media(max-width:1199px) and (min-width:641px){.pick-grid{display:flex;flex-wrap:wrap;justify-content:center}.pick-card{flex:1 1 200px;max-width:330px}}
+@media(min-width:1100px){.prog-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:stretch;margin-top:20px}.prog-cols>.tcard{margin-top:0}}
+@media(max-width:640px){
+  .pick-grid{grid-template-columns:minmax(0,1fr)}
+  .tl-txt{display:none}
+  #tlBtn{padding:8px 10px}
+  #view-ehb th:nth-child(3),#view-ehb td:nth-child(3),
+  #view-mvp th:nth-child(3),#view-mvp td:nth-child(3),#view-mvp th:nth-child(6),#view-mvp td:nth-child(6),
+  #capGrinders th:nth-child(3),#capGrinders td:nth-child(3){display:none}
+  #view-ehb td:nth-child(2),#view-mvp td:nth-child(2),#capGrinders td:nth-child(2){white-space:nowrap}
+  #view-overview #ehbBody tr:nth-child(n+6){display:none}
+  .chase-grid{grid-template-columns:minmax(0,1fr);gap:6px}
+  .tc-card{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name big" "bar bar" "teams teams";align-items:center;padding:9px 12px}
+  .tc-name{grid-area:name;min-height:0}
+  .tc-big{grid-area:big;font-size:17px;margin:0}
+  .tc-bar{grid-area:bar;margin:6px 0 4px}
+  .tc-teams{grid-area:teams}
+  th.src,td.src{display:none}
+}
 </style>
 </head>
 <body>
@@ -356,8 +407,8 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
     <button data-view="captain">🧭 Captain's Table</button>
     <button data-view="chase">🔥 Most Chased</button>
     <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
+    <button id="tlBtn">↺ <span class="tl-txt">Timeline</span></button>
   </div>
-  <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timeline</button></div>
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
       <button class="pillbtn" id="tlPlay">▶ Play</button>
@@ -375,13 +426,13 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
   <section class="view" id="view-overview">
     <div class="boards" id="boards"></div>
     <div class="tcard" id="sinceStrip" style="margin-top:16px;font-weight:700;display:none"></div>
-    <div id="womNote" style="color:var(--mut);font-weight:700;font-size:13.5px;margin-top:12px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there. Drop tiles and the items table come from the clan's drop log sheet.</div>
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th>When</th><th class="r">Count</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
         </div>
+        <div id="claimsMore" style="margin-top:10px"></div>
       </div>
       <div class="tcard">
         <h3>EHP / EHB Leaderboard</h3>
@@ -398,25 +449,21 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
     <div class="team-cols">
       <div class="side-card" id="teamSide"></div>
       <div class="board-card" id="teamBoard"></div>
-      <div class="side-card" id="teamLb"></div>
-    </div>
-    <div class="lower">
-      <div class="tcard">
-        <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Source</th><th>When</th><th class="r">Count</th></tr></thead>
-        <tbody id="teamClaimsBody"></tbody></table>
+      <div class="team-right" id="teamRight">
+        <div class="side-card" id="teamLb"></div>
+        <div class="tcard">
+          <h3>📣 Team Recap</h3>
+          <div id="recapBody"></div>
+          <button class="pillbtn" id="recapCopy" style="margin-top:12px">📋 Copy recap for Discord</button>
+          <span id="recapNote" style="color:var(--mut);font-weight:700;margin-left:8px"></span>
         </div>
-      </div>
-      <div class="tcard">
-        <h3>Skips</h3>
-        <div class="empty" id="skipsBox"></div>
       </div>
     </div>
     <div class="tcard" style="margin-top:20px">
-      <h3>📣 Team Recap</h3>
-      <div id="recapBody"></div>
-      <button class="pillbtn" id="recapCopy" style="margin-top:12px">📋 Copy recap for Discord</button>
-      <span id="recapNote" style="color:var(--mut);font-weight:700;margin-left:8px"></span>
+      <div class="tblwrap">
+      <table><thead><tr><th>Item</th><th>Player</th><th class="src">Source</th><th>When</th><th class="r">Count</th></tr></thead>
+      <tbody id="teamClaimsBody"></tbody></table>
+      </div>
     </div>
   </section>
 
@@ -454,9 +501,9 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
         </div>
       </div>
     </div>
-    <div class="tcard" style="margin-top:20px">
-      <div class="tfoot" id="mvpFoot" style="border-top:none;padding-top:4px">Total Players <b>0</b> · Total EHB <b>0</b> · Total EHP <b>0</b> · Total XP Gained <b>0</b></div>
-      <div style="text-align:right;padding:0 4px 6px"><a class="wl" href="#" onclick="setView('ehb');return false;" style="font-weight:800">Full ranking →</a></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px">
+      <div class="tfoot" id="mvpFoot" style="padding-top:0;text-align:left">Total Players <b>0</b> · Total EHB <b>0</b> · Total EHP <b>0</b> · Total XP Gained <b>0</b></div>
+      <a class="wl" href="#" onclick="setView('ehb');return false;" style="font-weight:800">Full ranking →</a>
     </div>
   </section>
 
@@ -499,7 +546,8 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
         <div class="map-legend" id="mapLegend"></div>
       </div>
     </div>
-    <div class="tcard" style="margin-top:20px">
+    <div class="prog-cols">
+    <div class="tcard">
       <h2>📈 Momentum</h2>
       <div class="mom-toggle" id="momToggle">
         <button data-mode="points" class="on">Points</button>
@@ -510,19 +558,21 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
       <div class="mom-info" id="momInfo"></div>
       <div class="mom-note" id="momNote"></div>
     </div>
+    <div class="tcard">
+      <h2>🕘 Timeline</h2>
+      <div id="feedBody"></div>
+    </div>
+    </div>
     <div class="tcard" style="margin-top:20px">
       <h2>🔥 Who's Grinding — XP per day</h2>
       <div id="hmBody"></div>
-    </div>
-    <div class="tcard" style="margin-top:20px">
-      <h2>🕘 Timeline</h2>
-      <div id="feedBody"></div>
     </div>
   </section>
 
   <footer>
     <img src="assets/rw-icon.png" alt="" />
     Raven's Watch · Fall Bingo 2026
+    <div style="color:var(--mut);font-weight:700;font-size:12.5px;margin-top:8px">XP, KC, EHP and EHB progress comes from the event's Wise Old Man competition and updates as players update there. Drop tiles and the items table come from the clan's drop log sheet.</div>
   </footer>
 </div>
 
@@ -756,12 +806,19 @@ function renderBoards(){
   var total = TEAMS.reduce(function(a, tm){ return a + tm.done.length; }, 0);
   document.getElementById("totalTiles").textContent = total;
 }
+var ovShowAll = false;
+function toggleOvClaims(){ ovShowAll = !ovShowAll; renderClaims(); }
 function renderClaims(){
   var cb = document.getElementById("claimsBody");
-  if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; }
-  else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
-  }).join(""); }
+  var more = document.getElementById("claimsMore");
+  if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; if (more) more.innerHTML = ""; }
+  else {
+    var rows = ovShowAll ? CLAIMS : CLAIMS.slice(0, 10);
+    cb.innerHTML = rows.map(function(cl){
+      return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    }).join("");
+    if (more) more.innerHTML = CLAIMS.length > 10 ? '<button class="pillbtn" onclick="toggleOvClaims()">' + (ovShowAll ? "Show less" : "Show all " + CLAIMS.length) + '</button>' : "";
+  }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
 
@@ -788,27 +845,31 @@ function renderTeamTabs(){
     return '<button data-team="' + i + '" style="color:' + tm.color + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
   }).join("");
 }
-function teamEhpHtml(tm){
-  var tp = PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); })
-    .sort(function(a, b){ return b.ehb - a.ehb || b.ehp - a.ehp; });
-  if (!tp.length) return '<div class="team-ehp"><h4>EHB / EHP</h4><div style="color:var(--mut);font-weight:700">Loading from Wise Old Man…</div></div>';
-  var tEhp = tp.reduce(function(a, p){ return a + p.ehp; }, 0);
-  var tEhb = tp.reduce(function(a, p){ return a + p.ehb; }, 0);
-  return '<div class="team-ehp"><h4>EHB / EHP</h4>' + tp.map(function(p){
-    return '<div class="member"><span>' + esc(p.name) + '</span><span class="rsn">' + p.ehb.toFixed(1) + ' EHB · ' + p.ehp.toFixed(1) + ' EHP</span></div>';
-  }).join("") + '<div class="member"><span><b>Team total</b></span><span class="rsn"><b>' + tEhb.toFixed(1) + ' EHB · ' + tEhp.toFixed(1) + ' EHP</b></span></div></div>';
+function teamPlayerVals(tm){
+  var map = {};
+  PLAYERS.forEach(function(p){
+    if (!p.team || p.team.toLowerCase() !== tm.name.toLowerCase()) return;
+    var cn = canonName(p.name) || canonName(p.raw && p.raw.player ? p.raw.player.username : "");
+    if (cn) map[String(cn).toLowerCase()] = p;
+  });
+  return map;
 }
 function renderTeam(){
   renderTeamTabs();
   var tm = TEAMS[curTeam], s = teamStats(tm);
+  var pv = teamPlayerVals(tm), tEhb = 0, tEhp = 0;
+  PLAYERS.forEach(function(p){ if (p.team && p.team.toLowerCase() === tm.name.toLowerCase()){ tEhb += p.ehb; tEhp += p.ehp; } });
   document.getElementById("teamSide").innerHTML =
     chipHTML(tm, "big-chip") +
     '<h3 style="color:' + tm.color + '">' + esc(tm.name) + '</h3>' +
-    '<div style="color:var(--mut);font-weight:700;margin-bottom:8px">' + tm.members.length + ' members · Skips used ' + tm.skips + ' / 3</div>' +
+    '<div style="color:var(--mut);font-weight:700;margin-bottom:8px">' + tm.members.length + ' members · Skips used ' + tm.skips + ' / 3 · numbers are EHB · EHP</div>' +
     tm.members.map(function(m){
+      var p = pv[String(m.d).toLowerCase()];
       return '<div class="member"><span>' + esc(m.d) + '</span>' + (m.cap ? '<span class="cap">Captain</span>' : '') +
-        (m.r ? '<span class="rsn">' + esc(m.r) + '</span>' : '') + '</div>';
-    }).join("") + teamEhpHtml(tm);
+        (m.r ? '<span class="rsn">' + esc(m.r) + '</span>' : '<span class="rsn"></span>') +
+        '<span class="rsn" style="color:#fff">' + (p ? p.ehb.toFixed(1) + ' · ' + p.ehp.toFixed(1) : '—') + '</span></div>';
+    }).join("") +
+    '<div class="member"><span><b>Team total</b></span><span class="rsn"><b>' + tEhb.toFixed(1) + ' EHB · ' + tEhp.toFixed(1) + ' EHP</b></span></div>';
   var tiles = TILES.map(function(tile, idx){
     var done = tm.done.indexOf(idx) >= 0;
     return '<button class="tile tile-lg ' + (done ? "done" : "open") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + '">' +
@@ -824,13 +885,12 @@ function renderTeam(){
     var t2 = TEAMS[o.i];
     return '<div class="lb-row"><span class="place ' + placeCls(r, o.s, order) + '">' + placeLabel(r, o.s, order) + '</span>' +
       chipHTML(t2, "team-chip", ";width:25px;height:25px;font-size:11px") +
-      '<span class="nm" style="color:' + t2.color + '">' + esc(t2.name) + '</span>' +
-      '<span class="dt">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles<br>' + o.s.pct + '% · ' + o.s.pts + ' pts</span></div>';
+      '<div class="lb-main"><div class="nm" style="color:' + t2.color + '">' + esc(t2.name) + '</div>' +
+      '<div class="dt2">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles · ' + o.s.pct + '% · ' + o.s.pts + ' pts</div></div></div>';
   }).join("");
-  document.getElementById("skipsBox").innerHTML = '<span style="color:' + tm.color + ';font-weight:800">' + esc(tm.name) + '</span> has used <b style="color:#fff">' + tm.skips + ' of 3</b> skips.<br><br>Bonus Tile: TFA Purple · Pet Skip · Megarare Skip (Twisted Bow, Tumeken\'s Shadow, Scythe of Vitur, or an Obligator).';
   var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
   document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
-    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + sourceLink(cl) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + itemIcon(cl) + itemLink(cl) + '</td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join("") : '<tr><td colspan="5" class="empty">No items received yet.</td></tr>';
   renderRecap();
 }
@@ -995,6 +1055,10 @@ function fmtEventTime(t, withDay){
   var o = {timeZone:"America/New_York", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"};
   if (withDay) o.weekday = "short";
   return new Date(t).toLocaleString("en-US", o);
+}
+function fmtShort(t){
+  var s = new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" });
+  return s.replace(",", "").replace(" AM", "a").replace(" PM", "p");
 }
 
 /* ---- map ---- */
@@ -1220,7 +1284,7 @@ function initMap(){
     infinite: false,
     projection: L.extend({}, L.Projection.LonLat, { bounds: L.bounds([0, 0], [12800, 12800]) })
   });
-  progMap = L.map("map", { crs: WikiCRS, minZoom: -2, maxZoom: 5, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
+  progMap = L.map("map", { crs: WikiCRS, minZoom: -2, maxZoom: 5, zoomSnap: 0.25, maxBounds: [[0, 0], [12800, 12800]], maxBoundsViscosity: 0.5, attributionControl: true });
   // The current world map picture (post-Sailing release), baked in as one
   // image aligned to game coordinates at exactly 1px per game tile:
   // x 1024..3968, y 2112..4160. (The live tile service's zoomed-out
@@ -1228,7 +1292,7 @@ function initMap(){
   L.imageOverlay('assets/gielinor-sailing.jpg', [[8640, 1024], [10688, 3968]], { className: 'map-dim',
     attribution: 'Map © <a href="https://oldschool.runescape.wiki" target="_blank" rel="noopener">OSRS Wiki</a> contributors'
   }).addTo(progMap);
-  progMap.fitBounds([[8750, 1150], [10450, 4000]]);
+  (function(){ var el = document.getElementById("map"); var w = (el && el.clientWidth) || 1200; var z = Math.ceil(Math.log2(Math.max(w, 320) / 2944) / 0.25) * 0.25; progMap.setView([9664, 2496], Math.max(-2, Math.min(2, z))); })();
   TILES.forEach(function(t, i){
     var p = MAP_POS[i]; if (!p) return;
     var icon = L.divIcon({ className: "map-node", iconSize: [30, 30], iconAnchor: [15, 15],
@@ -1332,21 +1396,21 @@ function renderMomentum(){
   note.textContent = empty ? "XP recording runs from Nov 15 — the curve appears after the first snapshots land." : "";
   if (empty){ document.getElementById("momChart").innerHTML = ""; var mi0 = document.getElementById("momInfo"); if (mi0) mi0.textContent = ""; return; }
 
-  var VW = 920, VH = 300, L0 = 54, R0 = 14, T0 = 12, B0 = 30;
+  var VW = window.innerWidth < 640 ? 460 : 920, VH = 300, L0 = 54, R0 = 14, T0 = 12, B0 = 30;
   var pw = VW - L0 - R0, ph = VH - T0 - B0;
   var top = niceCeil(maxV, mode);
   function X(t){ return L0 + (t - START) / (xEnd - START) * pw; }
   function Y(v){ return T0 + ph - v / top * ph; }
-  var s = '<svg class="mom-svg" viewBox="0 0 920 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,Segoe UI,sans-serif">';
+  var s = '<svg class="mom-svg" viewBox="0 0 ' + VW + ' 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,Segoe UI,sans-serif">';
   nyMidnights(START, xEnd).forEach(function(m){
     var x = X(m.t).toFixed(1);
     s += '<line x1="' + x + '" y1="' + T0 + '" x2="' + x + '" y2="' + (T0 + ph) + '" stroke="#1a2745" stroke-width="1"/>' +
-         '<text x="' + x + '" y="' + (VH - 10) + '" fill="#64769c" font-size="11" font-weight="700" text-anchor="middle">' + m.d + '</text>';
+         '<text x="' + x + '" y="' + (VH - 10) + '" fill="#64769c" font-size="' + (VW < 640 ? 15 : 11) + '" font-weight="700" text-anchor="middle">' + m.d + '</text>';
   });
   for (i = 0; i <= 4; i++){
     var v = top * i / 4, y = Y(v).toFixed(1);
     s += '<line x1="' + L0 + '" y1="' + y + '" x2="' + (L0 + pw) + '" y2="' + y + '" stroke="#22335a" stroke-width="1"' + (i ? ' stroke-dasharray="3 4"' : '') + '/>' +
-         '<text x="' + (L0 - 8) + '" y="' + (+y + 4) + '" fill="#8fa3c8" font-size="11" font-weight="700" text-anchor="end">' + (mode === "xp" ? compact(v) : fmt(v)) + '</text>';
+         '<text x="' + (L0 - 8) + '" y="' + (+y + 4) + '" fill="#8fa3c8" font-size="' + (VW < 640 ? 15 : 11) + '" font-weight="700" text-anchor="end">' + (mode === "xp" ? compact(v) : fmt(v)) + '</text>';
   }
   var evTitles = {}, evTiles = {};
   if (mode === "points") steps.forEach(function(st){
@@ -1382,26 +1446,39 @@ function renderMomentum(){
 }
 
 /* ---- heat map ---- */
+var heatShow = {};
+function heatToggle(tm){ heatShow[tm] = !heatShow[tm]; renderHeat(); }
 function renderHeat(){
   var box = document.getElementById("hmBody");
   var pl = (HEAT && HEAT.players) || [], days = (HEAT && HEAT.days) || [];
   if (!pl.length){ box.innerHTML = '<p class="hm-note">Heat map data starts landing with the Nov 15 snapshots.</p>'; return; }
+  var todayNum = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" })).getDate();
+  var keep = [];
+  days.forEach(function(d, k){ var n = parseInt(String(d).split(" ")[1], 10); if (!isNaN(n) && n <= todayNum) keep.push(k); });
+  if (!keep.length) keep = [0];
   var maxG = 0;
   pl.forEach(function(p){ (p.g || []).forEach(function(g){ if (g != null && g > maxG) maxG = g; }); });
+  function cell(p, k){
+    var g = p.g ? p.g[k] : null;
+    if (g == null) return '<td class="hm-cell hm-empty"></td>';
+    if (g <= 0) return '<td class="hm-cell hm-zero">0</td>';
+    return '<td class="hm-cell" style="background:rgba(255,158,27,' + (0.07 + 0.88 * (maxG ? g / maxG : 0)).toFixed(3) + ')">' + compact(g) + '</td>';
+  }
   var h = '<div class="tblwrap"><table class="hm-table"><thead><tr><th></th>' +
-    days.map(function(d){ return '<th>' + esc(d) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  pl.forEach(function(p){
-    var tm = TEAMS[p.tm];
-    h += '<tr><td class="hm-name">' + ccImg(p.tm) + esc(p.n) + '</td>';
-    days.forEach(function(d, k){
-      var g = p.g ? p.g[k] : null;
-      if (g == null) h += '<td class="hm-cell hm-empty"></td>';
-      else if (g <= 0) h += '<td class="hm-cell hm-zero">0</td>';
-      else h += '<td class="hm-cell" style="background:rgba(255,158,27,' + (0.07 + 0.88 * (maxG ? g / maxG : 0)).toFixed(3) + ')">' + compact(g) + '</td>';
+    keep.map(function(k){ return '<th>' + esc(days[k]) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  TEAMS.forEach(function(tm, ti){
+    var rows = pl.filter(function(p){ return p.tm === ti; }).map(function(p){
+      return { p: p, tot: (p.g || []).reduce(function(a, g){ return a + (g || 0); }, 0) };
+    }).sort(function(a, b){ return b.tot - a.tot; });
+    if (!rows.length) return;
+    h += '<tr class="hm-team"><td colspan="' + (keep.length + 1) + '" style="color:' + tm.color + '">' + esc(tm.name) + '</td></tr>';
+    var show = heatShow[ti] ? rows : rows.slice(0, 5);
+    show.forEach(function(r){
+      h += '<tr><td class="hm-name">' + ccImg(ti) + esc(r.p.n) + '</td>' + keep.map(function(k){ return cell(r.p, k); }).join("") + '</tr>';
     });
-    h += '</tr>';
+    if (rows.length > 5) h += '<tr class="hm-more-row"><td colspan="' + (keep.length + 1) + '"><button class="pillbtn" onclick="heatToggle(' + ti + ')">' + (heatShow[ti] ? "Show less" : "Show all " + rows.length) + '</button></td></tr>';
   });
-  h += '</tbody></table></div><p class="hm-note">XP gained per day from Wise Old Man snapshots, recorded every 30 minutes from Nov 15. Nov 14 has no snapshot data, so its column stays blank.</p>';
+  h += '</tbody></table></div><p class="hm-note">XP gained per day from Wise Old Man snapshots, recorded every 30 minutes. Nov 14 was backfilled from per-player snapshots.</p>';
   box.innerHTML = h;
 }
 
@@ -1511,7 +1588,7 @@ function renderChase(){
       var done = tm.done.indexOf(e.idx) >= 0;
       return '<span style="color:' + tm.color + '">' + (done ? "✓ " : "") + (st ? fmt(st.tot[ti]) : "0") + '</span>';
     }).join("");
-    return '<button class="tc-card" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
+    return '<button class="tc-card' + (e.total > 0 ? '' : ' zero') + '" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
       '<div class="tc-big">' + (st ? fmt(e.total) : "0") + ' <span class="tc-unit">' + (st ? st.u : "KC") + ' total</span></div>' +
       '<div class="tc-bar">' + segs + '</div><div class="tc-teams">' + counts + '</div></button>';
   }).join("");
@@ -1566,16 +1643,17 @@ function renderCaptain(){
     });
     tilesOut = tilesOut.slice(0, 5);
     var usedCt = {};
-    picksBox.innerHTML = tilesOut.length ? tilesOut.map(function(t){
+    picksBox.innerHTML = tilesOut.length ? '<div class="pick-grid">' + tilesOut.map(function(t){
       var tile = TILES[t.idx];
       var res = picksForTile(curTeam, tile, t.idx);
       var who = res.list.filter(function(c){ return (usedCt[String(c.cn).toLowerCase()] || 0) < 2; }).slice(0, 3);
       if (!who.length) who = res.list.slice(0, 3);
       who.forEach(function(c){ var k = String(c.cn).toLowerCase(); usedCt[k] = (usedCt[k] || 0) + 1; });
       var head = res.hasEv ? "" : '<div class="pick-none">Nobody on this tile yet · free grinders:</div>';
-      return '<div class="pick-tile"><span class="pick-name">' + esc(tile.t) + '</span><span class="pick-why">' + esc(t.why) + '</span>' + head +
-        '<div class="pick-who">' + (who.length ? who.map(function(c){ return '<b style="color:#fff">' + esc(c.p.name) + '</b> · ' + esc(c.why); }).join("<br>") : "Nobody on the team has a head start logged yet.") + '</div></div>';
-    }).join("") : '<div class="empty">No urgent tiles right now.</div>';
+      return '<div class="pick-card"><div class="pc-head">' + iconHTML(tile) + '<span class="pick-name">' + esc(tile.t) + '</span></div>' +
+        '<span class="pick-why">' + esc(t.why) + '</span>' + head +
+        (who.length ? who.map(function(c){ var av = avFor(c.cn); return '<div class="pc-row">' + (av ? '<img src="' + esc(av) + '" alt="" onerror="this.remove()">' : '') + '<span><b>' + esc(c.p.name) + '</b> · ' + esc(c.why) + '</span></div>'; }).join("") : '<div class="pc-row">Nobody on the team has a head start logged yet.</div>') + '</div>';
+    }).join("") + '</div>' : '<div class="empty">No urgent tiles right now.</div>';
   }
   var helped = {};
   CLAIMS.forEach(function(cl){
