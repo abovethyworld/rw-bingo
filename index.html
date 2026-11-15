@@ -750,12 +750,14 @@ document.getElementById("rulesBtn").addEventListener("click", openRules);
 document.getElementById("navRules").addEventListener("click", function(e){ e.preventDefault(); openRules(); });
 /* ============ TIMELINE ============ */
 var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
+var tlSig = null;
 function tlApply(){
   var cutoff = START + tlPos;
   TEAMS.forEach(function(tm, ti){
     tm.done = TIMELINE.filter(function(e){ return e.team === ti && e.t <= cutoff; }).map(function(e){ return e.tile; });
   });
-  renderBoards(); renderTeam();
+  var sig = TEAMS.map(function(tm){ return tm.done.join(","); }).join("|");
+  if (sig !== tlSig){ tlSig = sig; renderBoards(); renderTeam(); }
   var d = new Date(cutoff);
   document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   var mins = Math.round(tlPos / 60000);
@@ -774,7 +776,7 @@ function tlPause(){
 function tlExit(){
   tlPause();
   if (LIVE) TEAMS.forEach(function(tm, ti){ tm.done = LIVE[ti]; });
-  tlActive = false; LIVE = null;
+  tlActive = false; LIVE = null; tlSig = null;
   renderBoards(); renderTeam();
   document.getElementById("tlStamp").textContent = "Final board (live)";
   document.getElementById("tlElapsed").textContent = "192h 0m of 192h 0m";
