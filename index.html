@@ -310,7 +310,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <div class="lower">
       <div class="tcard">
         <div class="tblwrap">
-        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th class="r">Count</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Player</th><th>Team</th><th>Source</th><th>When</th><th class="r">Count</th></tr></thead>
         <tbody id="claimsBody"></tbody></table>
         </div>
       </div>
@@ -636,9 +636,9 @@ function renderBoards(){
 }
 function renderClaims(){
   var cb = document.getElementById("claimsBody");
-  if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="5" class="empty">No items received yet.</td></tr>'; }
+  if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; }
   else { cb.innerHTML = CLAIMS.map(function(cl){
-    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
+    return '<tr><td>' + esc(cl.item) + '</td><td>' + esc(cl.player) + '</td><td>' + esc(cl.team) + '</td><td>' + esc(cl.source) + '</td><td>' + (cl.t ? fmtEventTime(cl.t, true) : '—') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join(""); }
   document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
