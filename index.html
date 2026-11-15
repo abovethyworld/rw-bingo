@@ -1845,7 +1845,7 @@ function tick(){
   var now = Date.now();
   var pct = Math.max(0, Math.min(100, (now - START) / (END - START) * 100));
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
-  var nyNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  var nyNow = new Date(new Date(now).toLocaleString("en-US", { timeZone: "America/New_York" }));
   var dayN = Math.floor((Date.UTC(nyNow.getFullYear(), nyNow.getMonth(), nyNow.getDate()) - Date.UTC(2026, 10, 14)) / 86400000) + 1;
   document.getElementById("pctComplete").textContent = now < START ? "Starts Nov 14" : "Day " + Math.max(1, Math.min(9, dayN)) + " of 9";
 }
