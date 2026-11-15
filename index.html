@@ -253,6 +253,8 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .recap-sec h4{margin:0 0 4px;font-size:13.5px}
 .recap-sec div{font-weight:600;line-height:1.55}
 .rest-chip{display:flex;align-items:center;gap:6px;background:#0d1830;border:2px solid #5a6c8c;border-radius:999px;padding:4px 10px;font:800 11.5px Nunito,'Segoe UI',sans-serif;color:#dbe6ff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.85);cursor:pointer}
+.rest-node,.stack-node{background:none;border:none}
+.stack-chip{width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;background:#0d1830;display:flex;align-items:center;justify-content:center;font:900 12px Nunito,'Segoe UI',sans-serif;color:#fff;box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85);cursor:pointer}
 .pfp-pop{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.45;color:#e8ecf2}
 .pfp-pop img{width:44px;height:44px;border-radius:50%}
 .leaflet-popup-content-wrapper{background:#0d1526;color:#e8ecf2;border-radius:10px}
@@ -986,7 +988,8 @@ function itemIcon(cl){ var fn = cl.w ? decodeURIComponent(cl.w) : String(cl.item
 function itemLink(cl){ var u = cl.w ? 'https://oldschool.runescape.wiki/w/' + cl.w : 'https://oldschool.runescape.wiki/w/Special:Search?search=' + encodeURIComponent(cl.item); return '<a class="wl" href="' + u + '" target="_blank" rel="noopener">' + esc(cl.item) + '</a>'; }
 function sourceLink(cl){ var t = cl.sw || (typeof cl.tile === 'number' && window.WIKI ? WIKI[cl.tile] : null); return t ? '<a class="wl" href="https://oldschool.runescape.wiki/w/' + t + '" target="_blank" rel="noopener">' + esc(cl.source) + '</a>' : esc(cl.source); }
 var peopleMarkers = [];
-var peoplePos = []; /* {mk, gx, gy, k} per PEOPLE index, for pixel-offset layout */
+var peoplePos = []; /* {mk, gx, gy, k, tile} per PEOPLE index, for pixel-offset layout */
+var restMarker = null, stackMarkers = {}; /* tile idx -> +N chip marker, for low-zoom stacks */
 var bubbleTimer = null, bubbleOrder = [], bubbleStart = 0;
 function peopleSlotPx(k){
   /* Pixel ring slots around a tile pin. Slot 0 would sit on the pin itself,
@@ -1006,11 +1009,25 @@ function peopleSlotPx(k){
 function peopleLayout(){
   if (!progMap) return;
   var z = progMap.getZoom();
+  var stacked = z < 0;
+  var tileCount = {};
+  peoplePos.forEach(function(pp){ if (pp) tileCount[pp.tile] = (tileCount[pp.tile] || 0) + 1; });
   peoplePos.forEach(function(pp){
     if (!pp) return;
     var off = peopleSlotPx(pp.k);
     var pt = progMap.project([12800 - pp.gy, pp.gx], z);
     pp.mk.setLatLng(progMap.unproject([pt.x + off[0], pt.y + off[1]], z));
+    var el = pp.mk.getElement();
+    if (el) el.style.display = (stacked && tileCount[pp.tile] >= 4 && pp.k >= 3) ? "none" : "";
+  });
+  Object.keys(stackMarkers).forEach(function(tk){
+    var sm = stackMarkers[tk], base = MAP_POS[tk];
+    if (!base) return;
+    var pt = progMap.project([12800 - base[1], base[0]], z);
+    var off = peopleSlotPx(3);
+    sm.setLatLng(progMap.unproject([pt.x + off[0], pt.y + off[1]], z));
+    var el = sm.getElement();
+    if (el) el.style.display = stacked ? "" : "none";
   });
 }
 function bubbleShow(){
@@ -1044,7 +1061,10 @@ function buildPeopleLayer(){
   if (!window.PEOPLE || !PEOPLE.length || !progMap) return;
   peopleLayer = L.layerGroup();
   peopleMarkers = [];
+  restMarker = null;
+  stackMarkers = {};
   var byTile = {};
+  var resting = [];
   peoplePos = [];
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem("rwSpots") || "{}"); } catch (e) {}
@@ -1053,9 +1073,10 @@ function buildPeopleLayer(){
     var base = p.t >= 0 ? MAP_POS[p.t] : [3222, 3218];
     if (!base) return;
     var tm = TEAMS[p.tm]; if (!tm) return;
+    var key = p.r || p.n;
+    if (p.t < 0){ resting.push({ p: p, pi: pi }); nowSpots[key] = [3222, 3188, 0]; return; }
     var k = byTile[p.t] || 0; byTile[p.t] = k + 1;
     var gx = base[0], gy = base[1];
-    var key = p.r || p.n;
     nowSpots[key] = [gx, gy, k];
     var icon = L.divIcon({ className: "pfp-node", iconSize: [30, 30], iconAnchor: [15, 15],
       html: '<div class="pfp-badge" style="border-color:' + tm.color + '" title="' + esc(p.n) + '">' +
@@ -1064,13 +1085,36 @@ function buildPeopleLayer(){
     var prev = saved[key];
     var mk = L.marker(prev ? [12800 - prev[1], prev[0]] : [12800 - gy, gx], { icon: icon }).addTo(peopleLayer);
     peopleMarkers[pi] = mk;
-    peoplePos[pi] = { mk: mk, gx: gx, gy: gy, k: k };
+    peoplePos[pi] = { mk: mk, gx: gx, gy: gy, k: k, tile: p.t };
     if (prev && (prev[0] !== gx || prev[1] !== gy || prev[2] !== k)) glide = true;
     mk.on("click", function(){ bubbleJump(pi); });
     mk.bindPopup('<div class="pfp-pop">' + (p.av ? '<img src="' + esc(p.av) + '" alt="">' : '') +
       '<div><b>' + esc(p.un || p.n) + '</b><br>' +
       (p.r ? 'RSN: ' + esc(p.r) + '<br>' : '') +
       '<span style="color:' + tm.color + ';font-weight:800">' + ccImg(p.tm) + esc(tm.name) + '</span><br>' + esc(p.w) + '</div></div>');
+  });
+  if (resting.length){
+    var rIcon = L.divIcon({ className: "rest-node", iconSize: [170, 30], iconAnchor: [85, 15],
+      html: '<div class="rest-chip">💤 Lumbridge: ' + resting.length + ' resting</div>' });
+    restMarker = L.marker([12800 - 3188, 3222], { icon: rIcon }).addTo(peopleLayer);
+    restMarker.bindPopup('<div style="font-size:13px;line-height:1.5;color:#e8ecf2;min-width:170px">' + resting.map(function(r){
+      var tm2 = TEAMS[r.p.tm];
+      return '<div style="margin:4px 0"><b>' + esc(r.p.un || r.p.n) + '</b> <span style="color:' + tm2.color + ';font-weight:800">' + ccImg(r.p.tm) + esc(tm2.name) + '</span><br>' + esc(r.p.w) + '</div>';
+    }).join("") + '</div>');
+  }
+  Object.keys(byTile).forEach(function(tk){
+    var n = byTile[tk];
+    if (n < 4) return;
+    var counts = {};
+    PEOPLE.forEach(function(p){ if (p.t === +tk) counts[p.tm] = (counts[p.tm] || 0) + 1; });
+    var maj = +Object.keys(counts).sort(function(a, b){ return counts[b] - counts[a]; })[0];
+    var base2 = MAP_POS[tk];
+    if (!base2) return;
+    var sIcon = L.divIcon({ className: "stack-node", iconSize: [30, 30], iconAnchor: [15, 15],
+      html: '<div class="stack-chip" style="border-color:' + TEAMS[maj].color + '">+' + (n - 3) + '</div>' });
+    var sm = L.marker([12800 - base2[1], base2[0]], { icon: sIcon }).addTo(peopleLayer);
+    sm.on("click", function(){ progMap.flyTo([12800 - base2[1], base2[0]], 1, { duration: 0.9 }); });
+    stackMarkers[tk] = sm;
   });
   peopleLayer.addTo(progMap);
   var dl = document.getElementById("mapSearchList");
@@ -1098,6 +1142,7 @@ function buildPeopleLayer(){
 }
 function focusPerson(pi){
   var mk = peopleMarkers[pi];
+  if (!mk && restMarker && PEOPLE[pi] && PEOPLE[pi].t < 0) mk = restMarker;
   if (!mk || !progMap) return;
   if (peopleLayer && !progMap.hasLayer(peopleLayer)){
     peopleLayer.addTo(progMap);
