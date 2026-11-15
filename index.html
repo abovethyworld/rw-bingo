@@ -179,7 +179,7 @@ td.r,th.r{text-align:right}
 .lb-row .dt{margin-left:auto;color:var(--mut);font-weight:700;font-size:13px;text-align:right}
 
 /* modal + dialog */
-.backdrop{position:fixed;inset:0;background:rgba(3,5,10,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:80;padding:18px}
+.backdrop{position:fixed;inset:0;background:rgba(3,5,10,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;padding:18px}
 .backdrop.open{display:flex}
 .modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;max-height:86vh;max-height:86dvh;overflow:auto;overscroll-behavior:contain;padding:22px}
 @media(max-width:640px){.backdrop{padding:12px}.modal{padding:16px}.modal h2{font-size:18px}}
@@ -217,7 +217,7 @@ td.r,th.r{text-align:right}
 footer{margin-top:38px;text-align:center;color:var(--mut);font-weight:800}
 footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto 8px}
 /* progress view */
-#map{height:520px;background:#0a1120;border-radius:12px;border:1px solid var(--line)}
+#map{height:520px;background:#0a1120;border-radius:12px;border:1px solid var(--line);z-index:0}
 @media(max-width:700px){#map{height:340px}}
 .map-node{background:none;border:none}
 .node-badge{width:30px;height:30px;border-radius:50%;background:#101c33;border:2px solid #5a6c8c;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:.55;cursor:pointer}
