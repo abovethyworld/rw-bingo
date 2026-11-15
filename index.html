@@ -144,7 +144,8 @@ td.r,th.r{text-align:right}
 }
 @media(max-width:760px){.team-cols{grid-template-columns:minmax(0,1fr);grid-template-areas:none}#teamBoard,#teamSide,#teamLb{grid-area:auto}#teamBoard{order:-1}}
 /* Phones: a labelled 7x7 board cannot fit 320px, so it scrolls sideways inside its own card instead of widening the page. */
-#teamBoard{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#teamBoard{overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0}
+.team-cols>*{min-width:0}
 @media(max-width:600px){#teamBoard .grid7{min-width:500px}#teamBoard{padding:12px}}
 .side-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
 .side-card h3{margin:0 0 4px;font-size:20px;font-weight:900}
