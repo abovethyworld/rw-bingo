@@ -83,7 +83,11 @@ button{font-family:inherit;cursor:pointer}
 .tl-controls .spd{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:5px 13px;font-weight:800}
 .tl-controls .spd.on{color:#fff;border-color:var(--acc)}
 .tl-controls button:disabled{opacity:.45;cursor:default}
-.tl-slider{height:8px;background:#16223d;border-radius:99px;margin-top:14px}
+.tl-slider{height:16px;background:#16223d;border-radius:99px;margin-top:14px;touch-action:none}
+.tl-knob{position:absolute;top:50%;left:0%;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--acc);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+#tlDots i{position:absolute;top:50%;width:5px;height:5px;border-radius:50%;background:#0d1830;opacity:.5;transform:translate(-50%,-50%);pointer-events:none}
+#tlStamp{font-weight:900;color:#fff;font-size:15px}
+#tlElapsed{color:var(--mut);font-weight:800}
 .tl-note{color:var(--mut);font-size:13.5px;margin-top:10px;line-height:1.45}
 .tl-slider{position:relative;cursor:pointer}
 .tl-fill{height:100%;background:var(--acc);border-radius:99px;width:0%}
@@ -413,13 +417,13 @@ td.when{white-space:nowrap}
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
       <button class="pillbtn" id="tlPlay">▶ Play</button>
-      <button class="pillbtn" id="tlStart">Back to start</button>
-      <span class="spd" data-spd="0.5">0.5×</span><span class="spd on" data-spd="1">1×</span><span class="spd" data-spd="2">2×</span><span class="spd" data-spd="4">4×</span>
-      <span style="color:var(--mut);font-weight:800" id="tlStamp">Nov 14, 1:00 PM</span>
-      <span style="color:var(--mut);font-weight:800" id="tlElapsed">0m of 192h 0m</span>
-      <button class="pillbtn" id="tlFinal">Back to final board</button>
+      <button class="pillbtn" id="tlStart">⏮ Start</button>
+      <span id="tlStamp">Live</span>
+      <span id="tlElapsed"></span>
+      <span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span>
+      <button class="pillbtn" id="tlFinal">Back to live</button>
     </div>
-    <div class="tl-slider" id="tlSlider"><div class="tl-fill" id="tlFill"></div></div>
+    <div class="tl-slider" id="tlSlider"><div class="tl-fill" id="tlFill"></div><div id="tlDots"></div><div class="tl-knob" id="tlKnob"></div></div>
     <div class="tl-note" id="tlNote">No tiles completed yet. The timeline builds itself as tiles land during the week.</div>
   </div>
 
@@ -1865,9 +1869,13 @@ function tlApply(){
   var sig = TEAMS.map(function(tm){ return tm.done.join(","); }).join("|");
   if (sig !== tlSig){ tlSig = sig; renderBoards(); renderTeam(); }
   var d = new Date(cutoff);
-  document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  document.getElementById("tlElapsed").textContent = tlDur(tlPos) + " of " + tlDur(tlMax()) + (Date.now() < END ? " so far" : "");
-  document.getElementById("tlFill").style.width = (tlMax() ? tlPos / tlMax() * 100 : 0) + "%";
+  document.getElementById("tlStamp").textContent = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  var landed = TIMELINE.filter(function(e){ return e.t <= cutoff; }).length;
+  document.getElementById("tlElapsed").textContent = landed + " of " + TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " landed by then";
+  var pctDone = tlMax() ? tlPos / tlMax() * 100 : 0;
+  document.getElementById("tlFill").style.width = pctDone + "%";
+  document.getElementById("tlKnob").style.left = pctDone + "%";
+  document.getElementById("tlDots").innerHTML = TIMELINE.map(function(e){ return '<i style="left:' + ((e.t - START) / tlMax() * 100).toFixed(1) + '%"></i>'; }).join("");
   if (typeof mapClear === "function" && typeof mapLight === "function"){
     mapClear();
     var evs = sortedTimeline().filter(function(e){ return e.t <= cutoff; });
@@ -1894,14 +1902,15 @@ function tlExit(){
   tlActive = false; LIVE = null; tlSig = null;
   renderBoards(); renderTeam();
   if (typeof mapShowLive === "function"){ mapShowLive(); var cap2 = document.getElementById("mapCaption"); if (cap2) cap2.textContent = mapFinalCaption(); }
-  document.getElementById("tlStamp").textContent = "Final board (live)";
-  document.getElementById("tlElapsed").textContent = tlDur(tlMax()) + (Date.now() < END ? " so far" : " total");
+  document.getElementById("tlStamp").textContent = "Live";
+  document.getElementById("tlElapsed").textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " in · up to date";
   document.getElementById("tlFill").style.width = "100%";
+  document.getElementById("tlKnob").style.left = "100%";
 }
 document.getElementById("tlBtn").addEventListener("click", function(){
   var p = document.getElementById("tlPanel");
   p.classList.toggle("open");
-  if (p.classList.contains("open") && TIMELINE.length) tlEnter();
+  if (p.classList.contains("open") && TIMELINE.length){ tlPos = tlMax(); tlEnter(); }
 });
 document.getElementById("tlPlay").addEventListener("click", function(){
   if (tlPlaying){ tlPause(); return; }
@@ -1923,14 +1932,23 @@ document.querySelectorAll(".tl-controls .spd").forEach(function(sp){
     sp.classList.add("on"); tlSpeed = +sp.getAttribute("data-spd");
   });
 });
-document.getElementById("tlSlider").addEventListener("click", function(e){
-  var r = e.currentTarget.getBoundingClientRect();
+var tlDrag = false;
+function tlSeek(e){
+  var r = document.getElementById("tlSlider").getBoundingClientRect();
   tlPos = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * tlMax();
   tlEnter();
+}
+document.getElementById("tlSlider").addEventListener("pointerdown", function(e){
+  tlDrag = true; tlPause();
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+  tlSeek(e);
 });
+document.getElementById("tlSlider").addEventListener("pointermove", function(e){ if (tlDrag) tlSeek(e); });
+document.getElementById("tlSlider").addEventListener("pointerup", function(){ tlDrag = false; });
+document.getElementById("tlSlider").addEventListener("pointercancel", function(){ tlDrag = false; });
 (function(){
   if (TIMELINE.length){
-    document.getElementById("tlNote").textContent = TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " completed so far. Press Play or tap the bar to watch the boards fill in. Times are when the tracker first saw each tile land; the sheets and Wise Old Man are checked every 30 minutes, so a time can run a little after the real moment.";
+    document.getElementById("tlNote").textContent = "Drag the bar or press Play to watch the boards fill in. Times are when the tracker first saw each tile land; it checks the sheets every 30 minutes.";
   }
 })();
 function tick(){
@@ -1975,7 +1993,35 @@ document.getElementById("tileInfo").innerHTML = TILES.map(function(t, i){
   if (ti >= 0) curTeam = ti;
   else { var sv = null; try { sv = localStorage.getItem("rwTeam"); } catch (e) {} if (sv != null && TEAMS[+sv]) curTeam = +sv; }
 })();
-renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); renderCaptain(); loadWOM(); tick(); setInterval(tick, 60000);
+/* Live refresh: the sync rewrites data.json every 30 minutes; an open
+   page picks it up on its own, people glide to their new spots. */
+function pollData(){
+  if (tlActive) return;
+  fetch("data.json?x=" + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+    if (!d || !d.UPDATED || d.UPDATED === UPDATED) return;
+    UPDATED = d.UPDATED; SHEET = d.SHEET; DROPS = d.DROPS; TIMELINE = d.TIMELINE;
+    PEOPLE = d.PEOPLE; FLAGS = d.FLAGS || {};
+    if (d.TILESTATS) TILESTATS = d.TILESTATS;
+    if (d.HIST) HIST = d.HIST;
+    if (d.HEAT) HEAT = d.HEAT;
+    CLAIMS = DROPS.claims || [];
+    TEAMS.forEach(function(tm, i){
+      tm.skips = SHEET.skips[i] || 0;
+      tm.done = (SHEET.marks[i] || []).slice();
+    });
+    renderBoards(); renderClaims(); renderTeam(); renderCaptain(); renderChase(); renderSince(); tick();
+    loadWOM();
+    if (progInit && progMap){
+      mapShowLive();
+      if (peopleLayer) progMap.removeLayer(peopleLayer);
+      buildPeopleLayer();
+      renderMomentum(); renderHeat(); renderFeed();
+      var cap = document.getElementById("mapCaption");
+      if (cap) cap.textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
+    }
+  }).catch(function(){});
+}
+renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); renderCaptain(); loadWOM(); tick(); setInterval(tick, 60000); setInterval(pollData, 5 * 60 * 1000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
 </body>
