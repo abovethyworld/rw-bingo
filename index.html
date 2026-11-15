@@ -1421,9 +1421,13 @@ function picksForTile(ti, tile, idx){
   return capTeamPlayers(ti).map(function(p){
     var drops = claimCount[p.name.toLowerCase()] || 0;
     var gain = tile.metric ? deltaFor(p.raw, tile.metric) : 0;
-    var score = drops * 1000 + gain + p.ehp;
-    var why = drops ? drops + (drops === 1 ? " drop" : " drops") + " logged on this tile" :
-      (gain ? "+" + (tile.kc ? Math.floor(gain) + " KC" : fmt(gain) + " XP") + " this bingo" : p.ehp.toFixed(1) + " EHP this bingo");
+    /* Ranking (Nov 15): EHB is the top priority over XP. */
+    var score = drops * 1000000 + p.ehb * 10000 + p.ehp * 100 + Math.min(gain, 9999) * 0.01;
+    var why;
+    if (drops) why = drops + (drops === 1 ? " drop" : " drops") + " logged on this tile";
+    else if (p.ehb > 0) why = p.ehb.toFixed(1) + " EHB this bingo" + (gain ? (tile.kc ? " · +" + Math.floor(gain) + " KC on this tile" : " · +" + fmt(gain) + " XP on this tile") : "");
+    else if (gain) why = "+" + (tile.kc ? Math.floor(gain) + " KC" : fmt(gain) + " XP") + " this bingo";
+    else why = p.ehp.toFixed(1) + " EHP this bingo";
     return { p: p, score: score, why: why };
   }).filter(function(c){ return c.score > 0; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
 }
@@ -1473,10 +1477,10 @@ function renderCaptain(){
   });
   var gr = PLAYERS.map(function(p){
     var tiles = helped[p.name.toLowerCase()] ? Object.keys(helped[p.name.toLowerCase()]).length : 0;
-    return { p: p, tiles: tiles, score: tiles * 3 + p.ehp + p.ehb };
+    return { p: p, tiles: tiles, score: tiles * 1000 + p.ehb * 100 + p.ehp };
   }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
-  document.getElementById("capGrinders").innerHTML = gr.length ? '<table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Tiles helped</th><th class="r">EHP</th><th class="r">EHB</th></tr></thead><tbody>' + gr.map(function(g, i){
-    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(g.p.team) + esc(g.p.name) + '</td><td>' + teamSpan(g.p.team) + '</td><td class="r">' + g.tiles + '</td><td class="r">' + g.p.ehp.toFixed(1) + '</td><td class="r">' + g.p.ehb.toFixed(1) + '</td></tr>';
+  document.getElementById("capGrinders").innerHTML = gr.length ? '<table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Tiles helped</th><th class="r">EHB</th><th class="r">EHP</th></tr></thead><tbody>' + gr.map(function(g, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(g.p.team) + esc(g.p.name) + '</td><td>' + teamSpan(g.p.team) + '</td><td class="r">' + g.tiles + '</td><td class="r">' + g.p.ehb.toFixed(1) + '</td><td class="r">' + g.p.ehp.toFixed(1) + '</td></tr>';
   }).join("") + '</tbody></table>' : '<div class="empty">Loading from Wise Old Man…</div>';
   document.getElementById("capFoot").textContent = "Data: Wise Old Man competition (55 players) and the clan drop sheets" + (UPDATED ? " · last updated " + fmtEventTime(UPDATED, true) + " ET" : "") + ". RuneProfile check, Nov 15: 36 of 55 players have a profile, so picks lean on Wise Old Man where a profile is missing.";
 }
