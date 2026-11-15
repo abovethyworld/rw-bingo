@@ -88,6 +88,8 @@ button{font-family:inherit;cursor:pointer}
 .tile .mono{font-weight:900;font-size:15px;color:#cfe0ff;letter-spacing:.3px}
 .tile.open .mono{opacity:.6}
 .tile .pts{position:absolute;right:4px;bottom:3px;font-size:10px;font-weight:900;color:var(--gold)}
+.tile.focus{box-shadow:inset 0 0 0 2.5px var(--fc,#fff)}
+.tile .star{position:absolute;top:2px;left:5px;font-size:10px;color:var(--fc,#fff)}
 .board-foot{display:flex;justify-content:space-between;margin-top:12px;color:var(--mut);font-weight:700;font-size:13.5px}
 .board-foot b{color:#fff}
 
@@ -382,6 +384,9 @@ var TEAMS = [
    members:[C("Aaron","This Hellboy"),C("Cinderbulk"),M("DJRookies","Abg Hunts"),M("Apple Blood"),M("Huge swords"),M("Casval","Casval8"),M("scylla","scyllacybin"),M("Martel","Holy Martel"),M("Bottled Up","Cev"),M("Louie","IronMamba34"),M("Rad","Iron Tomoko"),M("HappyShake","Danni"),M("SPOOSER"),M("HappyTweak","Chris"),M("Potato","Ptaters"),M("ShaolinDildo","Washiiii"),M("Dave","Crab Admiral"),M("Rhombusaurus")] }
 ];
 var CLAIMS = []; /* {item, player, team, source, time} — fills in as drops are logged */
+/* === SHEET-SYNC (rewritten by sync-sheet.py from the clan sheet; do not hand-edit) === */
+var SHEET = {"focus": {"0": 25, "1": 11, "2": 39}, "scores": [0, 0, 0], "skips": [0, 0, 0]};
+/* === END SHEET-SYNC === */
 
 /* ============ SCORING ============ */
 function teamStats(tm){
@@ -419,8 +424,9 @@ function renderBoards(){
     var rank = rankOf[ti];
     var tiles = TILES.map(function(tile, idx){
       var done = tm.done.indexOf(idx) >= 0;
-      return '<button class="tile ' + (done ? "done" : "open") + '" data-tile="' + idx + '" aria-label="' + esc(tile.t) + ' — ' + tile.p + ' pts">' +
-        iconHTML(tile) + '<span class="pts">' + tile.p + '</span></button>';
+      var foc = SHEET.focus[String(ti)] === idx;
+      return '<button class="tile ' + (done ? "done" : "open") + (foc ? " focus" : "") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + ' — ' + tile.p + ' pts">' +
+        (foc ? '<span class="star">★</span>' : '') + iconHTML(tile) + '<span class="pts">' + tile.p + '</span></button>';
     }).join("");
     return '<div class="board-card">' +
       '<div class="board-head">' +
@@ -470,8 +476,9 @@ function renderTeam(){
     }).join("");
   var tiles = TILES.map(function(tile, idx){
     var done = tm.done.indexOf(idx) >= 0;
-    return '<button class="tile tile-lg ' + (done ? "done" : "open") + '" data-tile="' + idx + '" aria-label="' + esc(tile.t) + '">' +
-      (done ? '<span class="check">✓</span>' : '') + iconHTML(tile) +
+    var foc = SHEET.focus[String(curTeam)] === idx;
+    return '<button class="tile tile-lg ' + (done ? "done" : "open") + (foc ? " focus" : "") + '" data-tile="' + idx + '" style="--fc:' + tm.color + '" aria-label="' + esc(tile.t) + '">' +
+      (done ? '<span class="check">✓</span>' : '') + (foc ? '<span class="star">★</span>' : '') + iconHTML(tile) +
       '<span class="lab">' + esc(tile.t) + '</span><span class="prog">' + (done ? "Done" : teamProg(curTeam, tile, idx)) + '</span></button>';
   }).join("");
   document.getElementById("teamBoard").innerHTML =
@@ -580,8 +587,9 @@ function openTile(idx){
   document.getElementById("mPts").textContent = tile.p + " pts";
   document.getElementById("mRows").innerHTML = TEAMS.map(function(tm, ti){
     var done = tm.done.indexOf(idx) >= 0;
+    var foc = SHEET.focus[String(ti)] === idx;
     return '<div class="m-row"><span class="dot" style="background:' + tm.color + '"></span><span style="font-weight:800">' + esc(tm.name) + '</span>' +
-      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : teamProg(ti, tile, idx)) + '</span></div>';
+      '<span class="st ' + (done ? "done" : "") + '">' + (done ? "✓ Done" : foc ? "★ Highlighted on the clan sheet" : teamProg(ti, tile, idx)) + '</span></div>';
   }).join("");
   document.getElementById("tileBackdrop").classList.add("open");
 }
@@ -627,6 +635,7 @@ function tick(){
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
   document.getElementById("pctComplete").textContent = (Math.floor(pct * 10) / 10) + "% complete";
 }
+TEAMS.forEach(function(tm, i){ tm.skips = SHEET.skips[i] || 0; });
 renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); loadWOM(); tick(); setInterval(tick, 60000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
