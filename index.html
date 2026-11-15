@@ -85,7 +85,7 @@ button{font-family:inherit;cursor:pointer}
 .timelapse-row{display:flex;justify-content:center;margin-top:16px}
 .tl-panel{display:block;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
 .map-tl{margin-top:12px;padding:12px 14px}
-.tl-play{width:38px;height:38px;border-radius:50%;background:var(--acc);border:none;color:#14100a;font-size:15px;font-weight:900;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.tl-play{height:38px;padding:0 16px;border-radius:20px;background:var(--acc);border:none;color:#14100a;font-size:13.5px;font-weight:900;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .tl-clock{font-weight:900;color:#fff;font-size:15px}
 .tl-chip{color:var(--mut);font-weight:800;font-size:12.5px;background:#0d1730;border:1px solid var(--line);padding:4px 10px;border-radius:999px}
 .tl-spds{margin-left:auto;display:flex;gap:6px;align-items:center}
@@ -440,8 +440,8 @@ td.when{white-space:nowrap}
   </div>
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
-      <button class="tl-play" id="tlPlay" title="Play / pause">▶</button>
-      <button class="pillbtn" id="tlStart">⏮ Start</button>
+      <button class="tl-play" id="tlPlay" title="Play / pause">▶ Replay</button>
+      <button class="pillbtn" id="tlStart">⏮ From the start</button>
       <span class="tl-clock" id="tlStamp">Live</span>
       <span class="tl-chip" id="tlElapsed"></span>
       <span class="tl-spds"><span class="spd" data-spd="0.5">Slow</span><span class="spd on" data-spd="1">Normal</span><span class="spd" data-spd="4">Fast</span></span>
@@ -2106,6 +2106,7 @@ function chasedAt(idx){
 /* ============ TIMELINE ============ */
 var tlActive = false, tlPlaying = false, tlSpeed = 1, tlPos = 0, tlTimer = null, LIVE = null;
 function tlMax(){ return Math.max(0, Math.min(END, Date.now()) - START); }
+function tlCutoff(){ return START + tlPos; }
 function tlDur(ms){ var mins = Math.round(ms / 60000); return Math.floor(mins / 60) + "h " + (mins % 60) + "m"; }
 var tlSig = null;
 function tlApply(){
@@ -2152,7 +2153,7 @@ function tlEnter(){
 function tlPause(){
   tlPlaying = false; tlHold = 0;
   if (tlTimer){ clearInterval(tlTimer); tlTimer = null; }
-  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "▶"; });
+  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "▶ Replay"; });
 }
 function tlExit(){
   tlPause();
@@ -2176,7 +2177,7 @@ function tlPlayStart(){
   tlEnter();
   if (tlPos >= tlMax()) tlPos = 0;
   tlPlaying = true; tlHold = 0;
-  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "⏸"; });
+  TL_BARS.forEach(function(b){ var el = document.getElementById(b.play); if (el) el.textContent = "⏸ Pause"; });
   tlTimer = setInterval(function(){
     if (tlHold > 0){ tlHold--; if (tlHold === 0){ tlPos = 0; tlApply(); } return; }
     tlPos += (END - START) / 600 * tlSpeed;

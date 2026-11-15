@@ -16,6 +16,8 @@
   .tile{background:#131c33;border:1px solid #243354;border-radius:10px;padding:12px 14px;margin-bottom:12px}
   .tile h3{font-size:15px;margin:0 0 2px;color:#dbe5fa}
   .status{font-size:12.5px;color:#93a3c4;margin-bottom:10px}
+  .pbar{height:8px;background:#1b2745;border-radius:4px;overflow:hidden;margin:2px 0 10px}
+  .pbar i{display:block;height:100%;border-radius:4px}
   .status .done{color:#7dd87d;font-weight:700}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   .card{background:#0f1730;border:1px solid #22335c;border-radius:8px;overflow:hidden}
@@ -136,7 +138,9 @@ function render(){
       else if(XPT[tile])status="Progress: "+fmtN(tTot)+" of "+fmtN(XPT[tile])+" "+(tUnit||"XP");
       else if(tTot)status="So far: "+fmtN(tTot)+" "+tUnit;
       else status="";
-      body+='<div class="tile"><h3>Tile '+tile+' — '+esc(TILES[tile][0])+' ('+TILES[tile][1]+' pts)</h3><div class="status">'+status+'</div>';
+      var cur2=goal?(((prog[tile]||{})[ti]||0)+es.filter(function(e){return e.counted;}).reduce(function(a,e){return a+e.n;},0)):(XPT[tile]?tTot:null), goal2=goal||XPT[tile];
+      var bar=(goal2&&cur2!=null)?'<div class="pbar"><i style="width:'+Math.min(100,Math.round(cur2/goal2*100))+'%;background:'+(done?"#e6cc80":tm.color)+'"></i></div>':"";
+      body+='<div class="tile"><h3>Tile '+tile+' — '+esc(TILES[tile][0])+' ('+TILES[tile][1]+' pts)</h3><div class="status">'+status+'</div>'+bar;
       if(!es.length){body+='<div class="status">'+(done?'Marked complete on the board — no individual drop screenshots on file.':(XPT[tile]?'Tracked on Wise Old Man — no screenshots for this tile.':'No proof on file yet.'))+'</div>';}
       body+='<div class="grid">'+es.map(function(e){
         var tag=e.tag==="sheet"?'<span class="tag sheet">sheet log</span>':(e.tag==="shot"?'<span class="tag shot">screenshot</span>':'<span class="tag prog">progress</span>');
