@@ -66,10 +66,18 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
       "<td class='pts'>"+sp+"</td><td class='pts'>"+ap+(ap>sp?" <span class='gain'>(+"+(ap-sp)+" from screenshots)</span>":"")+"</td></tr>"+
       (gained[ti]?"<tr><td colspan='3' style='color:#a5e3a5;font-size:13px'>Screenshot-complete: "+gained[ti].join(", ")+"</td></tr>":"");
   });
-  var log=shots.map(function(s){
+  var groups={}, gorder=[];
+  shots.forEach(function(s){
+    var k=s.p+"|"+s.item+"|"+s.tile+"|"+s.team+"|"+s.inSheets+"|"+(s.tag?"2b":"");
+    if(!groups[k]){groups[k]={s:s,n:0};gorder.push(k);}
+    if(s.kind==="drop")groups[k].n+=s.n;
+  });
+  var log=gorder.map(function(k){
+    var g=groups[k], s=g.s;
     var team=s.team==null?"":(" · <span style='color:"+TEAMS[s.team].color+"'>"+TEAMS[s.team].name+"</span>");
-    var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+"</b>");
-    return "<div class='logrow'>"+s.p+team+" — "+what+"<span class='tag "+(s.inSheets?"yes":"no")+"'>"+(s.tag||(s.inSheets?"in the sheets":"not in the sheets yet"))+"</span>"+
+    var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+(g.n>1?" ×"+g.n:"")+"</b>");
+    var tag=s.inSheets?"in sheets":(s.tag?"2B log only":"not logged");
+    return "<div class='logrow'>"+s.p+team+" — "+what+" <span class='tag "+(s.inSheets?"yes":"no")+"'>"+tag+"</span>"+
       "<br><span class='when'>"+TILES[s.tile][0]+" · "+fmtT(s.t)+" ET</span></div>";
   }).join("");
   var seen={}, prows="";
