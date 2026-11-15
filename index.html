@@ -252,6 +252,17 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .recap-sec{margin-top:10px}
 .recap-sec h4{margin:0 0 4px;font-size:13.5px}
 .recap-sec div{font-weight:600;line-height:1.55}
+.pick-tile{border-top:1px solid #22335a;padding:10px 0}
+.pick-tile:first-child{border-top:none}
+.pick-name{font-weight:800;font-size:14.5px}
+.pick-why{color:var(--acc2);font-weight:800;font-size:12.5px;margin-left:8px}
+.pick-who{color:var(--mut);font-weight:700;margin-top:3px;line-height:1.55}
+.chase-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #1a2745}
+.chase-row:first-child{border-top:none}
+.chase-name{flex:0 0 190px;font-weight:800}
+.chase-bar{flex:1;display:flex;height:12px;border-radius:6px;overflow:hidden;background:#131f3a}
+.chase-bar i{display:block;height:100%}
+.chase-lbl{flex:0 0 170px;color:var(--mut);font-weight:700;font-size:12.5px;text-align:right}
 .rest-chip{display:flex;align-items:center;gap:6px;background:#0d1830;border:2px solid #5a6c8c;border-radius:999px;padding:4px 10px;font:800 11.5px Nunito,'Segoe UI',sans-serif;color:#dbe6ff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.85);cursor:pointer}
 .rest-node,.stack-node{background:none;border:none}
 .stack-chip{width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;background:#0d1830;display:flex;align-items:center;justify-content:center;font:900 12px Nunito,'Segoe UI',sans-serif;color:#fff;box-shadow:0 0 0 2px rgba(5,8,16,.92),0 2px 10px rgba(0,0,0,.85);cursor:pointer}
@@ -326,6 +337,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
     <button data-view="team">👥 Team View</button>
     <button data-view="ehb">📊 EHB / EHP</button>
     <button data-view="mvp">🏆 MVP</button>
+    <button data-view="captain">🧭 Captain's Table</button>
     <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
   </div>
   <div class="timelapse-row"><button class="pillbtn" id="tlBtn">↺ Timeline</button></div>
@@ -413,6 +425,25 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
       </div>
       <div class="tfoot" id="mvpFoot">Total Players <b>0</b> · Total XP Gained <b>0</b> · Average per Player <b>0</b></div>
     </div>
+  </section>
+
+  <!-- CAPTAIN'S TABLE -->
+  <section class="view" id="view-captain">
+    <div class="tcard" style="margin-top:20px">
+      <h3>🎯 Captain Picks</h3>
+      <div class="team-tabs" id="capTeamTabs"></div>
+      <p style="color:var(--mut);font-weight:700;margin:8px 0 12px">Picks show for the team picked above only: the tiles that matter most right now, and who on that team is best placed for them.</p>
+      <div id="capPicks"></div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h3>🔥 Most Chased Tiles</h3>
+      <div id="capChase"></div>
+    </div>
+    <div class="tcard" style="margin-top:20px">
+      <h3>🏆 Top Grinders</h3>
+      <div id="capGrinders"></div>
+    </div>
+    <div style="color:var(--mut);font-weight:700;font-size:12.5px;margin-top:14px" id="capFoot"></div>
   </section>
 
   <!-- PROGRESS -->
@@ -849,7 +880,7 @@ function loadWOM(){
         });
       });
       if (tlActive){ LIVE = TEAMS.map(function(tm){ return tm.done.slice(); }); tlApply(); renderEHB(); renderMVP(); }
-      else { renderBoards(); renderTeam(); renderEHB(); renderMVP(); }
+      else { renderBoards(); renderTeam(); renderEHB(); renderMVP(); renderCaptain(); }
     })
     .catch(function(){
       document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC, EHP and EHB progress is not shown. Refresh to try again.";
@@ -984,7 +1015,16 @@ var CC_ICONS = ["assets/cc-buying.png", "assets/cc-unpossible.png", "assets/cc-2
 function ccImg(ti){ return CC_ICONS[ti] ? '<img class="cc-ico" src="' + CC_ICONS[ti] + '" alt="">' : ''; }
 function ccImgFor(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return ccImg(i); return ''; }
 function teamSpan(name){ for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name.toLowerCase() === String(name).toLowerCase()) return '<span style="color:' + TEAMS[i].color + ';font-weight:800">' + esc(name) + '</span>'; return esc(name); }
-function itemIcon(cl){ var fn = cl.w ? decodeURIComponent(cl.w) : String(cl.item).replace(/ /g, "_"); return '<img class="item-ico" src="https://oldschool.runescape.wiki/w/Special:FilePath/' + encodeURIComponent(fn) + '.png" alt="" loading="lazy" onerror="this.remove()">'; }
+function itemIcon(cl){ var fn = cl.w ? decodeURIComponent(cl.w) : String(cl.item).replace(/ /g, "_"); return '<img class="item-ico" src="https://oldschool.runescape.wiki/w/Special:FilePath/' + encodeURIComponent(fn) + '.png" alt="" loading="lazy" data-fn="' + esc(fn) + '" onerror="itemIconErr(this)">'; }
+function itemIconErr(img){
+  /* Wiki icon files are usually sentence case ("Guthan's spear.png"), so a
+     failed exact-name load gets one retry in that form before giving up. */
+  if (img.getAttribute("data-tried")){ img.remove(); return; }
+  img.setAttribute("data-tried", "1");
+  var words = (img.getAttribute("data-fn") || "").replace(/_/g, " ").split(" ");
+  var sc = words.map(function(w, i){ return i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w.charAt(0).toLowerCase() + w.slice(1); }).join(" ");
+  img.src = "https://oldschool.runescape.wiki/w/Special:FilePath/" + encodeURIComponent(sc) + ".png";
+}
 function itemLink(cl){ var u = cl.w ? 'https://oldschool.runescape.wiki/w/' + cl.w : 'https://oldschool.runescape.wiki/w/Special:Search?search=' + encodeURIComponent(cl.item); return '<a class="wl" href="' + u + '" target="_blank" rel="noopener">' + esc(cl.item) + '</a>'; }
 function sourceLink(cl){ var t = cl.sw || (typeof cl.tile === 'number' && window.WIKI ? WIKI[cl.tile] : null); return t ? '<a class="wl" href="https://oldschool.runescape.wiki/w/' + t + '" target="_blank" rel="noopener">' + esc(cl.source) + '</a>' : esc(cl.source); }
 var peopleMarkers = [];
@@ -1367,6 +1407,80 @@ function renderProgress(){
   }
 }
 
+/* ============ CAPTAIN'S TABLE ============ */
+function capTeamPlayers(ti){
+  var tm = TEAMS[ti];
+  return PLAYERS.filter(function(p){ return p.team && p.team.toLowerCase() === tm.name.toLowerCase(); });
+}
+function picksForTile(ti, tile, idx){
+  var tm = TEAMS[ti];
+  var claimCount = {};
+  CLAIMS.forEach(function(cl){
+    if (cl.tile === idx && cl.team === tm.name) claimCount[cl.player.toLowerCase()] = (claimCount[cl.player.toLowerCase()] || 0) + cl.count;
+  });
+  return capTeamPlayers(ti).map(function(p){
+    var drops = claimCount[p.name.toLowerCase()] || 0;
+    var gain = tile.metric ? deltaFor(p.raw, tile.metric) : 0;
+    var score = drops * 1000 + gain + p.ehp;
+    var why = drops ? drops + (drops === 1 ? " drop" : " drops") + " logged on this tile" :
+      (gain ? "+" + (tile.kc ? Math.floor(gain) + " KC" : fmt(gain) + " XP") + " this bingo" : p.ehp.toFixed(1) + " EHP this bingo");
+    return { p: p, score: score, why: why };
+  }).filter(function(c){ return c.score > 0; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
+}
+function renderCaptain(){
+  document.getElementById("capTeamTabs").innerHTML = TEAMS.map(function(tm, i){
+    return '<button data-team="' + i + '" style="color:' + tm.color + '" class="' + (i === curTeam ? "on" : "") + '"><img src="' + tm.img + '" alt="" onerror="this.remove()" />' + esc(tm.name) + '</button>';
+  }).join("");
+  var tm = TEAMS[curTeam];
+  var picksBox = document.getElementById("capPicks");
+  if (!PLAYERS.length){
+    picksBox.innerHTML = '<div class="empty">Loading from Wise Old Man…</div>';
+  } else {
+    var seen = {}, tilesOut = [];
+    recapLineList(tm).slice(0, 2).forEach(function(L){
+      L.left.forEach(function(idx){
+        if (!seen[idx]){ seen[idx] = 1; tilesOut.push({ idx: idx, why: L.left.length === 1 ? "Last tile on the " + L.name.toLowerCase() + " (+" + L.bonus + ")" : L.left.length + " left on the " + L.name.toLowerCase() + " (+" + L.bonus + ")" }); }
+      });
+    });
+    TILES.forEach(function(tile, idx){
+      if (tm.done.indexOf(idx) >= 0 || seen[idx]) return;
+      if (progRatio(curTeam, tile, idx) >= 0.5){ seen[idx] = 1; tilesOut.push({ idx: idx, why: "Close: " + teamProg(curTeam, tile, idx) }); }
+    });
+    tilesOut = tilesOut.slice(0, 5);
+    picksBox.innerHTML = tilesOut.length ? tilesOut.map(function(t){
+      var tile = TILES[t.idx];
+      var who = picksForTile(curTeam, tile, t.idx);
+      return '<div class="pick-tile"><span class="pick-name">' + esc(tile.t) + '</span><span class="pick-why">' + esc(t.why) + '</span>' +
+        '<div class="pick-who">' + (who.length ? who.map(function(c){ return '<b style="color:#fff">' + esc(c.p.name) + '</b> · ' + esc(c.why); }).join("<br>") : "Nobody on the team has a head start logged yet.") + '</div></div>';
+    }).join("") : '<div class="empty">No urgent tiles right now.</div>';
+  }
+  var chase = TILES.map(function(tile, idx){
+    var rs = TEAMS.map(function(t2, ti){ return t2.done.indexOf(idx) >= 0 ? 1 : progRatio(ti, tile, idx); });
+    var sum = rs.reduce(function(a, b){ return a + b; }, 0);
+    return { idx: idx, rs: rs, sum: sum };
+  }).filter(function(c){ return c.sum > 0 && c.sum < 3; }).sort(function(a, b){ return b.sum - a.sum; }).slice(0, 8);
+  document.getElementById("capChase").innerHTML = chase.length ? chase.map(function(c){
+    var tile = TILES[c.idx];
+    var segs = c.rs.map(function(r, ti){ return '<i style="width:' + (r * 33.33).toFixed(1) + '%;background:' + TEAMS[ti].color + '"></i>'; }).join("");
+    var lbl = c.rs.map(function(r, ti){ return TEAMS[ti].done.indexOf(c.idx) >= 0 ? "✓" : Math.round(r * 100) + "%"; }).join(" · ");
+    return '<div class="chase-row"><span class="chase-name">' + esc(tile.t) + '</span><span class="chase-bar">' + segs + '</span><span class="chase-lbl">' + lbl + '</span></div>';
+  }).join("") : '<div class="empty">No progress logged yet.</div>';
+  var helped = {};
+  CLAIMS.forEach(function(cl){
+    var k = cl.player.toLowerCase();
+    helped[k] = helped[k] || {};
+    helped[k][cl.tile] = 1;
+  });
+  var gr = PLAYERS.map(function(p){
+    var tiles = helped[p.name.toLowerCase()] ? Object.keys(helped[p.name.toLowerCase()]).length : 0;
+    return { p: p, tiles: tiles, score: tiles * 3 + p.ehp + p.ehb };
+  }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
+  document.getElementById("capGrinders").innerHTML = gr.length ? '<table><thead><tr><th>#</th><th>Player</th><th>Team</th><th class="r">Tiles helped</th><th class="r">EHP</th><th class="r">EHB</th></tr></thead><tbody>' + gr.map(function(g, i){
+    return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(g.p.team) + esc(g.p.name) + '</td><td>' + teamSpan(g.p.team) + '</td><td class="r">' + g.tiles + '</td><td class="r">' + g.p.ehp.toFixed(1) + '</td><td class="r">' + g.p.ehb.toFixed(1) + '</td></tr>';
+  }).join("") + '</tbody></table>' : '<div class="empty">Loading from Wise Old Man…</div>';
+  document.getElementById("capFoot").textContent = "Data: Wise Old Man competition (55 players) and the clan drop sheets" + (UPDATED ? " · last updated " + fmtEventTime(UPDATED, true) + " ET" : "") + ". RuneProfile check, Nov 15: 36 of 55 players have a profile, so picks lean on Wise Old Man where a profile is missing.";
+}
+
 /* ============ RECAP ============ */
 function progRatio(ti, tile, idx){
   var lbl = String(teamProg(ti, tile, idx)).replace(/,/g, "");
@@ -1473,7 +1587,7 @@ document.getElementById("recapCopy").addEventListener("click", function(){
 
 /* ============ WIRING ============ */
 function setView(v){
-  var views = ["overview","team","ehb","mvp","progress"];
+  var views = ["overview","team","ehb","mvp","captain","progress"];
   if (views.indexOf(v) < 0) v = "overview";
   views.forEach(function(x){
     document.getElementById("view-" + x).classList.toggle("on", x === v);
@@ -1489,6 +1603,7 @@ function setView(v){
   history.replaceState(null, "", url);
   window.scrollTo({ top: 0 });
   if (v === "progress") renderProgress();
+  if (v === "captain") renderCaptain();
 }
 document.getElementById("viewTabs").addEventListener("click", function(e){
   var b = e.target.closest("button[data-view]"); if (b) setView(b.getAttribute("data-view"));
@@ -1504,6 +1619,16 @@ document.getElementById("teamTabs").addEventListener("click", function(e){
     var url = new URL(window.location.href); url.searchParams.set("team", TEAM_SLUGS[curTeam]);
     history.replaceState(null, "", url);
     renderTeam();
+  }
+});
+document.getElementById("capTeamTabs").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-team]");
+  if (b){
+    curTeam = +b.getAttribute("data-team");
+    try { localStorage.setItem("rwTeam", String(curTeam)); } catch (err) {}
+    var url = new URL(window.location.href); url.searchParams.set("team", TEAM_SLUGS[curTeam]);
+    history.replaceState(null, "", url);
+    renderTeam(); renderCaptain();
   }
 });
 document.addEventListener("click", function(e){
@@ -1624,7 +1749,7 @@ document.getElementById("tileInfo").innerHTML = TILES.map(function(t, i){
   if (ti >= 0) curTeam = ti;
   else { var sv = null; try { sv = localStorage.getItem("rwTeam"); } catch (e) {} if (sv != null && TEAMS[+sv]) curTeam = +sv; }
 })();
-renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); loadWOM(); tick(); setInterval(tick, 60000);
+renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); renderCaptain(); loadWOM(); tick(); setInterval(tick, 60000);
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
 </body>
