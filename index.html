@@ -1347,7 +1347,7 @@ function recapLineList(tm){
 function recapData(){
   var tm = TEAMS[curTeam], s = teamStats(tm);
   var order = standings();
-  var rank = 0; order.forEach(function(o, i){ if (o.i === curTeam) rank = i; });
+  var rank = order.filter(function(o){ return o.s.pts > s.pts; }).length;
   var tied = order.some(function(o){ return o.i !== curTeam && o.s.pts === s.pts; });
   var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
   var cut = 0;
