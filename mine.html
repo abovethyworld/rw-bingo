@@ -69,7 +69,7 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
   var log=shots.map(function(s){
     var team=s.team==null?"":(" · <span style='color:"+TEAMS[s.team].color+"'>"+TEAMS[s.team].name+"</span>");
     var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+"</b>");
-    return "<div class='logrow'>"+s.p+team+" — "+what+"<span class='tag "+(s.inSheets?"yes":"no")+"'>"+(s.inSheets?"in the sheets":"not in the sheets yet")+"</span>"+
+    return "<div class='logrow'>"+s.p+team+" — "+what+"<span class='tag "+(s.inSheets?"yes":"no")+"'>"+(s.tag||(s.inSheets?"in the sheets":"not in the sheets yet"))+"</span>"+
       "<br><span class='when'>"+TILES[s.tile][0]+" · "+fmtT(s.t)+" ET</span></div>";
   }).join("");
   var seen={}, prows="";
