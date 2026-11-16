@@ -306,6 +306,10 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .tc-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#131f3a;margin:8px 0 6px}
 .tc-bar i{display:block;height:100%}
 .tc-teams{display:flex;justify-content:space-between;color:var(--mut);font-weight:700;font-size:12px}
+.tc-name{display:flex;align-items:center;gap:8px}
+.tc-ic{display:inline-flex;flex:none;width:28px;height:28px;align-items:center;justify-content:center}
+.tc-ic img{width:28px;height:28px;object-fit:contain}
+.tc-ic .mono{font-size:20px;line-height:1}
 .gr-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid #1a2745}
 .gr-row img{width:24px;height:24px;border-radius:50%;flex:none}
 .gr-row .gv{margin-left:auto;font-weight:800;white-space:nowrap}
@@ -1770,7 +1774,7 @@ function renderChase(){
       var done = tm.done.indexOf(e.idx) >= 0;
       return '<span style="color:' + tm.color + '">' + (done ? "✓ " : "") + (st ? fmt(st.tot[ti]) : "0") + '</span>';
     }).join("");
-    return '<button class="tc-card' + (e.st ? '' : ' zero') + '" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
+    return '<button class="tc-card' + (e.st ? '' : ' zero') + '" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name"><span class="tc-ic">' + iconHTML(e.tile) + '</span>' + esc(e.tile.t) + '</div>' +
       '<div class="tc-big">' + (st ? fmt(e.total) : "0") + ' <span class="tc-unit">' + (st ? st.u : "KC") + ' total</span></div>' +
       '<div class="tc-bar">' + segs + '</div><div class="tc-teams">' + counts + '</div></button>';
   }).join("");
