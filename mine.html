@@ -50,7 +50,7 @@ function pointsFor(marks){
   if(d2.every(function(i){return s.has(i);}))p+=10;
   return p;
 }
-function fmtT(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",minute:"2-digit"});}
+function fmtT(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
 var shotBoxEl=null;
 function openShot(e,src){
   if(e)e.stopPropagation();
@@ -64,12 +64,16 @@ function openShot(e,src){
   shotBoxEl.querySelector("img").src=src;
   shotBoxEl.hidden=false;
 }
-fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+var _upd=null, _loaded=false;
+function load(){fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+  if(_upd&&d.UPDATED===_upd)return; _upd=d.UPDATED; _loaded=true;
   var shots=(d.SHOTS||[]).slice().sort(function(a,b){return b.t-a.t;});
+  var claimImgs={}; (d.DROPS.claims||[]).forEach(function(c){if(c.img)claimImgs[c.img]=1;});
   var prog={};
   Object.keys(d.DROPS.prog||{}).forEach(function(t){prog[t]={};Object.keys(d.DROPS.prog[t]).forEach(function(tm){prog[t][tm]=d.DROPS.prog[t][tm];});});
   shots.forEach(function(s){
-    if(s.inSheets||s.team==null)return;
+    if(s.inSheets||s.team==null||s.tile==null)return;
+    if(s.img&&claimImgs[s.img])return;
     if(!prog[s.tile])prog[s.tile]={};
     prog[s.tile][s.team]=(prog[s.tile][s.team]||0)+s.n;
   });
@@ -87,21 +91,22 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
   });
   var groups={}, gorder=[];
   shots.forEach(function(s){
+    if(s.tile==null||!TILES[s.tile])return;
     var k=s.p+"|"+s.item+"|"+s.tile+"|"+s.team+"|"+s.inSheets+"|"+(s.tag?"2b":"");
     if(!groups[k]){groups[k]={s:s,n:0};gorder.push(k);}
-    if(s.kind==="drop")groups[k].n+=s.n;
+    groups[k].n+=s.n;
   });
   var log=gorder.map(function(k){
     var g=groups[k], s=g.s;
     var team=s.team==null?"":(" · <span style='color:"+TEAMS[s.team].color+"'>"+TEAMS[s.team].name+"</span>");
-    var what=s.kind==="prog"?("<b>"+s.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+(g.n>1?" ×"+g.n:"")+"</b>");
+    var what=s.kind==="prog"?("<b>"+g.n.toLocaleString()+"</b> "+s.item):("<b>"+s.item+(g.n>1?" ×"+g.n:"")+"</b>");
     var tag=s.inSheets?"in sheets":(s.tag?"2B log only":"not logged");
     return "<div class='logrow'>"+(s.img?"<img class='sthumb' src='"+s.img+"' alt='' onclick='openShot(event,this.src)'>":"")+s.p+team+" — "+what+" <span class='tag "+(s.inSheets?"yes":"no")+"'>"+tag+"</span>"+
       "<br><span class='when'>"+TILES[s.tile][0]+" · "+fmtT(s.t)+" ET</span></div>";
   }).join("");
   var seen={}, prows="";
   shots.forEach(function(s){
-    if(s.team==null||s.inSheets)return;
+    if(s.team==null||s.inSheets||s.tile==null||!TILES[s.tile])return;
     var key=s.tile+"-"+s.team; if(seen[key])return; seen[key]=1;
     var goal=DROP_GOALS[s.tile]; if(!goal)return;
     var cur=(prog[s.tile]&&prog[s.tile][s.team])||0, pct=Math.min(100,Math.round(cur/goal*100));
@@ -125,7 +130,8 @@ fetch("data.json",{cache:"no-store"}).then(function(r){return r.json();}).then(f
     (prows?"<div class='card'><h2>Progress the sheets don't show</h2>"+prows+"</div>":"")+
     "<div class='card'><h2>Screenshot log</h2>"+log+"</div>"+
     "<div class='sub'>Updated "+fmtT(d.UPDATED)+" ET · send screenshots in chat and they land here within minutes.</div>";
-}).catch(function(e){document.getElementById("app").textContent="Could not load data.json — "+e;});
+  }).catch(function(e){if(!_loaded)document.getElementById("app").textContent="Could not load data.json — "+e;});}
+load(); setInterval(load,120000);
 </script>
 </body>
 </html>
