@@ -91,7 +91,7 @@ button{font-family:inherit;cursor:pointer}
 .tl-chip{color:var(--mut);font-weight:800;font-size:12.5px;background:#0d1730;border:1px solid var(--line);padding:4px 10px;border-radius:999px}
 .tl-spds{margin-left:auto;display:flex;gap:6px;align-items:center}
 .tl-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.tl-controls .spd{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:5px 13px;font-weight:800}
+.tl-controls .spd{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:5px 13px;font-weight:800;min-height:40px;display:inline-flex;align-items:center}
 .tl-controls .spd.on{color:#fff;border-color:var(--acc)}
 .tl-controls button:disabled{opacity:.45;cursor:default}
 .tl-slider{height:10px;background:#16223d;border-radius:99px;margin-top:12px;touch-action:none}
@@ -204,7 +204,7 @@ td.r,th.r{text-align:right}
 /* h2 takes the free space so the close button sits at the right edge in both modals (the Rules modal has no .m-pts to push it). */
 .modal h2{margin:0;font-size:21px;font-weight:900;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
 .modal .m-pts{margin-left:auto;color:var(--gold);font-weight:900;white-space:nowrap;flex:none}
-.modal .x{margin-left:6px;background:none;border:none;color:var(--mut);font-size:21px;line-height:1;flex:none;padding:6px;margin-right:-6px}
+.modal .x{margin-left:6px;background:none;border:none;color:var(--mut);font-size:21px;line-height:1;flex:none;padding:6px;margin-right:-6px;min-width:40px;min-height:40px}
 .m-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--hair)}
 .m-row:last-child{border-bottom:none}
 .m-row .dot{width:11px;height:11px;border-radius:99px;flex:none}
@@ -275,7 +275,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .ehb-full th:nth-child(1),.ehb-full td:nth-child(1){width:44px}
 .ehb-full th.r,.ehb-full td.r{width:128px}
 .recap-days{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
-.recap-days button{background:#0d1730;border:1px solid #22335a;color:var(--ink);border-radius:999px;padding:5px 11px;font-weight:800;font-size:12.5px;cursor:pointer}
+.recap-days button{background:#0d1730;border:1px solid #22335a;color:var(--ink);border-radius:999px;padding:5px 11px;font-weight:800;font-size:12.5px;cursor:pointer;min-height:40px}
 .recap-days button.on{background:#2a3f6e;border-color:#4a6db3;color:#fff}
 .recap-days button:disabled{opacity:.3;cursor:default}
 .recap-sec{margin-top:10px}
@@ -338,7 +338,7 @@ footer img{width:40px;height:40px;border-radius:11px;display:block;margin:0 auto
 .hm-name{white-space:nowrap;font-weight:800;font-size:13px;padding:2px 8px 2px 4px;text-align:left}
 .hm-cell{font-size:11px;text-align:center;padding:5px 6px;border-radius:4px;min-width:46px;font-weight:700}
 .hm-empty{background:rgba(143,163,200,.05)}
-.hm-zero{color:var(--mut2);opacity:.5}
+.hm-zero{color:var(--mut)}
 .hm-note{color:var(--mut);font-weight:600;font-size:13px;margin:10px 0 4px;line-height:1.5}
 .feed-box{max-height:420px;overflow-y:auto}
 .feed-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--hair);font-weight:700;font-size:14px}
@@ -349,7 +349,7 @@ body[data-view]:not([data-view="overview"]) .banner img{height:120px;object-fit:
 body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-view="overview"]) .progress,body[data-view]:not([data-view="overview"]) .underbar{display:none}
 @media(max-width:640px){body[data-view]:not([data-view="overview"]) .banner img{height:70px}}
 .ms-wrap{position:relative;display:inline-block}
-.ms-drop{position:absolute;left:0;top:calc(100% + 6px);width:250px;max-height:252px;overflow:auto;background:#0d1830;border:1px solid #22345e;border-radius:12px;z-index:1500;box-shadow:0 14px 34px rgba(0,0,0,.5);text-align:left}
+.ms-drop{position:absolute;left:0;top:calc(100% + 6px);width:250px;max-width:calc(100vw - 28px);max-height:252px;overflow:auto;background:#0d1830;border:1px solid #22345e;border-radius:12px;z-index:1500;box-shadow:0 14px 34px rgba(0,0,0,.5);text-align:left}
 .ms-opt{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer;font-weight:700}
 .ms-opt:hover{background:#16264a}
 .ms-opt img{width:24px;height:24px;border-radius:50%}
@@ -364,7 +364,7 @@ body[data-view]:not([data-view="overview"]) .dateline,body[data-view]:not([data-
 .pod .who,.pod .tm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:640px){.podium .pod:nth-child(1){min-height:118px}.podium .pod:nth-child(2){min-height:136px}.podium .pod:nth-child(3){min-height:110px}}
 @media(min-width:1300px){.chase-grid{grid-template-columns:repeat(7,minmax(0,1fr))}.tc-big{font-size:20px}}
-.tc-card.zero{opacity:.55}
+.tc-card.zero{opacity:.85}
 .grid7{grid-auto-rows:1fr}
 .tile-lg .lab{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #view-ehb .note-card table{table-layout:fixed;width:100%}
@@ -409,6 +409,7 @@ td.when{white-space:nowrap}
   .tc-teams{grid-area:teams}
   th.src,td.src{display:none}
 }
+#view-progress .tcard:first-child{overflow:visible}
 </style>
 </head>
 <body>
@@ -437,8 +438,9 @@ td.when{white-space:nowrap}
     <button data-view="mvp">🏆 MVP</button>
     <button data-view="captain">🧭 Captain's Table</button>
     <button data-view="chase">🔥 Most Chased</button>
-    <button data-view="progress" onclick="setView('progress')">🗺️ Progress</button>
+    <button data-view="progress">🗺️ Progress</button>
   </div>
+  <div id="womNote" class="hm-note"></div>
   <div class="tl-panel" id="tlPanel">
     <div class="tl-controls">
       <button class="tl-play" id="tlPlay" title="Play / pause">▶ Replay</button>
@@ -755,16 +757,20 @@ var FLAGS = {}; /* baked by the sync: "team:tile" -> why a sheet-marked completi
 var UPDATED = 1794787331913; /* baked by the sync: ms epoch of the last data bake */
 var TILESTATS = {"43": {"u": "KC", "tot": [40, 185, 106], "top": [["Ami", 1, 185], ["Apple Blood", 2, 73], ["Maeve", 0, 40], ["Huge swords", 2, 33]]}, "46": {"u": "KC", "tot": [36, 34, 28], "top": [["Door Man Nic", 1, 8], ["Kelsen", 1, 8], ["Aaron", 2, 7], ["Taylay", 0, 7], ["MightyHonk", 0, 6], ["DJRookies", 2, 6], ["Dake", 1, 6], ["scylla", 2, 5]]}, "39": {"u": "KC", "tot": [103, 6, 5], "top": [["Ross", 0, 91], ["Maeve", 0, 12], ["DJRookies", 2, 5], ["Door Man Nic", 1, 4], ["Ami", 1, 2]]}, "9": {"u": "KC", "tot": [0, 13, 25], "top": [["Apple Blood", 2, 25], ["Raven", 1, 12], ["Ami", 1, 1]]}, "7": {"u": "KC", "tot": [28, 28, 6], "top": [["Donnie", 1, 23], ["Buf", 0, 11], ["r\u014dnin", 0, 7], ["Aaron", 2, 4], ["Dr. Pearls", 0, 3], ["Apple Blood", 2, 1], ["Door Man Nic", 1, 1], ["Lath", 1, 1]]}, "22": {"u": "KC", "tot": [7, 4, 3], "top": [["Apple Blood", 2, 1], ["ShaolinDildo", 2, 1], ["Door Man Nic", 1, 1], ["Lath", 1, 1], ["Chowder", 1, 1], ["Maeve", 0, 1], ["Martel", 2, 1], ["Suga", 0, 1]]}, "35": {"u": "KC", "tot": [41, 6, 72], "top": [["Casval", 2, 45], ["Martel", 2, 17], ["Oden", 0, 12], ["Nama", 0, 12], ["Elle", 0, 9], ["SPOOSER", 2, 7], ["iKronken", 0, 7], ["Chris", 1, 6]]}, "31": {"u": "KC", "tot": [57, 41, 39], "top": [["iKronken", 0, 57], ["Tydreamt", 1, 41], ["ShaolinDildo", 2, 39]]}, "45": {"u": "KC", "tot": [19, 5, 24], "top": [["Taylay", 0, 7], ["DJRookies", 2, 5], ["Aaron", 2, 5], ["Kenna", 0, 5], ["Casval", 2, 4], ["MightyHonk", 0, 3], ["Door Man Nic", 1, 3], ["HappyShake", 2, 3]]}, "10": {"u": "KC", "tot": [65, 0, 44], "top": [["Nama", 0, 65], ["ShaolinDildo", 2, 13], ["Huge swords", 2, 13], ["SPOOSER", 2, 13], ["scylla", 2, 5]]}, "8": {"u": "KC", "tot": [3, 0, 0], "top": [["Oden", 0, 3]]}, "44": {"u": "KC", "tot": [10, 20, 6], "top": [["Door Man Nic", 1, 5], ["Chowder", 1, 5], ["Kelsen", 1, 5], ["Nick", 1, 5], ["Ross", 0, 4], ["Aaron", 2, 4], ["DJRookies", 2, 2], ["Maeve", 0, 2]]}, "41": {"u": "KC", "tot": [31, 28, 0], "top": [["MightyHonk", 0, 31], ["Kelsen", 1, 28]]}, "14": {"u": "KC", "tot": [2129, 444, 1258], "top": [["Jo", 0, 1092], ["Rhombusaurus", 2, 768], ["BoilShad0w5", 0, 472], ["Louie", 2, 414], ["Dr. Pearls", 0, 271], ["Limp", 0, 200], ["Door Man Nic", 1, 160], ["Lath", 1, 110]]}, "28": {"u": "KC", "tot": [16, 9, 47], "top": [["DJRookies", 2, 46], ["Eric", 0, 13], ["Door Man Nic", 1, 9], ["Maeve", 0, 2], ["Aaron", 2, 1], ["Dan", 0, 1]]}, "34": {"u": "KC", "tot": [0, 205, 0], "top": [["Lath", 1, 205]]}, "36": {"u": "KC", "tot": [136, 225, 50], "top": [["Rob", 1, 142], ["Dan", 0, 95], ["Marcy", 1, 76], ["Taylay", 0, 41], ["HappyShake", 2, 30], ["Casval", 2, 16], ["Chowder", 1, 7], ["Aaron", 2, 4]]}, "38": {"u": "KC", "tot": [0, 0, 24], "top": [["DJRookies", 2, 12], ["Huge swords", 2, 12]]}, "12": {"u": "KC", "tot": [3, 0, 29], "top": [["Martel", 2, 21], ["Huge swords", 2, 8], ["Kenna", 0, 3]]}, "33": {"u": "KC", "tot": [0, 0, 17], "top": [["Cinderbulk", 2, 17]]}, "26": {"u": "KC", "tot": [0, 103, 89], "top": [["Bottled Up", 2, 71], ["Quough", 1, 50], ["Andy", 1, 48], ["SPOOSER", 2, 18], ["Raven", 1, 5]]}, "29": {"u": "KC", "tot": [7, 0, 6], "top": [["Suga", 0, 7], ["scylla", 2, 6]]}, "40": {"u": "KC", "tot": [12, 44, 18], "top": [["Kelsen", 1, 43], ["Aaron", 2, 18], ["Suga", 0, 12], ["Marcy", 1, 1]]}, "23": {"u": "KC", "tot": [2, 19, 0], "top": [["Kelsen", 1, 19], ["Taylay", 0, 2]]}, "30": {"u": "KC", "tot": [0, 0, 7], "top": [["Louie", 2, 6], ["SPOOSER", 2, 1]]}, "15": {"u": "KC", "tot": [44, 0, 0], "top": [["Dr. Pearls", 0, 44]]}, "0": {"u": "XP", "tot": [227956, 935382, 539692], "top": [["Ami", 1, 344043], ["HappyTweak", 2, 252858], ["Lath", 1, 228000], ["Apple Blood", 2, 179388], ["Donnie", 1, 144840], ["Maeve", 0, 119083], ["Chowder", 1, 113127], ["Huge swords", 2, 63037]]}, "1": {"u": "XP", "tot": [341244, 796333, 1206952], "top": [["Cinderbulk", 2, 706174], ["Allie", 1, 370566], ["MightyHonk", 0, 317233], ["Potato", 2, 295930], ["Ami", 1, 238136], ["Dave", 2, 202032], ["Tydreamt", 1, 187553], ["Nama", 0, 23479]]}, "2": {"u": "XP", "tot": [1623705, 1578207, 1366484], "top": [["ShaolinDildo", 2, 1018440], ["Oden", 0, 957604], ["riir", 1, 736570], ["Chris", 1, 439005], ["Limp", 0, 274086], ["MightyHonk", 0, 154898], ["Casval", 2, 145730], ["Martel", 2, 140535]]}, "3": {"u": "XP", "tot": [206372, 157854, 680686], "top": [["Martel", 2, 331681], ["Dave", 2, 178885], ["Dake", 1, 153938], ["Huge swords", 2, 124164], ["iKronken", 0, 100110], ["Eric", 0, 40546], ["Elle", 0, 31795], ["Kenna", 0, 27220]]}, "5": {"u": "XP", "tot": [2892, 674006, 660565], "top": [["Apple Blood", 2, 653686], ["Ami", 1, 352156], ["Raven", 1, 318852], ["Rhombusaurus", 2, 2400], ["Aaron", 2, 1272], ["DJRookies", 2, 920], ["Kelsen", 1, 789], ["Door Man Nic", 1, 736]]}, "6": {"u": "XP", "tot": [513505, 386619, 559484], "top": [["Buf", 0, 425174], ["Dave", 2, 237371], ["Dake", 1, 198226], ["Rhombusaurus", 2, 162251], ["Huge swords", 2, 159536], ["Marcy", 1, 140717], ["Eric", 0, 60090], ["MrKulaid", 1, 38430]]}, "4": {"u": "XP", "tot": [2989, 833034, 774997], "top": [["Bottled Up", 2, 603490], ["Quough", 1, 375753], ["Andy", 1, 330543], ["SPOOSER", 2, 163552], ["Raven", 1, 125868], ["ShaolinDildo", 2, 2270], ["Huge swords", 2, 2255], ["Ross", 0, 1944]]}, "17": {"u": "drops", "tot": [1, 2, 0], "top": [["Buf", 0, 1], ["MrKulaid", 1, 1], ["Marcy", 1, 1]]}, "19": {"u": "drops", "tot": [1, 1, 0], "top": [["MightyHonk", 0, 1], ["Allie", 1, 1]]}, "20": {"u": "drops", "tot": [2, 1, 0], "top": [["Oden", 0, 1], ["Dr. Pearls", 0, 1], ["riir", 1, 1]]}, "21": {"u": "drops", "tot": [1, 1, 0], "top": [["iKronken", 0, 1], ["Chris", 1, 1]]}}; /* baked by the sync: per-tile {u, tot[3], top[[name, teamIdx, value]]} for the Most Chased tab */
 var DROP_GOALS = {7:4, 8:5, 12:3, 14:3, 15:5, 16:3, 17:5, 18:4, 19:3, 20:4, 21:3, 22:3, 23:3, 25:1000, 26:750, 27:50000, 30:4, 31:3, 32:1, 33:5, 34:3, 35:3, 36:3, 38:2, 41:3, 42:2, 43:3, 45:4, 46:3, 48:400};
+if (!DROPS.prog) DROPS.prog = {};
 CLAIMS = DROPS.claims;
 var TIMELINE = [{"t": 1794694380000, "team": 2, "tile": 39}, {"t": 1794699120000, "team": 0, "tile": 25}, {"t": 1794706860000, "team": 1, "tile": 11}, {"t": 1794708840000, "team": 0, "tile": 31}, {"t": 1794712320000, "team": 0, "tile": 46}, {"t": 1794717361508, "team": 1, "tile": 44}, {"t": 1794720120000, "team": 1, "tile": 28}, {"t": 1794736080000, "team": 2, "tile": 12}, {"t": 1794756240000, "team": 1, "tile": 14}, {"t": 1794759050090, "team": 2, "tile": 24}, {"t": 1794759071748, "team": 1, "tile": 25}, {"t": 1794765600000, "team": 1, "tile": 39}, {"t": 1794767400000, "team": 0, "tile": 28}, {"t": 1794768120000, "team": 2, "tile": 13}, {"t": 1794770160000, "team": 0, "tile": 13}]; /* baked by the sheet sync: {t, team, tile} first-seen completion times */
 var HIST = {"t": [1794679200000, 1794718799000, 1794721907881, 1794722731468, 1794722943885, 1794723089835, 1794724040913, 1794724298698, 1794724749320, 1794726546313, 1794728343806, 1794730116385, 1794730428705, 1794731154702, 1794731338926, 1794731643294, 1794731939698, 1794732013998, 1794732331788, 1794732707884, 1794732789667, 1794732881335, 1794732969610, 1794733210246, 1794733546848, 1794733722793, 1794734258600, 1794734398870, 1794735398571, 1794735523829, 1794736877536, 1794737000442, 1794737155319, 1794737323459, 1794737557250, 1794739105661, 1794739294851, 1794739443592, 1794740461327, 1794740926702, 1794742732336, 1794744529489, 1794746335426, 1794748146007, 1794749933209, 1794751736486, 1794753531897, 1794755333423, 1794757129564, 1794759050091, 1794760332311, 1794761227371, 1794761913579, 1794762131419, 1794763027679, 1794763936156, 1794764838142, 1794765234527, 1794765653104, 1794765726011, 1794766633849, 1794767535610, 1794767602570, 1794768436374, 1794769061609, 1794769436244, 1794769553591, 1794770317408, 1794771132800, 1794772045766, 1794772954858, 1794773834519, 1794774735873, 1794775557772, 1794775638822, 1794776542944, 1794776709460, 1794777438931, 1794778345944, 1794779231704, 1794780151787, 1794781036471, 1794781758294, 1794781938330, 1794782018937, 1794782600405, 1794782829290, 1794783361076, 1794783737256, 1794784632883, 1794785544783, 1794786430949, 1794787331914], "txp": [[0, 6949171, 7414283, 7603077, 7603077, 7603077, 7603077, 7603077, 7809390, 7926552, 8161629, 8161629, 8161629, 8496572, 8496572, 8496572, 8496572, 8496572, 8496572, 9246131, 9246131, 9246131, 9246131, 9246131, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9402968, 9580990, 9679609, 9684072, 10037186, 10037186, 10350574, 10350574, 10350574, 10350574, 10350574, 10507964, 11090674, 11259049, 11259049, 11282548, 11394260, 11394260, 11394260, 11394260, 11637530, 11637530, 11637530, 11652336, 11797068, 11797068, 11814139, 11857250, 11874741, 11874741, 11981119, 12167338, 12223003, 12223003, 12907982, 12907982, 13240459, 13240459, 13707991, 13707991, 13951206, 13951206, 13951206, 13951206, 14773745, 14773745, 14773745, 14773745, 15073848, 15073848, 15073848, 15073848, 15317085, 15317085, 15459841, 15532383], [0, 9645277, 9979039, 10213250, 10213250, 10213250, 10213250, 10379979, 10391573, 10668360, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11569390, 11684953, 11684953, 11737768, 11737768, 11737768, 11737768, 11737768, 11737768, 11951210, 11951210, 11951210, 11951210, 11951210, 12306527, 12409323, 12409323, 12495444, 12495594, 12691544, 12691544, 12735973, 12960154, 13708818, 14058589, 14181534, 14469181, 14469181, 14469181, 14469181, 14905190, 15020812, 15020812, 15152118, 15210026, 15235608, 15272194, 15272194, 15288267, 15418516, 15418516, 15418516, 15418516, 15515873, 15657755, 16776219, 16776219, 17236375, 17259631, 17259631, 17259631, 17259631, 17259631, 17259631, 17259631, 17401932, 17536711, 17945420, 18087498, 18087498, 18087498, 18087498, 18368215, 18616586, 18616586, 18616586, 18616586, 18616586], [0, 7792839, 8203286, 8203286, 8406442, 8406442, 8680505, 8680505, 8680505, 8680505, 8968439, 9603318, 9603318, 9690014, 9690014, 9690014, 9690014, 9690014, 10389505, 10573761, 10573761, 10898017, 10898017, 10898017, 10898017, 10898017, 10898017, 11187571, 11213714, 11213714, 11213714, 11213714, 11213714, 11213714, 11213714, 11310786, 11310786, 11310786, 11930845, 11930845, 12005933, 12005933, 12215114, 12215114, 12229053, 12229053, 12229053, 12279039, 12312453, 13233180, 13272390, 13312863, 13312863, 13429136, 13539435, 13539435, 13670077, 13670077, 13756594, 13844771, 13844771, 13984007, 13984007, 14004461, 14147708, 14197039, 14278591, 14553898, 14683119, 14801898, 14801898, 14801898, 15128837, 15595226, 15595226, 15606036, 15938546, 16102321, 16177052, 16177052, 16252914, 16494034, 16571644, 16571644, 16571644, 16938256, 16938256, 17273461, 17273461, 17334975, 17346141, 17359134, 17410920]], "tehp": [[0, 17.73, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.2, 16.96, 17.75, 17.75, 17.75, 18.72, 18.72, 18.72, 18.72, 18.72, 18.72, 18.88, 18.88, 18.88, 18.88, 18.88, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 18.93, 19.01, 19.02, 19.03, 19.13, 19.13, 19.27, 19.27, 19.27, 19.27, 19.27, 19.33, 20.75, 20.83, 20.83, 20.99, 21.07, 21.07, 21.07, 21.07, 21.2, 21.2, 21.2, 21.93, 21.94, 21.94, 21.94, 21.96, 22.08, 22.08, 22.08, 22.96, 23.02, 23.02, 23.71, 23.71, 24.47, 24.47, 24.79, 24.79, 25.71, 25.71, 25.71, 25.71, 26.65, 26.65, 26.65, 26.65, 26.83, 26.83, 26.83, 26.83, 27.17, 27.17, 27.45, 27.46], [0, 23.52, 24.28, 25.04, 25.04, 25.04, 25.04, 25.15, 25.2, 25.23, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.45, 26.47, 26.47, 26.49, 26.49, 26.49, 26.49, 26.49, 26.49, 26.84, 26.84, 26.84, 26.84, 26.84, 28.01, 29.42, 29.42, 29.47, 29.47, 30.38, 30.38, 30.99, 32.02, 34.47, 35.55, 36.46, 41.35, 41.35, 41.35, 41.35, 43.72, 43.73, 43.73, 43.98, 44.0, 44.02, 44.2, 44.2, 44.42, 44.51, 44.51, 44.51, 44.51, 46.11, 46.19, 49.0, 49.0, 50.6, 51.02, 51.02, 51.02, 51.02, 51.02, 51.02, 51.02, 51.47, 52.13, 52.83, 53.29, 53.29, 53.29, 53.29, 53.38, 53.66, 53.66, 53.66, 53.66, 53.66], [0, 17.57, 18.34, 18.34, 18.51, 18.51, 19.2, 19.2, 19.2, 19.2, 19.63, 20.39, 20.39, 20.86, 20.86, 20.86, 20.86, 20.86, 21.7, 23.34, 23.34, 23.38, 23.38, 23.38, 23.38, 23.38, 23.38, 26.09, 26.24, 26.24, 26.24, 26.24, 26.24, 26.24, 26.24, 26.83, 26.83, 26.83, 28.95, 28.95, 28.95, 28.95, 30.34, 30.34, 30.34, 30.34, 30.34, 30.42, 30.51, 32.13, 32.13, 32.22, 32.22, 32.48, 32.76, 32.76, 33.44, 33.44, 33.53, 33.6, 33.6, 33.78, 33.78, 33.78, 34.13, 34.53, 34.93, 36.05, 36.45, 36.63, 36.63, 36.63, 37.29, 37.9, 37.9, 37.9, 38.17, 38.24, 38.42, 38.42, 38.45, 38.87, 39.01, 39.01, 39.01, 42.46, 42.46, 43.16, 43.16, 43.18, 43.19, 43.2, 43.25]], "tehb": [[0, 20.71, 25.71, 26.77, 26.77, 26.77, 26.77, 26.77, 27.5, 27.78, 28.42, 28.42, 28.42, 28.42, 28.42, 28.42, 28.42, 28.42, 28.42, 29.92, 29.92, 29.92, 29.92, 29.92, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 30.95, 31.85, 31.85, 31.85, 31.85, 32.02, 32.02, 32.02, 32.02, 32.02, 32.19, 33.58, 34.08, 34.08, 34.36, 35.02, 35.02, 35.02, 35.02, 35.02, 35.02, 35.02, 35.02, 35.7, 35.7, 35.92, 35.92, 35.92, 35.92, 36.5, 36.5, 37.34, 37.34, 38.33, 38.33, 38.4, 38.4, 38.4, 38.4, 39.93, 39.93, 39.93, 39.93, 42.24, 42.24, 42.24, 42.24, 44.01, 44.01, 44.01, 44.01, 44.95, 44.95, 45.98, 46.65], [0, 16.46, 16.9, 16.92, 16.92, 16.92, 16.92, 18.16, 18.16, 20.36, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.26, 21.73, 21.73, 21.73, 21.73, 21.73, 21.73, 21.73, 21.73, 21.88, 21.88, 21.88, 21.88, 21.88, 22.08, 22.08, 22.08, 22.73, 22.73, 22.73, 22.73, 22.73, 22.73, 23.5, 23.99, 24.23, 24.23, 24.23, 24.23, 24.23, 24.23, 25.05, 25.05, 25.05, 25.05, 25.2, 25.2, 25.2, 25.2, 26.17, 26.17, 26.17, 26.17, 26.17, 26.81, 27.81, 27.81, 28.51, 28.51, 28.51, 28.51, 28.51, 28.51, 28.51, 28.51, 28.51, 28.51, 29.94, 29.94, 29.94, 29.94, 29.94, 32.6, 34.22, 34.22, 34.22, 34.22, 34.22], [0, 21.63, 24.12, 24.12, 24.75, 24.75, 25.75, 25.75, 25.75, 25.75, 27.65, 31.4, 31.4, 31.4, 31.4, 31.4, 31.4, 31.4, 31.4, 31.45, 31.45, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.79, 32.85, 32.85, 32.85, 32.85, 32.85, 33.71, 33.71, 34.16, 34.16, 34.16, 34.16, 34.16, 34.4, 34.4, 35.52, 35.95, 35.95, 35.95, 35.95, 36.5, 36.5, 36.5, 36.5, 37.08, 37.65, 37.65, 38.22, 38.22, 38.33, 39.02, 39.02, 39.02, 39.02, 39.22, 39.22, 39.22, 39.22, 39.22, 39.79, 39.79, 39.88, 41.78, 41.84, 41.84, 41.84, 42.17, 42.91, 43.66, 43.66, 43.66, 43.76, 43.76, 44.24, 44.24, 44.67, 44.67, 44.97, 45.8]]};
 var HEAT = {"days": ["Sat 14", "Sun 15", "Mon 16", "Tue 17", "Wed 18", "Thu 19", "Fri 20", "Sat 21", "Sun 22"], "players": [{"n": "ItsAChocobo", "tm": 0, "g": [1498579, 667508, 0, 0, 0, 0, 0, 0, 0]}, {"n": "MightyHonk", "tm": 0, "g": [382448, 1180409, 0, 0, 0, 0, 0, 0, 0]}, {"n": "sheslimp", "tm": 0, "g": [796460, 659544, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Kiwi1281Iron", "tm": 0, "g": [368069, 1003815, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Dredlax", "tm": 0, "g": [1103252, 118083, 0, 0, 0, 0, 0, 0, 0]}, {"n": "ikuradon", "tm": 0, "g": [178873, 817175, 0, 0, 0, 0, 0, 0, 0]}, {"n": "sunshine4evr", "tm": 0, "g": [128682, 855687, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Taylays", "tm": 0, "g": [419448, 555595, 0, 0, 0, 0, 0, 0, 0]}, {"n": "JobeeFe", "tm": 0, "g": [336847, 518436, 0, 0, 0, 0, 0, 0, 0]}, {"n": "EvilFarore", "tm": 0, "g": [258108, 418998, 0, 0, 0, 0, 0, 0, 0]}, {"n": "uBeeez", "tm": 0, "g": [450042, 157065, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Pearls", "tm": 0, "g": [176632, 346970, 0, 0, 0, 0, 0, 0, 0]}, {"n": "thaidacar", "tm": 0, "g": [94268, 399608, 0, 0, 0, 0, 0, 0, 0]}, {"n": "nayrune", "tm": 0, "g": [245675, 152131, 0, 0, 0, 0, 0, 0, 0]}, {"n": "boilshad0w5", "tm": 0, "g": [74088, 295172, 0, 0, 0, 0, 0, 0, 0]}, {"n": "iKronken", "tm": 0, "g": [178977, 158152, 0, 0, 0, 0, 0, 0, 0]}, {"n": "i Ronin", "tm": 0, "g": [87777, 186219, 0, 0, 0, 0, 0, 0, 0]}, {"n": "namasar", "tm": 0, "g": [170946, 92645, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Zefy Sunless", "tm": 0, "g": [0, 0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Amaris Eden", "tm": 1, "g": [1378026, 1503237, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Azzyl", "tm": 1, "g": [1035945, 763145, 0, 0, 0, 0, 0, 0, 0]}, {"n": "riir", "tm": 1, "g": [1074446, 549517, 0, 0, 0, 0, 0, 0, 0]}, {"n": "IronClamChow", "tm": 1, "g": [638778, 933058, 0, 0, 0, 0, 0, 0, 0]}, {"n": "latheon", "tm": 1, "g": [587794, 875599, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Idne", "tm": 1, "g": [554548, 614566, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Dontropic", "tm": 1, "g": [143274, 1025609, 0, 0, 0, 0, 0, 0, 0]}, {"n": "dake st farm", "tm": 1, "g": [701111, 380793, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Tydreamt", "tm": 1, "g": [595434, 287239, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Ultimate RVN", "tm": 1, "g": [347114, 529401, 0, 0, 0, 0, 0, 0, 0]}, {"n": "StrKes", "tm": 1, "g": [526388, 226037, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Ferric Niko", "tm": 1, "g": [653990, 79092, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Have Marcy", "tm": 1, "g": [253237, 442906, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Hex Bun", "tm": 1, "g": [423098, 158183, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Quough", "tm": 1, "g": [131603, 294638, 0, 0, 0, 0, 0, 0, 0]}, {"n": "its me cia", "tm": 1, "g": [118206, 296978, 0, 0, 0, 0, 0, 0, 0]}, {"n": "cutedog_jpeg", "tm": 1, "g": [278745, 117163, 0, 0, 0, 0, 0, 0, 0]}, {"n": "MrKulaid", "tm": 1, "g": [203540, 0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "DJRookies", "tm": 2, "g": [776382, 893627, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Apple Blood", "tm": 2, "g": [487172, 1175732, 0, 0, 0, 0, 0, 0, 0]}, {"n": "scyllacybin", "tm": 2, "g": [954903, 564769, 0, 0, 0, 0, 0, 0, 0]}, {"n": "HappyTweak", "tm": 2, "g": [420504, 946978, 0, 0, 0, 0, 0, 0, 0]}, {"n": "huge swords", "tm": 2, "g": [522226, 770439, 0, 0, 0, 0, 0, 0, 0]}, {"n": "washiiii", "tm": 2, "g": [369936, 922109, 0, 0, 0, 0, 0, 0, 0]}, {"n": "This Hellboy", "tm": 2, "g": [546753, 638597, 0, 0, 0, 0, 0, 0, 0]}, {"n": "happyshake", "tm": 2, "g": [706309, 324055, 0, 0, 0, 0, 0, 0, 0]}, {"n": "bottled up", "tm": 2, "g": [337882, 573648, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Cinderbulk", "tm": 2, "g": [443751, 457927, 0, 0, 0, 0, 0, 0, 0]}, {"n": "casval8", "tm": 2, "g": [402081, 499094, 0, 0, 0, 0, 0, 0, 0]}, {"n": "holy martel", "tm": 2, "g": [370173, 398056, 0, 0, 0, 0, 0, 0, 0]}, {"n": "rhombusaurus", "tm": 2, "g": [570042, 145494, 0, 0, 0, 0, 0, 0, 0]}, {"n": "IronMamba34", "tm": 2, "g": [202850, 508124, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Crab Admiral", "tm": 2, "g": [256168, 406742, 0, 0, 0, 0, 0, 0, 0]}, {"n": "SPOOSER", "tm": 2, "g": [182282, 286146, 0, 0, 0, 0, 0, 0, 0]}, {"n": "Ptaters", "tm": 2, "g": [243425, 106544, 0, 0, 0, 0, 0, 0, 0]}, {"n": "iron tomoko", "tm": 2, "g": [0, 0, 0, 0, 0, 0, 0, 0, 0]}]};
-TEAMS.forEach(function(tm, ti){
-  Object.keys(DROPS.prog).forEach(function(k){
-    var idx = +k, cnt = DROPS.prog[k][ti];
-    if (cnt != null && DROP_GOALS[idx] && cnt >= DROP_GOALS[idx] && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+function applyDropGoals(){
+  TEAMS.forEach(function(tm, ti){
+    Object.keys(DROPS.prog || {}).forEach(function(k){
+      var idx = +k, cnt = DROPS.prog[k][ti];
+      if (cnt != null && DROP_GOALS[idx] && cnt >= DROP_GOALS[idx] && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+    });
   });
-});
+}
+applyDropGoals();
 /* === SHEET-SYNC (rewritten by sync-sheet.py from the clan sheet; do not hand-edit) === */
 var SHEET = {"scores": [5, 6, 4], "skips": [0, 0, 0], "marks": [[13, 25, 28, 31, 46], [11, 14, 25, 28, 39, 44], [12, 13, 24, 39]]};
 /* === END SHEET-SYNC === */
@@ -816,6 +822,11 @@ function renderBoards(){
     var s = teamStats(tm);
     var ehbArr = (typeof HIST !== "undefined" && HIST.tehb && HIST.tehb[ti]) || [];
     var ehb = ehbArr.length ? ehbArr[ehbArr.length - 1] : null;
+    if (tlActive && ehbArr.length && typeof HIST !== "undefined" && HIST.t){
+      var _cut = tlCutoff(), _bi = 0;
+      for (var _hi = 0; _hi < HIST.t.length; _hi++){ if (HIST.t[_hi] <= _cut) _bi = _hi; else break; }
+      ehb = ehbArr[_bi];
+    }
     var rank = rankOf[ti];
     var tiles = TILES.map(function(tile, idx){
       var done = tm.done.indexOf(idx) >= 0;
@@ -847,15 +858,15 @@ function toggleOvClaims(){ ovShowAll = !ovShowAll; renderClaims(); }
 function renderClaims(){
   var cb = document.getElementById("claimsBody");
   var more = document.getElementById("claimsMore");
-  if (!CLAIMS.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; if (more) more.innerHTML = ""; }
+  var CL = claimsAt();
+  if (!CL.length){ cb.innerHTML = '<tr><td colspan="6" class="empty">No items received yet.</td></tr>'; if (more) more.innerHTML = ""; }
   else {
-    var rows = ovShowAll ? CLAIMS : CLAIMS.slice(0, 10);
+    var rows = ovShowAll ? CL : CL.slice(0, 10);
     cb.innerHTML = rows.map(function(cl){
       return '<tr><td><div class="itemcell">' + shotThumb(cl) + itemIcon(cl) + itemLink(cl) + '</div></td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td>' + teamSpan(cl.team) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
     }).join("");
-    if (more) more.innerHTML = CLAIMS.length > 10 ? '<button class="pillbtn" onclick="toggleOvClaims()">' + (ovShowAll ? "Show less" : "Show all " + CLAIMS.length) + '</button>' : "";
+    if (more) more.innerHTML = CL.length > 10 ? '<button class="pillbtn" onclick="toggleOvClaims()">' + (ovShowAll ? "Show less" : "Show all " + CL.length) + '</button>' : "";
   }
-  document.getElementById("ehbBody").innerHTML = '<tr><td colspan="4" class="empty">Loading from Wise Old Man…</td></tr>';
 }
 
 function goTeam(ti){
@@ -889,7 +900,7 @@ function renderTeamTabs(){
 }
 function teamPlayerVals(tm){
   var map = {};
-  PLAYERS.forEach(function(p){
+  tlPlayers().forEach(function(p){
     if (!p.team || p.team.toLowerCase() !== tm.name.toLowerCase()) return;
     var cn = canonName(p.name) || canonName(p.raw && p.raw.player ? p.raw.player.username : "");
     if (cn) map[String(cn).toLowerCase()] = p;
@@ -900,7 +911,7 @@ function renderTeam(){
   renderTeamTabs();
   var tm = TEAMS[curTeam], s = teamStats(tm);
   var pv = teamPlayerVals(tm), tEhb = 0, tEhp = 0;
-  PLAYERS.forEach(function(p){ if (p.team && p.team.toLowerCase() === tm.name.toLowerCase()){ tEhb += p.ehb; tEhp += p.ehp; } });
+  tlPlayers().forEach(function(p){ if (p.team && p.team.toLowerCase() === tm.name.toLowerCase()){ tEhb += p.ehb; tEhp += p.ehp; } });
   document.getElementById("teamSide").innerHTML =
     chipHTML(tm, "big-chip") +
     '<h3 style="color:' + tm.color + '">' + esc(tm.name) + '</h3>' +
@@ -930,7 +941,7 @@ function renderTeam(){
       '<div class="lb-main"><div class="nm" style="color:' + t2.color + '">' + esc(t2.name) + '</div>' +
       '<div class="dt2">' + o.s.lines + ' bingos · ' + o.s.tiles + ' tiles · ' + o.s.pct + '% · ' + o.s.pts + ' pts</div></div></div>';
   }).join("");
-  var tc = CLAIMS.filter(function(cl){ return cl.team === tm.name; });
+  var tc = claimsAt().filter(function(cl){ return cl.team === tm.name; });
   document.getElementById("teamClaimsBody").innerHTML = tc.length ? tc.map(function(cl){
     return '<tr><td><div class="itemcell">' + shotThumb(cl) + itemIcon(cl) + itemLink(cl) + '</div></td><td>' + ccImgFor(cl.team) + esc(cl.player) + '</td><td class="src">' + sourceLink(cl) + '</td><td class="when">' + (cl.t ? fmtShort(cl.t) : '&mdash;') + '</td><td class="r">' + esc(cl.count) + '</td></tr>';
   }).join("") : '<tr><td colspan="5" class="empty">No items received yet.</td></tr>';
@@ -967,10 +978,10 @@ function renderMVP(){
   document.getElementById("skillBody").innerHTML = byXp.slice(0, 10).map(function(p, i){
     return '<tr><td>' + (i + 1) + '</td><td>' + ccImgFor(p.team) + esc(p.name) + '</td><td>' + teamSpan(p.team) + '</td><td class="r">' + fmt(p.xp) + '</td><td class="r">' + p.ehp.toFixed(1) + '</td><td class="r">' + p.ehb.toFixed(1) + '</td></tr>';
   }).join("");
-  var totalXp = PLAYERS.reduce(function(a, p){ return a + p.xp; }, 0);
-  var totalEhb = PLAYERS.reduce(function(a, p){ return a + p.ehb; }, 0);
-  var totalEhp = PLAYERS.reduce(function(a, p){ return a + p.ehp; }, 0);
-  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + PLAYERS.length + '</b> \u00B7 Total EHB <b>' + totalEhb.toFixed(1) + '</b> \u00B7 Total EHP <b>' + totalEhp.toFixed(1) + '</b> \u00B7 Total XP Gained <b>' + fmt(totalXp) + '</b>';
+  var totalXp = TP.reduce(function(a, p){ return a + p.xp; }, 0);
+  var totalEhb = TP.reduce(function(a, p){ return a + p.ehb; }, 0);
+  var totalEhp = TP.reduce(function(a, p){ return a + p.ehp; }, 0);
+  document.getElementById("mvpFoot").innerHTML = 'Total Players <b>' + TP.length + '</b> \u00B7 Total EHB <b>' + totalEhb.toFixed(1) + '</b> \u00B7 Total EHP <b>' + totalEhp.toFixed(1) + '</b> \u00B7 Total XP Gained <b>' + fmt(totalXp) + '</b>';
 }
 function renderEhbFull(){
   var box = document.getElementById("ehbFullBody"); if (!box) return;
@@ -1004,11 +1015,27 @@ function renderEHB(){
 
 /* ============ WISE OLD MAN (live) ============ */
 var PROG = {}; /* PROG[teamIdx][tileIdx] = progress label */
+var PROGRAW = {}; /* raw WOM sums per team/tile, for replay scaling */
 function teamProg(ti, tile, idx){
+  if (tlActive && PROGRAW[ti] && PROGRAW[ti][idx] != null){
+    var raw = PROGRAW[ti][idx], fac = tlFac(tile.kc ? "tehb" : "txp", ti);
+    if (tile.kc) return Math.floor(raw * fac) + " / 20 KC";
+    return fmt(raw * fac) + " / " + tile.prog.split("/ ")[1];
+  }
   if (PROG[ti] && PROG[ti][idx]) return PROG[ti][idx];
+  if (tlActive && DROP_GOALS[idx] && [25, 26, 27].indexOf(idx) < 0){
+    var cc = 0;
+    claimsAt().forEach(function(cl){ if (cl.tile === idx && cl.team === TEAMS[ti].name) cc += cl.count || 1; });
+    allDrops().forEach(function(cl){ if (cl.tile === idx && cl.team === TEAMS[ti].name && !cl.count) cc += 0; });
+    return fmt(cc) + " / " + fmt(DROP_GOALS[idx]);
+  }
   var dp = DROPS.prog[idx];
-  if (dp && dp[ti] != null && DROP_GOALS[idx]) return fmt(dp[ti]) + " / " + fmt(DROP_GOALS[idx]);
-  return tile.prog;
+  if (dp && dp[ti] != null && DROP_GOALS[idx]){
+    var v = dp[ti];
+    if (tlActive) v = Math.round(v * tlFac("txp", ti));
+    return fmt(v) + " / " + fmt(DROP_GOALS[idx]);
+  }
+  return DROP_GOALS[idx] ? "0 / " + fmt(DROP_GOALS[idx]) : tile.prog;
 }
 function deltaFor(part, metric){
   var ds = part.deltas || [];
@@ -1017,7 +1044,7 @@ function deltaFor(part, metric){
 }
 function loadWOM(){
   fetch("https://api.wiseoldman.net/v2/competitions/165771")
-    .then(function(r){ return r.json(); })
+    .then(function(r){ if (!r.ok) throw new Error("wom " + r.status); return r.json(); })
     .then(function(d){
       var parts = d.participations || [];
       var byTeam = {};
@@ -1032,12 +1059,13 @@ function loadWOM(){
         TILES.forEach(function(tile, idx){
           if (!tile.metric) return;
           var sum = ps.reduce(function(a, p){ return a + deltaFor(p.raw, tile.metric); }, 0);
+          (PROGRAW[ti] = PROGRAW[ti] || {})[idx] = sum;
           if (tile.kc){
             PROG[ti][idx] = Math.floor(sum) + " / 20 KC";
-            if (sum >= tile.target && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+            if (sum >= tile.target){ var _arr = tlActive ? LIVE[ti] : tm.done; if (_arr.indexOf(idx) < 0) _arr.push(idx); }
           } else {
             PROG[ti][idx] = fmt(sum) + " / " + tile.prog.split("/ ")[1];
-            if (sum >= tile.target && tm.done.indexOf(idx) < 0) tm.done.push(idx);
+            if (sum >= tile.target){ var _arr = tlActive ? LIVE[ti] : tm.done; if (_arr.indexOf(idx) < 0) _arr.push(idx); }
           }
         });
       });
@@ -1045,7 +1073,7 @@ function loadWOM(){
       else { renderBoards(); renderTeam(); renderEHB(); renderMVP(); renderCaptain(); }
     })
     .catch(function(){
-      document.getElementById("womNote").textContent = "Could not reach Wise Old Man just now, so XP, KC, EHP and EHB progress is not shown. Refresh to try again.";
+      var wn = document.getElementById("womNote"); if (wn) wn.textContent = "Could not reach Wise Old Man just now, so XP, KC, EHP and EHB progress is not shown. Refresh to try again.";
       renderEHB(); renderMVP();
     });
 }
@@ -1055,9 +1083,9 @@ function tileWho(ti, idx){
   var seen = {}, out = [];
   allDrops().forEach(function(cl){
     if (cl.tile !== idx || cl.team !== TEAMS[ti].name) return;
-    var k = cl.player + "|" + cl.item;
+    var k = (canonName(cl.player) || cl.player) + "|" + itemKeyNorm(cl.item);
     if (seen[k]) return; seen[k] = 1;
-    out.push(cl.player + " \u2014 " + cl.item);
+    out.push((canonName(cl.player) || cl.player) + " \u2014 " + cl.item);
   });
   if (out.length) return out;
   var st = TILESTATS[idx];
@@ -1130,7 +1158,7 @@ function fmtEventTime(t, withDay){
   return new Date(t).toLocaleString("en-US", o);
 }
 function fmtShort(t){
-  var s = new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" });
+  var s = new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   return s.replace(",", "").replace(" AM", "a").replace(" PM", "p");
 }
 
@@ -1544,7 +1572,7 @@ function renderMomentum(){
   nyMidnights(START, xEnd).forEach(function(m){
     var x = X(m.t).toFixed(1);
     s += '<line x1="' + x + '" y1="' + T0 + '" x2="' + x + '" y2="' + (T0 + ph) + '" stroke="#1a2745" stroke-width="1"/>' +
-         '<text x="' + x + '" y="' + (VH - 10) + '" fill="#64769c" font-size="' + (VW < 640 ? 15 : 11) + '" font-weight="700" text-anchor="middle">' + m.d + '</text>';
+         '<text x="' + x + '" y="' + (VH - 10) + '" fill="#8fa3c8" font-size="' + (VW < 640 ? 15 : 11) + '" font-weight="700" text-anchor="middle">' + m.d + '</text>';
   });
   for (i = 0; i <= 4; i++){
     var v = top * i / 4, y = Y(v).toFixed(1);
@@ -1566,7 +1594,7 @@ function renderMomentum(){
     var lastPt = sr.pts[sr.pts.length - 1];
     s += '<path d="' + d + 'L' + X(lastPt[0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'L' + X(sr.pts[0][0]).toFixed(1) + ' ' + Y(0).toFixed(1) + 'Z" fill="' + TEAMS[ti].color + '" opacity="0.10" stroke="none"/>';
     s += '<path d="' + d + '" fill="none" stroke="' + TEAMS[ti].color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
-    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; var evT = evTiles[ti + "|" + p[0] + "|" + p[1]]; var tImg = (evT != null && TILES[evT]) ? TILES[evT].img : null; if (tImg){ s += '<circle cx="' + cx + '" cy="' + cy + '" r="11" fill="#0d1830" stroke="' + TEAMS[ti].color + '" stroke-width="2" pointer-events="none"/><image href="' + tImg + '" x="' + (cx - 8.5).toFixed(1) + '" y="' + (cy - 8.5).toFixed(1) + '" width="17" height="17" pointer-events="none"/>'; } else { s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; } if (ev) s += '<circle class="mom-hit" data-info="' + esc(ev) + '"' + (evT != null ? ' data-tile="' + evT + '"' : '') + ' cx="' + cx + '" cy="' + cy + '" r="15" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
+    if (mode === "points") sr.pts.forEach(function(p, k){ if (k && p[1] === sr.pts[k - 1][1]) return; var cx = X(p[0]).toFixed(1), cy = Y(p[1]).toFixed(1); var ev = evTitles[ti + "|" + p[0] + "|" + p[1]]; var evT = evTiles[ti + "|" + p[0] + "|" + p[1]]; var tImg = (evT != null && TILES[evT]) ? TILES[evT].img : null; if (tImg){ s += '<circle cx="' + cx + '" cy="' + cy + '" r="11" fill="#0d1830" stroke="' + TEAMS[ti].color + '" stroke-width="2" pointer-events="none"/><image href="' + tImg + '" x="' + (cx - 8.5).toFixed(1) + '" y="' + (cy - 8.5).toFixed(1) + '" width="17" height="17" pointer-events="none"/>'; } else { s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.2"/>'; } if (ev) s += '<circle class="mom-hit" data-info="' + esc(ev) + '"' + '' + ' cx="' + cx + '" cy="' + cy + '" r="15" fill="transparent" style="cursor:pointer"><title>' + esc(ev) + '</title></circle>'; });
     var lp = sr.pts[sr.pts.length - 1];
     s += '<circle class="mom-hit" data-info="' + esc(TEAMS[ti].name + " — " + (mode === "xp" ? compact(lp[1]) + " XP" : lp[1] + " pts") + " right now") + '" cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="9" fill="transparent" style="cursor:pointer"><title>' + esc(TEAMS[ti].name) + '</title></circle>';
     s += '<circle cx="' + X(lp[0]).toFixed(1) + '" cy="' + Y(lp[1]).toFixed(1) + '" r="4" fill="' + TEAMS[ti].color + '" stroke="#0d1526" stroke-width="1.5" pointer-events="none"/>';
@@ -1709,13 +1737,24 @@ function picksForTile(ti, tile, idx){
 function avFor(name){
   var k = String(name || "").toLowerCase();
   for (var i = 0; i < PEOPLE.length; i++){
-    if (PEOPLE[i].n.toLowerCase() === k || PEOPLE[i].r.toLowerCase() === k) return PEOPLE[i].av || "";
+    if ((PEOPLE[i].n || "").toLowerCase() === k || (PEOPLE[i].r || "").toLowerCase() === k) return PEOPLE[i].av || "";
   }
   return "";
 }
+function chaseFallback(idx){
+  var tot = [0, 0, 0], anyDone = false;
+  TEAMS.forEach(function(tm, ti){ if (tm.done.indexOf(idx) >= 0) anyDone = true; });
+  allDrops().forEach(function(cl){
+    if (cl.tile !== idx) return;
+    var ti = TEAMS.findIndex(function(tm){ return tm.name === cl.team; });
+    if (ti >= 0) tot[ti]++;
+  });
+  if (!tot[0] && !tot[1] && !tot[2] && !anyDone) return null;
+  return { u: "drops", tot: tot, top: null, fb: true };
+}
 function renderChase(){
   var entries = TILES.map(function(tile, idx){
-    var st = chasedAt(idx);
+    var st = chasedAt(idx) || chaseFallback(idx);
     return { idx: idx, tile: tile, st: st, total: st ? st.tot.reduce(function(a, b){ return a + b; }, 0) : 0 };
   }).sort(function(a, b){ return b.total - a.total; });
   var withData = entries.filter(function(e){ return e.total > 0; }).length;
@@ -1731,13 +1770,13 @@ function renderChase(){
       var done = tm.done.indexOf(e.idx) >= 0;
       return '<span style="color:' + tm.color + '">' + (done ? "✓ " : "") + (st ? fmt(st.tot[ti]) : "0") + '</span>';
     }).join("");
-    return '<button class="tc-card' + (e.total > 0 ? '' : ' zero') + '" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
+    return '<button class="tc-card' + (e.st ? '' : ' zero') + '" onclick="openChaseTile(' + e.idx + ')"><div class="tc-name">' + esc(e.tile.t) + '</div>' +
       '<div class="tc-big">' + (st ? fmt(e.total) : "0") + ' <span class="tc-unit">' + (st ? st.u : "KC") + ' total</span></div>' +
       '<div class="tc-bar">' + segs + '</div><div class="tc-teams">' + counts + '</div></button>';
   }).join("");
 }
 function openChaseTile(idx){
-  var tile = TILES[idx], st = chasedAt(idx);
+  var tile = TILES[idx], st = chasedAt(idx) || chaseFallback(idx);
   document.getElementById("mIcon").innerHTML = iconHTML(tile);
   document.getElementById("mTitle").textContent = tile.t;
   document.getElementById("mPts").textContent = tile.p + " pts";
@@ -1754,7 +1793,7 @@ function openChaseTile(idx){
     var whoRows = TEAMS.map(function(tm, ti){
       var seenC = {}, lines = [];
       allDrops().forEach(function(cl){
-        if (cl.tile === idx && cl.team === tm.name){ var k = cl.player + "|" + cl.item; if (!seenC[k]){ seenC[k] = 1; lines.push(esc(cl.player) + " \u2014 " + (cl.img ? '<a class="who-link" onclick="openShot(event,\'' + cl.img + '\')">' + esc(cl.item) + '</a>' : esc(cl.item))); } }
+        if (cl.tile === idx && cl.team === tm.name){ var k = (canonName(cl.player) || cl.player) + "|" + itemKeyNorm(cl.item); if (!seenC[k]){ seenC[k] = 1; lines.push(esc(canonName(cl.player) || cl.player) + " \u2014 " + (cl.img ? '<a class="who-link" onclick="openShot(event,\'' + cl.img + '\')">' + esc(cl.item) + '</a>' : esc(cl.item))); } }
       });
       return { tm: tm, lines: lines };
     });
@@ -1894,8 +1933,8 @@ function recapDayData(n){
       if (doneBy[x.team].indexOf(x.e.tile) < 0) doneBy[x.team].push(x.e.tile);
     }
   });
-  var rank = ptsAt.filter(function(v){ return v > ptsAt[curTeam]; }).length;
-  var tied = ptsAt.some(function(v, i){ return i !== curTeam && v === ptsAt[curTeam] && v > 0; });
+  var rank = ptsAt.filter(function(v, i){ return v > ptsAt[curTeam] || (v === ptsAt[curTeam] && (doneBy[i] || []).length > (doneBy[curTeam] || []).length); }).length;
+  var tied = ptsAt.some(function(v, i){ return i !== curTeam && v === ptsAt[curTeam] && (doneBy[i] || []).length === (doneBy[curTeam] || []).length && v > 0; });
   var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
   var done = TIMELINE.filter(function(e){ return e.team === curTeam && e.t >= start && e.t < end; }).map(function(e){
     var st = null;
@@ -1919,8 +1958,8 @@ function recapDayData(n){
 function recapData(){
   var tm = TEAMS[curTeam], s = teamStats(tm);
   var order = standings();
-  var rank = order.filter(function(o){ return o.s.pts > s.pts; }).length;
-  var tied = order.some(function(o){ return o.i !== curTeam && o.s.pts === s.pts; });
+  var rank = order.filter(function(o){ return o.s.pts > s.pts || (o.s.pts === s.pts && o.s.tiles > s.tiles); }).length;
+  var tied = order.some(function(o){ return o.i !== curTeam && o.s.pts === s.pts && o.s.tiles === s.tiles; });
   var place = (tied ? "T-" : "") + ["1st", "2nd", "3rd"][rank];
   var cut = recapDayStart(recapTodayNum());
   var steps = pointSteps();
@@ -2110,9 +2149,12 @@ function claimsAt(){
   var c = tlCutoff();
   return CLAIMS.filter(function(cl){ return !cl.t || cl.t <= c; });
 }
+function itemKeyNorm(item){
+  return String(item).toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "").replace(/armour/g, "armor").replace(/dihns/g, "dinhs").replace(/dhcb/g, "dragonhuntercrossbow");
+}
 function allDrops(){
   var out = claimsAt().slice();
-  function ikey(item){ return String(item).toLowerCase().replace(/[^a-z0-9]+/g, ""); }
+  function ikey(item){ return itemKeyNorm(item); }
   function sameDrop(a, b){
     if (a.tile !== b.tile) return false;
     if ((canonName(a.player) || a.player).toLowerCase() !== (canonName(b.player) || b.player).toLowerCase()) return false;
@@ -2132,6 +2174,19 @@ function allDrops(){
 function chasedAt(idx){
   var st = TILESTATS[idx]; if (!st) return null;
   if (!tlActive) return st;
+  if (st.u === "drops"){
+    var tot = [0, 0, 0], byP = {};
+    allDrops().forEach(function(cl){
+      if (cl.tile !== idx) return;
+      var ti = TEAMS.findIndex(function(tm){ return tm.name === cl.team; });
+      if (ti < 0) return;
+      tot[ti]++;
+      var pk = cl.player + "|" + ti;
+      byP[pk] = byP[pk] || [cl.player, ti, 0]; byP[pk][2]++;
+    });
+    var top = Object.keys(byP).map(function(k){ return byP[k]; }).sort(function(a, b){ return b[2] - a[2]; }).slice(0, 8);
+    return { u: "drops", tot: tot, top: top };
+  }
   var key = st.u === "XP" ? "txp" : "tehb";
   return { u: st.u,
     tot: st.tot.map(function(v, ti){ return Math.round(v * tlFac(key, ti)); }),
@@ -2155,10 +2210,10 @@ function tlApply(){
   var nowMs = Date.now();
   if (tlActive && (sigChanged || nowMs - tlDataAt > 600)){
     tlDataAt = nowMs;
-    renderEHB(); renderMVP(); renderCaptain(); renderChase();
+    renderEHB(); renderMVP(); renderCaptain(); renderChase(); renderTeam(); renderClaims();
   }
   var d = new Date(cutoff);
-  var stampTxt = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  var stampTxt = d.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET";
   var landed = TIMELINE.filter(function(e){ return e.t <= cutoff; }).length;
   var elapsedTxt = landed + " of " + TIMELINE.length + (TIMELINE.length === 1 ? " tile" : " tiles") + " landed by then";
   var pctDone = tlMax() ? tlPos / tlMax() * 100 : 0;
@@ -2258,7 +2313,7 @@ TL_BARS.forEach(function(b){
 })();
 function tick(){
   var ul = document.getElementById("updatedLine");
-  if (ul && UPDATED) ul.textContent = "Last updated " + fmtEventTime(UPDATED, true) + " ET · scores and drops refresh every 30 minutes";
+  if (ul && UPDATED) ul.textContent = "Last updated " + fmtEventTime(UPDATED, true) + " ET · the page refreshes itself every couple of minutes";
   var now = Date.now();
   var pct = Math.max(0, Math.min(100, (now - START) / (END - START) * 100));
   document.getElementById("timeBar").style.width = pct.toFixed(1) + "%";
@@ -2307,30 +2362,41 @@ function pollData(){
   if (tlActive) return;
   fetch("data.json?x=" + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
     if (!d) return;
+    var hadShots = SHOTS.length;
     if (d.SHOTS) SHOTS = d.SHOTS;
-    if (!d.UPDATED || d.UPDATED === UPDATED) return;
+    if (!d.UPDATED || d.UPDATED === UPDATED){ if (!hadShots && SHOTS.length && progInit){ renderFeed(); renderMomentum(); } return; }
     UPDATED = d.UPDATED; SHEET = d.SHEET; DROPS = d.DROPS; TIMELINE = d.TIMELINE;
     PEOPLE = d.PEOPLE; FLAGS = d.FLAGS || {};
     if (d.TILESTATS) TILESTATS = d.TILESTATS;
     if (d.HIST) HIST = d.HIST;
     if (d.HEAT) HEAT = d.HEAT;
+    if (!DROPS.prog) DROPS.prog = {};
     CLAIMS = DROPS.claims || [];
+    CANON = null;
     TEAMS.forEach(function(tm, i){
       tm.skips = SHEET.skips[i] || 0;
       tm.done = (SHEET.marks[i] || []).slice();
     });
+    applyDropGoals();
     renderBoards(); renderClaims(); renderTeam(); renderCaptain(); renderChase(); renderSince(); tick();
     loadWOM();
     if (progInit && progMap){
       mapShowLive();
       if (peopleLayer) progMap.removeLayer(peopleLayer);
       buildPeopleLayer();
+      var mpBtn = document.getElementById("mapPeople");
+      if (mpBtn && !mpBtn.classList.contains("on") && peopleLayer) progMap.removeLayer(peopleLayer);
       renderMomentum(); renderHeat(); renderFeed();
       var cap = document.getElementById("mapCaption");
       if (cap) cap.textContent = TIMELINE.length ? mapFinalCaption() : "No tiles claimed yet.";
     }
   }).catch(function(){});
 }
+document.addEventListener("keydown", function(e){
+  if (e.key !== "Escape") return;
+  ["tileBackdrop", "rulesBackdrop"].forEach(function(id){ var b = document.getElementById(id); if (b) b.classList.remove("open"); });
+  if (typeof shotBoxEl !== "undefined" && shotBoxEl) shotBoxEl.hidden = true;
+});
 renderBoards(); renderClaims(); renderTeam(); renderMVP(); renderEHB(); renderSince(); renderCaptain(); loadWOM(); tick(); setInterval(tick, 60000); setInterval(pollData, 2 * 60 * 1000); pollData();
 setView(new URLSearchParams(window.location.search).get("view") || "overview");
 </script>
